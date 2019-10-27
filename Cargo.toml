@@ -18,3 +18,7 @@ clap = "^2.33.0"
 members = [
     "wallet_lib",
 ]
+
+[[bin]]
+name = "wallet"
+path = "src/main.rs"
