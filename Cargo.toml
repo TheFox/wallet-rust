@@ -1,7 +1,7 @@
 [package]
 name = "wallet-app"
 description = "CLI application using wallet-lib to manage your finances."
-version = "0.1.0"
+version = "0.0.0"
 license = "GPL-3.0-or-later"
 authors = ["Christian Mayer <christian@fox21.at>"]
 homepage = "https://fox21.at"
@@ -11,7 +11,7 @@ categories = ["finances"]
 edition = "2018"
 
 [dependencies]
-wallet-lib = { path = "wallet_lib", version = "0.1.0" }
+wallet-lib = { path = "wallet_lib", version = "0.0.0" }
 clap = "^2.33.0"
 
 [workspace]
