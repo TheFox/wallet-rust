@@ -1,0 +1,7 @@
+[package]
+name = "wallet-lib"
+version = "0.1.0"
+authors = ["Christian Mayer <christian@fox21.at>"]
+edition = "2018"
+
+[dependencies]
