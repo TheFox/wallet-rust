@@ -1,6 +1,6 @@
 
 #[derive(Debug)]
-struct Wallet {
+pub struct Wallet {
     path: String,
 }
 

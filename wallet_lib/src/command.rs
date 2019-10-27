@@ -1,11 +1,12 @@
 
 // #[derive(Clone, Copy)]
-struct CommandOptions {
+#[derive(Debug)]
+pub struct CommandOptions {
     wallet_path: String,
 }
 
 impl CommandOptions {
-    fn new() -> Self {
+    pub fn new() -> Self {
         CommandOptions {
             wallet_path: String::new(),
         }
@@ -15,7 +16,7 @@ impl CommandOptions {
         println!("-> CommandOptions::wallet_path()");
 
         // self.wallet_path.clone()
-        String::new("TODO") // TODO
+        String::new() // TODO
     }
 }
 
@@ -31,8 +32,8 @@ impl Command for AddCommand {
     fn exec(&self) {
         println!("-> AddCommand::exec()");
 
-        let _wallet = Wallet::new_with_path(self.options.wallet_path());
-        let _entry = Entry::new();
+        // let _wallet = Wallet::new_with_path(self.options.wallet_path());
+        // let _entry = Entry::new();
 
         // _wallet.add(_entry);
     }

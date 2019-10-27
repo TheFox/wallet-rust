@@ -1,5 +1,7 @@
+
 pub mod wallet;
-//pub mod entry;
+pub mod entry;
+pub mod command;
 
 // #[cfg(test)]
 // mod tests {
