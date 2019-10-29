@@ -1,11 +1,12 @@
 [package]
 name = "wallet-lib"
 description = "A spreadsheet likewise Rust library to track your finances."
-version = "0.0.0"
+version = "0.1.0-dev"
 license = "GPL-3.0-or-later"
 authors = ["Christian Mayer <christian@fox21.at>"]
-homepage = "https://fox21.at"
-documentation = "https://fox21.at"
+homepage = "https://github.com/TheFox/wallet-rust"
+documentation = "https://github.com/TheFox/wallet-rust"
+repository = "https://github.com/TheFox/wallet-rust"
 keywords = ["wallet", "lib"]
 categories = ["finances"]
 edition = "2018"
