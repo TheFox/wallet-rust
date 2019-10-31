@@ -2,7 +2,7 @@
 name = "wallet-lib"
 description = "A spreadsheet likewise Rust library to track your finances."
 version = "0.1.0-dev"
-license = "GPL-3.0-or-later"
+license = "MIT"
 authors = ["Christian Mayer <christian@fox21.at>"]
 homepage = "https://github.com/TheFox/wallet-rust"
 documentation = "https://github.com/TheFox/wallet-rust"
