@@ -1,5 +1,5 @@
 
-use std::fs::create_dir;
+use std::fs::create_dir_all;
 
 #[derive(Debug)]
 pub struct Wallet {
@@ -27,8 +27,7 @@ impl Wallet {
     fn create_dirs(&self) {
         println!("-> Wallet::create_dirs() -> {}", self.path);
 
-        // fs::create_dir_all("/some/dir")?;
-        // Ok(())
+        create_dir_all(self.path.clone());
     }
 
     // TODO
