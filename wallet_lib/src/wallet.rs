@@ -1,20 +1,14 @@
 
+use std::fs::create_dir;
+
 #[derive(Debug)]
 pub struct Wallet {
     path: String,
 }
 
 impl Wallet {
-    fn new() -> Self {
-        println!("-> Wallet::new()");
-
-        Wallet {
-            path: String::new(), // TODO
-        }
-    }
-
-    fn new_with_path(path: String) -> Self {
-        println!("-> Wallet::new_with_path({})", path);
+    pub fn new(path: String) -> Self {
+        println!("-> Wallet::new({})", path);
 
         let _w = Wallet {
             path: path,
@@ -24,16 +18,21 @@ impl Wallet {
         _w
     }
 
-    fn init(&self) {
+    pub fn init(&self) -> () {
         println!("-> Wallet::init()");
         self.create_dirs();
     }
 
+    // TODO
     fn create_dirs(&self) {
-        println!("-> Wallet::create_dirs()");
+        println!("-> Wallet::create_dirs() -> {}", self.path);
+
+        // fs::create_dir_all("/some/dir")?;
+        // Ok(())
     }
 
-    // fn add(&self, entry: Entry) {
+    // TODO
+    // pub fn add(&self, entry: Entry) {
     //     println!("-> Wallet::add() {:?}", entry);
     // }
 }

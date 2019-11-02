@@ -1,11 +1,15 @@
 
+use crate::wallet::Wallet;
+
 // #[derive(Clone, Copy)]
 #[derive(Debug)]
 pub struct CommandOptions {
-    wallet_path: String,
+    pub wallet_path: String,
 }
 
+/// Common Options for commands.
 impl CommandOptions {
+    /// Create a new CommandOptions object.
     pub fn new() -> Self {
         CommandOptions {
             wallet_path: String::new(),
@@ -15,26 +19,42 @@ impl CommandOptions {
     fn wallet_path(&self) -> String {
         println!("-> CommandOptions::wallet_path()");
 
-        // self.wallet_path.clone()
-        String::new() // TODO
+        self.wallet_path.clone()
     }
 }
 
-trait Command {
+pub trait Command {
     fn exec(&self);
 }
 
-struct AddCommand {
-    options: CommandOptions,
+pub struct InitCommand {
+    pub options: CommandOptions,
+}
+
+pub struct AddCommand {
+    pub options: CommandOptions,
+}
+
+pub struct HtmlCommand {
+    pub options: CommandOptions,
+}
+
+impl Command for InitCommand {
+    fn exec(&self) {
+        println!("-> InitCommand::exec()");
+
+        Wallet::new(self.options.wallet_path());
+    }
 }
 
 impl Command for AddCommand {
     fn exec(&self) {
         println!("-> AddCommand::exec()");
+    }
+}
 
-        // let _wallet = Wallet::new_with_path(self.options.wallet_path());
-        // let _entry = Entry::new();
-
-        // _wallet.add(_entry);
+impl Command for HtmlCommand {
+    fn exec(&self) {
+        println!("-> HtmlCommand::exec()");
     }
 }

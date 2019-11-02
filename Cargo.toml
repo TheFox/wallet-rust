@@ -20,6 +20,9 @@ members = [
     "wallet_lib",
 ]
 
+[profile.release]
+panic = 'abort'
+
 [[bin]]
 name = "wallet"
 path = "src/main.rs"
