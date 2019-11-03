@@ -8,7 +8,7 @@ which cargo &> /dev/null || { echo 'ERROR: cargo not found in PATH'; exit 1; }
 cd "${SCRIPT_BASEDIR}/.."
 
 pushd wallet_lib/ &> /dev/null
-cargo publish --dry-run
+cargo publish
 
 popd &> /dev/null
-cargo publish --dry-run
+cargo publish

@@ -4,7 +4,7 @@ use clap::{App, Arg};
 use std::env;
 use wallet_lib::command::CommandOptions;
 use wallet_lib::command::Command;
-use wallet_lib::command::{InitCommand, AddCommand, HtmlCommand};
+use wallet_lib::command::{InitCommand, AddCommand, ListCommand, HtmlCommand};
 
 const APP_NAME: &'static str = env!("CARGO_PKG_NAME");
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -37,9 +37,21 @@ fn main() {
                 .takes_value(false)
         );
 
+    // List Sub Command
+    let mut list_subcmd = App::new("list")
+        .about("List entries.");
+
     // HTML Sub Command
     let html_subcmd = App::new("html")
         .about("Generate HTML output.");
+
+    // Common Arguments
+    let wallet_arg = Arg::with_name("wallet")
+        .short("w")
+        .long("wallet")
+        .value_name("PATH")
+        .help("Path to the wallet directory.")
+        .takes_value(true);
 
     // Main App
     let app = App::new(APP_NAME)
@@ -50,15 +62,9 @@ fn main() {
         .subcommand(vars_subcmd)
         .subcommand(init_subcmd)
         .subcommand(add_subcmd)
+        .subcommand(list_subcmd)
         .subcommand(html_subcmd)
-        .arg(
-            Arg::with_name("wallet")
-                .short("w")
-                .long("wallet")
-                .value_name("PATH")
-                .help("Path to the wallet directory.")
-                .takes_value(true)
-        );
+        .arg(wallet_arg);
 
     // Command Options
     let mut options = CommandOptions::new();
@@ -92,16 +98,16 @@ fn main() {
             if add_matches.is_present("interactive") {
                 println!("-> interactive is present");
             }
-            // let cmd = AddCommand { options };
-            // cmd.exec();
+            let cmd = AddCommand { options };
+            cmd.exec();
         },
         ("html", Some(html_matches)) => {
             println!("-> cmd: html");
             if html_matches.is_present("path") {
                 println!("-> path is present: {}", matches.value_of("wallet").unwrap());
             }
-            // let cmd = HtmlCommand { options };
-            // cmd.exec();
+            let cmd = HtmlCommand { options };
+            cmd.exec();
         },
         _ => unreachable!(),
     }

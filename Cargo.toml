@@ -7,8 +7,8 @@ authors = ["Christian Mayer <christian@fox21.at>"]
 homepage = "https://github.com/TheFox/wallet-rust"
 documentation = "https://github.com/TheFox/wallet-rust"
 repository = "https://github.com/TheFox/wallet-rust"
-keywords = ["wallet", "app", "cli"]
-categories = ["finances"]
+keywords = ["wallet"]
+categories = ["cli", "finances"]
 edition = "2018"
 
 [dependencies]

@@ -35,6 +35,10 @@ pub struct AddCommand {
     pub options: CommandOptions,
 }
 
+pub struct ListCommand {
+    pub options: CommandOptions,
+}
+
 pub struct HtmlCommand {
     pub options: CommandOptions,
 }
@@ -50,11 +54,26 @@ impl Command for InitCommand {
 impl Command for AddCommand {
     fn exec(&self) {
         println!("-> AddCommand::exec()");
+
+        let wallet = Wallet::new(self.options.wallet_path());
+        wallet.add();
+    }
+}
+
+impl Command for ListCommand {
+    fn exec(&self) {
+        println!("-> ListCommand::exec()");
+
+        let wallet = Wallet::new(self.options.wallet_path());
+        wallet.list();
     }
 }
 
 impl Command for HtmlCommand {
     fn exec(&self) {
         println!("-> HtmlCommand::exec()");
+
+        let wallet = Wallet::new(self.options.wallet_path());
+        wallet.html();
     }
 }
