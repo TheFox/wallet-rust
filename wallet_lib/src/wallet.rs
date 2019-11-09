@@ -1,6 +1,7 @@
 
 use std::fs::create_dir_all;
 use std::path::PathBuf;
+use crate::entry::Entry;
 
 #[derive(Debug)]
 pub struct Wallet {
@@ -44,7 +45,7 @@ impl Wallet {
         _w
     }
 
-    pub fn init(&self) -> () {
+    pub fn init(&self) {
         println!("-> Wallet::init()");
         self.create_dirs();
     }
@@ -59,8 +60,9 @@ impl Wallet {
     }
 
     // TODO
-    pub fn add(&self) {
+    pub fn add(&self, entry: Entry) {
         println!("-> Wallet::add()");
+        println!("-> entry {:?}", entry);
     }
 
     // TODO

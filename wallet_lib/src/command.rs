@@ -1,10 +1,14 @@
 
 use crate::wallet::Wallet;
+use crate::entry::Entry;
+use crate::types::Number;
 
 // #[derive(Clone, Copy)]
 #[derive(Debug)]
 pub struct CommandOptions {
     pub wallet_path: String,
+    pub revenue: Number,
+    pub expense: Number,
 }
 
 /// Common Options for commands.
@@ -13,11 +17,13 @@ impl CommandOptions {
     pub fn new() -> Self {
         CommandOptions {
             wallet_path: String::new(),
+            revenue: 0.0,
+            expense: 0.0,
         }
     }
 
-    fn wallet_path(&self) -> String {
-        println!("-> CommandOptions::wallet_path()");
+    fn get_wallet_path(&self) -> String {
+        println!("-> CommandOptions::get_wallet_path()");
 
         self.wallet_path.clone()
     }
@@ -47,7 +53,7 @@ impl Command for InitCommand {
     fn exec(&self) {
         println!("-> InitCommand::exec()");
 
-        Wallet::new(self.options.wallet_path());
+        Wallet::new(self.options.get_wallet_path());
     }
 }
 
@@ -55,8 +61,12 @@ impl Command for AddCommand {
     fn exec(&self) {
         println!("-> AddCommand::exec()");
 
-        let wallet = Wallet::new(self.options.wallet_path());
-        wallet.add();
+        // TODO
+        let mut entry = Entry::new(); // TODO: use from() here
+        entry.set_revenue(self.options.revenue);
+
+        let wallet = Wallet::new(self.options.get_wallet_path());
+        wallet.add(entry);
     }
 }
 
@@ -64,8 +74,8 @@ impl Command for ListCommand {
     fn exec(&self) {
         println!("-> ListCommand::exec()");
 
-        let wallet = Wallet::new(self.options.wallet_path());
-        wallet.list();
+        let wallet = Wallet::new(self.options.get_wallet_path());
+        wallet.list(); // TODO
     }
 }
 
@@ -73,7 +83,7 @@ impl Command for HtmlCommand {
     fn exec(&self) {
         println!("-> HtmlCommand::exec()");
 
-        let wallet = Wallet::new(self.options.wallet_path());
-        wallet.html();
+        let wallet = Wallet::new(self.options.get_wallet_path());
+        wallet.html(); // TODO
     }
 }

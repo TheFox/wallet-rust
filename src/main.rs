@@ -5,6 +5,8 @@ use std::env;
 use wallet_lib::command::CommandOptions;
 use wallet_lib::command::Command;
 use wallet_lib::command::{InitCommand, AddCommand, ListCommand, HtmlCommand};
+use wallet_lib::ext::StringExt;
+use wallet_lib::types::Number;
 
 const APP_NAME: &'static str = env!("CARGO_PKG_NAME");
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -15,8 +17,15 @@ const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 fn main() {
     println!("-> start");
 
+    // let _s1 = String::from("1,23");
+    // println!("-> _s1: '{:?}'", _s1);
+    // println!("-> _s1 rc: '{:?}'", _s1.replace_comma());
+    // println!("-> _s1 num: '{:?}'", _s1.replace_comma().to_num());
+    // let _f1: f64 = _s1.replace_comma().to_num();
+    // println!("-> _f1: '{:?}'", _f1);
+
     let args: Vec<String> = env::args().collect();
-    println!("-> cmd: '{:?}'", args);
+    println!("-> args: '{:?}'", args);
 
     // Vars Sub Command
     let mut vars_subcmd = App::new("vars")
@@ -29,13 +38,21 @@ fn main() {
     // Add Sub Command
     let add_subcmd = App::new("add")
         .about("Add a new entry.")
-        .arg(
-            Arg::with_name("interactive")
-                .short("i")
-                .long("interactive")
-                .help("Run the Add command in interactive mode.")
-                .takes_value(false)
-        );
+        .arg(Arg::with_name("interactive")
+            .short("i")
+            .long("interactive")
+            .help("Run the Add command in interactive mode.")
+            .takes_value(false))
+        .arg(Arg::with_name("revenue")
+            .short("r")
+            .long("revenue")
+            .help("Set a Revenue.")
+            .takes_value(true))
+        .arg(Arg::with_name("expense")
+            .short("e")
+            .long("expense")
+            .help("Set a Expense.")
+            .takes_value(true));
 
     // List Sub Command
     let mut list_subcmd = App::new("list")
@@ -95,9 +112,38 @@ fn main() {
         },
         ("add", Some(add_matches)) => {
             println!("-> cmd: add");
+
+            // Interactive
             if add_matches.is_present("interactive") {
                 println!("-> interactive is present");
             }
+
+            // Revenue
+            if add_matches.is_present("revenue") {
+                // Convert from &str to String.
+                let vs = add_matches.value_of("revenue").unwrap().to_string();
+                println!("-> v {:?}", vs);
+
+                // Convert from String to Number.
+                let vn: Number = vs.replace_comma().to_num();
+
+                println!("-> revenue is present: '{}'", vn);
+                options.revenue = vn;
+            }
+
+            // Expense
+            if add_matches.is_present("expense") {
+                // Convert from &str to String.
+                let vs = add_matches.value_of("expense").unwrap().to_string();
+                println!("-> v {:?}", vs);
+
+                // Convert from String to Number.
+                let vn: Number = vs.replace_comma().to_num();
+
+                println!("-> expense is present: '{}'", vn);
+                options.expense = vn;
+            }
+
             let cmd = AddCommand { options };
             cmd.exec();
         },
