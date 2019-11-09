@@ -64,6 +64,7 @@ impl Command for AddCommand {
         // TODO
         let mut entry = Entry::new(); // TODO: use from() here
         entry.set_revenue(self.options.revenue);
+        entry.set_expense(self.options.expense);
 
         let wallet = Wallet::new(self.options.get_wallet_path());
         wallet.add(entry);
