@@ -2,6 +2,12 @@
 
 A spreadsheet likewise [Rust](https://www.rust-lang.org/) program to track your finances.
 
+## Dev
+
+```bash
+./bin/dev.sh -w tmp/wallet add
+```
+
 ## License
 
 MIT License
