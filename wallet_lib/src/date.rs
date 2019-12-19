@@ -40,8 +40,6 @@ impl Date {
 
         // Shift
         let s = 1 << i;
-        // println!("-> shift: {}", s);
-        // println!("-> res: {} ({})", self.used & s > 0, self.used);
 
         self.used & s > 0
     }
@@ -65,15 +63,6 @@ impl Date {
         println!("-> Date::year()");
         self.date.year()
     }
-
-    // fn set_year(&mut self, y: i32) {
-    //     println!("-> Date::set_year({})", y);
-    //     self.date.year(y);
-    // }
-
-    // fn year_str(&self) -> String {
-    //     self.date.format("%Y").to_string()
-    // }
 
     fn month(&self) -> u32 {
         println!("-> Date::month()");
