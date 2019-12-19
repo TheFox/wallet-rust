@@ -1,8 +1,11 @@
 
 use crate::types::Number;
+// use crate::date::Date;
+// use chrono::{DateTime, Local};
 
 #[derive(Debug)]
 pub struct Entry {
+    // date: String,
     revenue: Number,
     expense: Number,
     balance: Number,
@@ -12,7 +15,11 @@ impl Entry {
     pub fn new() -> Self {
         println!("-> Entry::new()");
 
+        // let dt: DateTime<Local> = Local::now();
+        // let d: Date<Local> = dt.date();
+
         Entry {
+            // date: String::new(),
             revenue: 0.0,
             expense: 0.0,
             balance: 0.0,

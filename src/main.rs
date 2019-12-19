@@ -28,11 +28,11 @@ fn main() {
     println!("-> args: '{:?}'", args);
 
     // Vars Sub Command
-    let mut vars_subcmd = App::new("vars")
+    let vars_subcmd = App::new("vars")
         .about("Print variables.");
 
     // Init Sub Command
-    let mut init_subcmd = App::new("init")
+    let init_subcmd = App::new("init")
         .about("Initialize a new wallet.");
 
     // Add Sub Command
@@ -55,7 +55,7 @@ fn main() {
             .takes_value(true));
 
     // List Sub Command
-    let mut list_subcmd = App::new("list")
+    let list_subcmd = App::new("list")
         .about("List entries.");
 
     // HTML Sub Command
@@ -145,6 +145,12 @@ fn main() {
             }
 
             let cmd = AddCommand { options };
+            cmd.exec();
+        },
+        ("list", Some(_list_matches)) => {
+            println!("-> cmd: list");
+
+            let cmd = ListCommand { options };
             cmd.exec();
         },
         ("html", Some(html_matches)) => {

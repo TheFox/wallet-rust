@@ -53,10 +53,11 @@ impl Wallet {
     fn create_dirs(&self) {
         println!("-> Wallet::create_dirs()");
 
-        create_dir_all(self.path.clone());
-        create_dir_all(self.data_dir.clone());
-        create_dir_all(self.html_dir.clone());
-        create_dir_all(self.tmp_dir.clone());
+        create_dir_all(self.path.clone()).expect("Cannot create base path.");
+        // TODO
+        // create_dir_all(self.data_dir.clone());
+        // create_dir_all(self.html_dir.clone());
+        // create_dir_all(self.tmp_dir.clone());
     }
 
     // TODO

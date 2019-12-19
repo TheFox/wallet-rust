@@ -12,3 +12,5 @@ categories = ["finances"]
 edition = "2018"
 
 [dependencies]
+regex = "^1.3.1"
+chrono = "^0.4.10"

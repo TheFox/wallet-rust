@@ -10,6 +10,7 @@ repository = "https://github.com/TheFox/wallet-rust"
 keywords = ["wallet"]
 categories = ["cli", "finances"]
 edition = "2018"
+default-run = "wallet"
 
 [dependencies]
 wallet-lib = { path = "wallet_lib" }
