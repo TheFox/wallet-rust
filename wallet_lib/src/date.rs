@@ -307,6 +307,30 @@ mod tests {
         assert_eq!("02-21", d1.to_string());
     }
 
+    #[test]
+    fn from_ok6() {
+        let d1 = Date::from_str("2/21/1987").unwrap();
+        assert_eq!(1987, d1.year());
+        assert_eq!(2, d1.month());
+        assert_eq!(21, d1.day());
+        assert!(d1.has_year());
+        assert!(d1.has_month());
+        assert!(d1.has_day());
+        assert_eq!("1987-02-21", d1.to_string());
+    }
+
+    #[test]
+    fn from_ok7() {
+        let d1 = Date::from_str("2/21").unwrap();
+        assert_eq!(1970, d1.year());
+        assert_eq!(2, d1.month());
+        assert_eq!(21, d1.day());
+        assert!(!d1.has_year());
+        assert!(d1.has_month());
+        assert!(d1.has_day());
+        assert_eq!("02-21", d1.to_string());
+    }
+
     // TODO
     #[test]
     fn from_bad1() {
