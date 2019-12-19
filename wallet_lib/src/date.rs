@@ -3,8 +3,14 @@ use chrono::{NaiveDate, Datelike};
 use std::fmt::{Display, Formatter, Result as FmtRes, Debug};
 use std::str::FromStr;
 use std::num::ParseIntError;
+// use std::num::IntErrorKind;
 use regex::Regex;
 use std::vec;
+
+#[derive(Debug)]
+pub enum DateError {
+    InvalidDate,
+}
 
 #[derive(Debug, Clone)]
 enum Parts {
@@ -76,7 +82,8 @@ impl Date {
 }
 
 impl FromStr for Date {
-    type Err = ParseIntError;
+    // type Err = ParseIntError;
+    type Err = DateError;
 
     /// Available formats:
     ///
@@ -120,32 +127,32 @@ impl FromStr for Date {
 
         for pattern in patterns {
             let re = Regex::new(pattern).unwrap();
-            println!("-> pattern: {:?}", re);
+            // println!("-> pattern: {:?}", re);
 
             match re.captures(s) {
                 Some(captures) => {
-                    println!("-> captures: {:?}", captures);
+                    // println!("-> captures: {:?}", captures);
 
                     match captures.name("y") {
                         Some(t) => {
-                            println!("-> y: {:?}", t);
-                            y = t.as_str().parse()?;
+                            // println!("-> y: {:?}", t);
+                            y = t.as_str().parse().expect("Parse field 'y' failed");
                         },
                         None => (),
                     }
 
                     match captures.name("m") {
                         Some(t) => {
-                            println!("-> m: {:?}", t);
-                            m = t.as_str().parse()?;
+                            // println!("-> m: {:?}", t);
+                            m = t.as_str().parse().expect("Parse field 'm' failed");
                         },
                         None => (),
                     }
 
                     match captures.name("d") {
                         Some(t) => {
-                            println!("-> d: {:?}", t);
-                            d = t.as_str().parse()?;
+                            // println!("-> d: {:?}", t);
+                            d = t.as_str().parse().expect("Parse field 'd' failed");
                         },
                         None => (),
                     }
@@ -179,15 +186,22 @@ impl FromStr for Date {
             usage |= 1;
         }
 
-        println!("-> usage: {}", usage);
-        println!("-> ymd: {}-{}-{}", y, m, d);
+        // println!("-> usage: {}", usage);
+        // println!("-> ymd: {}-{}-{}", y, m, d);
 
-        let d = Self {
-            date: NaiveDate::from_ymd(y, m, d),
-            used: usage,
-        };
+        if usage == 0 {
+            Err(DateError::InvalidDate)
+            // Err(ParseIntError{ kind: std::num::IntErrorKind::Zero })
+            // Self::Err(ParseIntError{})
+            // Self::Err(ParseIntError{ kind: IntErrorKind::InvalidDigit })
+        } else {
+            let d = Self {
+                date: NaiveDate::from_ymd(y, m, d),
+                used: usage,
+            };
 
-        Ok(d)
+            Ok(d)
+        }
     }
 }
 
@@ -225,7 +239,7 @@ impl Debug for Date {
 mod tests {
     // // use super::*;
     // use super::{Date, FromStr};
-    use super::Date;
+    use super::{Date, DateError};
     use std::str::FromStr;
 
     #[test]
@@ -293,17 +307,25 @@ mod tests {
         assert_eq!("02-21", d1.to_string());
     }
 
-    // #[test]
     // TODO
-    // fn from_exception1() {
-    //     let d1 = Date::from_str("x");
-    //     match d1 {
-    //         Err(e) => {
-    //             println!("ERROR: from_exception1()");
-    //         },
-    //         _ => (),
-    //     }
-    // }
+    #[test]
+    fn from_bad1() {
+        let d1 = Date::from_str("x");
+        println!("-> from_bad1: {:?}", d1);
+
+        // match d1 {
+        //     Err(DateError::InvalidDate) => println!("-> Err(DateError::InvalidDate)"),
+        //     // Err(DateError) => println!("-> Err(DateError)"),
+        //     // Err(e) => println!("-> Err(e) -> {:?}", e),
+        //     _ => println!("-> UNKNOWN"),
+        // }
+        // assert!(false);
+
+        assert!(match d1 {
+            Err(DateError::InvalidDate) => true,
+            _ => false,
+        });
+    }
 
     #[test]
     fn display() {
