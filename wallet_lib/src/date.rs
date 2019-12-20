@@ -243,12 +243,12 @@ mod tests {
     use std::str::FromStr;
 
     #[test]
-    fn new() {
+    fn test_new_date() {
         Date::new();
     }
 
     #[test]
-    fn from_ok1() {
+    fn test_from_ok1() {
         let d1 = Date::from_str("1987-02-21").unwrap();
         assert_eq!(1987, d1.year());
         assert_eq!(2, d1.month());
@@ -260,7 +260,7 @@ mod tests {
     }
 
     #[test]
-    fn from_ok2() {
+    fn test_from_ok2() {
         let d1 = Date::from_str("1987-02").unwrap();
         assert_eq!(1987, d1.year());
         assert_eq!(2, d1.month());
@@ -272,7 +272,7 @@ mod tests {
     }
 
     #[test]
-    fn from_ok3() {
+    fn test_from_ok3() {
         let d1 = Date::from_str("1987").unwrap();
         assert_eq!(1987, d1.year());
         assert_eq!(1, d1.month());
@@ -284,7 +284,7 @@ mod tests {
     }
 
     #[test]
-    fn from_ok4() {
+    fn test_from_ok4() {
         let d1 = Date::from_str("21.2.1987").unwrap();
         assert_eq!(1987, d1.year());
         assert_eq!(2, d1.month());
@@ -296,7 +296,7 @@ mod tests {
     }
 
     #[test]
-    fn from_ok5() {
+    fn test_from_ok5() {
         let d1 = Date::from_str("21.2").unwrap();
         assert_eq!(1970, d1.year());
         assert_eq!(2, d1.month());
@@ -308,7 +308,7 @@ mod tests {
     }
 
     #[test]
-    fn from_ok6() {
+    fn test_from_ok6() {
         let d1 = Date::from_str("2/21/1987").unwrap();
         assert_eq!(1987, d1.year());
         assert_eq!(2, d1.month());
@@ -320,7 +320,7 @@ mod tests {
     }
 
     #[test]
-    fn from_ok7() {
+    fn test_from_ok7() {
         let d1 = Date::from_str("2/21").unwrap();
         assert_eq!(1970, d1.year());
         assert_eq!(2, d1.month());
@@ -333,7 +333,7 @@ mod tests {
 
     // TODO
     #[test]
-    fn from_bad1() {
+    fn test_from_bad1() {
         let d1 = Date::from_str("x");
         println!("-> from_bad1: {:?}", d1);
 
@@ -352,31 +352,31 @@ mod tests {
     }
 
     #[test]
-    fn display() {
+    fn test_display() {
         let d1 = Date::new();
         assert_eq!("", d1.to_string());
     }
 
     #[test]
-    fn has() {
+    fn test_has() {
         let d1 = Date::new();
         assert!(!d1.has(super::Parts::Year));
     }
 
     #[test]
-    fn year() {
+    fn test_year() {
         let d1 = Date::new();
         assert!(!d1.has_year());
     }
 
     #[test]
-    fn month() {
+    fn test_month() {
         let d1 = Date::new();
         assert!(!d1.has_month());
     }
 
     #[test]
-    fn day() {
+    fn test_day() {
         let d1 = Date::new();
         assert!(!d1.has_day());
     }
