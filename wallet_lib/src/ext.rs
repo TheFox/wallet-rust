@@ -24,3 +24,20 @@ impl StringExt for String {
         self.parse().expect("Failed to convert String to Number")
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::StringExt;
+
+    #[test]
+    fn test_replace_comma1(){
+        let s1 = String::from("1,2");
+        assert_eq!("1.2", s1.replace_comma());
+    }
+
+    #[test]
+    fn test_to_num1(){
+        let s1 = String::from("1.2");
+        assert_eq!(1.2, s1.to_num());
+    }
+}
