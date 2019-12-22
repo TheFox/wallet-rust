@@ -25,16 +25,17 @@ enum Parts {
 /// For example, when you run `-d 2019-11`, to filter
 /// all entries from Nov 2019. Or you want to auto-fill
 /// the year and month by providing only the day.
+#[derive(Copy, Clone)]
 pub struct Date {
     date: NaiveDate,
     used: u8, // 3 Bits: Y | M | D
 }
 
 impl Date {
-    fn new() -> Self {
-        println!("-> Date::new()");
+    pub fn new() -> Self {
+        // println!("-> Date::new()");
 
-        Date {
+        Self {
             date: NaiveDate::from_ymd(1970, 1, 1),
             used: 0, // 1 << 2 | 1 << 1 | 1
         }
@@ -50,38 +51,69 @@ impl Date {
         self.used & s > 0
     }
 
-    fn has_year(&self) -> bool {
-        println!("-> Date::has_year() -> {}", self.has(Parts::Year));
+    pub fn has_year(&self) -> bool {
+        // println!("-> Date::has_year() -> {}", self.has(Parts::Year));
         self.has(Parts::Year)
     }
 
-    fn has_month(&self) -> bool {
-        println!("-> Date::has_month()");
+    pub fn has_month(&self) -> bool {
+        // println!("-> Date::has_month()");
         self.has(Parts::Month)
     }
 
-    fn has_day(&self) -> bool {
-        println!("-> Date::has_day()");
+    pub fn has_day(&self) -> bool {
+        // println!("-> Date::has_day()");
         self.has(Parts::Day)
     }
 
     fn year(&self) -> i32 {
-        println!("-> Date::year()");
+        // println!("-> Date::year()");
         self.date.year()
     }
 
+    /// Set new Year.
+    pub fn set_year(&mut self, y: i32) {
+        // println!("-> Date::set_year({})", y);
+        // self.date = self.date.with_year(y);
+
+        self.date = self.date.with_year(y).expect("Invalid year");
+        // println!("-> new date: {:?}", self.date);
+
+        self.used |= 1 << (Parts::Year as u8 - 1);
+    }
+
     fn month(&self) -> u32 {
-        println!("-> Date::month()");
+        // println!("-> Date::month()");
         self.date.month()
     }
 
+    /// Set new Month.
+    pub fn set_month(&mut self, m: u32) {
+        // println!("-> Date::set_month({})", m);
+
+        self.date = self.date.with_month(m).expect("Invalid month");
+        // println!("-> new date: {:?}", self.date);
+
+        self.used |= 1 << (Parts::Month as u8 - 1);
+    }
+
     fn day(&self) -> u32 {
-        println!("-> Date::day()");
+        // println!("-> Date::day()");
         self.date.day()
     }
 
+    /// Set new Day.
+    pub fn set_day(&mut self, d: u32) {
+        // println!("-> Date::set_day({})", d);
+
+        self.date = self.date.with_day(d).expect("Invalid day");
+        // println!("-> new date: {:?}", self.date);
+
+        self.used |= 1;
+    }
+
     fn ym(&self) -> String {
-        println!("-> Date::ym()");
+        // println!("-> Date::ym()");
 
         let mut items: Vec<String> = vec![];
 
@@ -230,9 +262,9 @@ impl Display for Date {
 
 impl Debug for Date {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtRes {
-        println!("-> Debug Date::fmt()");
+        // println!("-> Debug Date::fmt()");
 
-        write!(f, "Date[{},Y={} M={} D={}]", self.date.format("%Y-%m-%d"),
+        write!(f, "Date[{}, Y={} M={} D={}]", self.date.format("%Y-%m-%d"),
             if self.has_year()  { "Y" } else { "N" },
             if self.has_month() { "Y" } else { "N" },
             if self.has_day()   { "Y" } else { "N" }
@@ -381,20 +413,30 @@ mod tests {
     }
 
     #[test]
-    fn test_year() {
-        let d1 = Date::new();
-        assert!(!d1.has_year());
-    }
+    fn test_set() {
+        let mut d1 = Date::new();
 
-    #[test]
-    fn test_month() {
-        let d1 = Date::new();
+        d1.set_year(2019);
+        assert!(d1.has_year());
         assert!(!d1.has_month());
-    }
-
-    #[test]
-    fn test_day() {
-        let d1 = Date::new();
         assert!(!d1.has_day());
+        assert_eq!("2019", d1.to_string());
+        // println!("-> test_year: {:?}", d1);
+
+        d1.set_month(12);
+        assert!(d1.has_year());
+        assert!(d1.has_month());
+        assert!(!d1.has_day());
+        assert_eq!("2019-12", d1.to_string());
+        // println!("-> test_year: {:?}", d1);
+
+        d1.set_day(31);
+        assert!(d1.has_year());
+        assert!(d1.has_month());
+        assert!(d1.has_day());
+        assert_eq!("2019-12-31", d1.to_string());
+        // println!("-> test_year: {:?}", d1);
+
+        // assert!(false);
     }
 }

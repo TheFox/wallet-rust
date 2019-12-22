@@ -1,11 +1,10 @@
 
+use crate::date::Date;
 use crate::types::Number;
-// use crate::date::Date;
-// use chrono::{DateTime, Local};
 
 #[derive(Debug)]
 pub struct Entry {
-    // date: String,
+    date: Date,
     revenue: Number,
     expense: Number,
     balance: Number,
@@ -13,13 +12,10 @@ pub struct Entry {
 
 impl Entry {
     pub fn new() -> Self {
-        println!("-> Entry::new()");
+        // println!("-> Entry::new()");
 
-        // let dt: DateTime<Local> = Local::now();
-        // let d: Date<Local> = dt.date();
-
-        Entry {
-            // date: String::new(),
+        Self {
+            date: Date::new(),
             revenue: 0.0,
             expense: 0.0,
             balance: 0.0,
@@ -29,27 +25,32 @@ impl Entry {
     // TODO: use this instead of Entry::new()
     // pub fn from()
 
+    pub fn set_date(&mut self, d: Date) {
+        println!("-> Entry.set_date({})", d);
+        self.date = d;
+    }
+
     pub fn set_revenue(&mut self, v: Number) {
-        println!("-> Entry.set_revenue({})", v);
+        // println!("-> Entry.set_revenue({})", v);
         self.revenue = v.abs();
         self.calc();
     }
 
     pub fn set_expense(&mut self, v: Number) {
-        println!("-> Entry.set_expense({}) -> {}", v, -v.abs());
+        // println!("-> Entry.set_expense({}) -> {}", v, -v.abs());
         self.expense = -v.abs();
         self.calc();
     }
 
     pub fn get_balance(&self) -> Number {
-        println!("-> Entry.get_balance() -> {}", self.balance);
+        // println!("-> Entry.get_balance() -> {}", self.balance);
         self.balance
     }
 
     fn calc(&mut self) {
-        println!("-> Entry.calc() -> r={} e={}", self.revenue, self.expense);
+        // println!("-> Entry.calc() -> r={} e={}", self.revenue, self.expense);
         self.balance = self.revenue + self.expense;
-        println!("-> b={}", self.balance);
+        // println!("-> b={}", self.balance);
     }
 }
 

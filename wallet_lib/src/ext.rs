@@ -12,14 +12,14 @@ impl StringExt for String {
     /// instead of 1.23 as a floating point number.
     /// This function replaces ',' with '.'.
     fn replace_comma(&self) -> String {
-        println!("-> String.replace_comma() -> {:?}", self);
+        // println!("-> String.replace_comma() -> {:?}", self);
 
         self.replace(",", ".")
     }
 
     /// Convert String to Number.
     fn to_num(&self) -> Number {
-        println!("-> String.to_num() -> {:?}", self);
+        // println!("-> String.to_num() -> {:?}", self);
 
         self.parse().expect("Failed to convert String to Number")
     }

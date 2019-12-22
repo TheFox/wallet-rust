@@ -2,11 +2,14 @@
 extern crate clap;
 use clap::{App, Arg};
 use std::env;
+use std::str::FromStr;
+use chrono::{Local, DateTime, Datelike};
 use wallet_lib::command::CommandOptions;
 use wallet_lib::command::CommandKind;
 use wallet_lib::command::Command;
 use wallet_lib::ext::StringExt;
 use wallet_lib::types::Number;
+use wallet_lib::date::Date;
 
 const APP_NAME: &'static str = env!("CARGO_PKG_NAME");
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -45,6 +48,11 @@ fn main() {
             .short("e")
             .long("expense")
             .help("Set a Expense.")
+            .takes_value(true))
+        .arg(Arg::with_name("date")
+            .short("d")
+            .long("date")
+            .help("Date")
             .takes_value(true));
 
     // List Sub Command
@@ -77,7 +85,7 @@ fn main() {
         .arg(wallet_arg);
 
     // Command Options
-    let mut options = CommandOptions::new();
+    let mut cmd_options = CommandOptions::new();
     let mut cmd_kind = CommandKind::None;
 
     // Get Argument matches.
@@ -86,7 +94,7 @@ fn main() {
 
     if matches.is_present("wallet") {
         println!("-> wallet is present: {:?}", matches.value_of("wallet").unwrap());
-        options.wallet_path = matches.value_of("wallet").unwrap().to_string();
+        cmd_options.wallet_path = matches.value_of("wallet").unwrap().to_string();
     }
 
     match matches.subcommand() {
@@ -121,26 +129,36 @@ fn main() {
             if add_matches.is_present("revenue") {
                 // Convert from &str to String.
                 let vs = add_matches.value_of("revenue").unwrap().to_string();
-                println!("-> v {:?}", vs);
+                // println!("-> vs {:?}", vs);
 
                 // Convert from String to Number.
                 let vn: Number = vs.replace_comma().to_num();
 
-                println!("-> revenue is present: '{}'", vn);
-                options.revenue = vn;
+                // println!("-> revenue is present: '{}'", vn);
+                cmd_options.revenue = vn;
             }
 
             // Expense
             if add_matches.is_present("expense") {
                 // Convert from &str to String.
                 let vs = add_matches.value_of("expense").unwrap().to_string();
-                println!("-> v {:?}", vs);
+                // println!("-> vs {:?}", vs);
 
                 // Convert from String to Number.
                 let vn: Number = vs.replace_comma().to_num();
 
-                println!("-> expense is present: '{}'", vn);
-                options.expense = vn;
+                // println!("-> expense is present: '{}'", vn);
+                cmd_options.expense = vn;
+            }
+
+            // Date
+            if add_matches.is_present("date") {
+                // &str
+                let vs = add_matches.value_of("date").unwrap();
+                // println!("-> vs '{:?}'", vs);
+
+                cmd_options.date = Date::from_str(vs).expect("Unable to parse given Date");
+                // println!("-> date '{:?}'", cmd_options.date);
             }
         },
         ("list", Some(_list_matches)) => {
@@ -161,8 +179,29 @@ fn main() {
         _ => unreachable!(),
     }
 
+    // Now
+    let now: DateTime<Local> = Local::now();
+
+    // Correct date.
+    if !cmd_options.date.has_year() {
+        println!("-> year missing");
+        cmd_options.date.set_year(now.year());
+    }
+
+    if !cmd_options.date.has_month() {
+        println!("-> month missing");
+        cmd_options.date.set_month(now.month());
+    }
+
+    if !cmd_options.date.has_day() {
+        println!("-> day missing");
+        cmd_options.date.set_day(now.day());
+    }
+
+    println!("-> date: {:?}", cmd_options.date);
+
     println!("-> cmd: {:?}", cmd_kind);
-    let cmd = Command::new(cmd_kind, options);
+    let cmd = Command::new(cmd_kind, cmd_options);
     println!("-> cmd: {:?}", cmd);
 
     println!("-> exec");

@@ -2,6 +2,7 @@
 use crate::wallet::Wallet;
 use crate::entry::Entry;
 use crate::types::Number;
+use crate::date::Date;
 
 /// Command options hold all available options for ALL commands.
 /// Not all commands will us all options.
@@ -10,6 +11,7 @@ pub struct CommandOptions {
     pub wallet_path: String,
     pub revenue: Number,
     pub expense: Number,
+    pub date: Date,
 }
 
 /// Common Options for commands.
@@ -20,6 +22,7 @@ impl CommandOptions {
             wallet_path: String::new(),
             revenue: 0.0,
             expense: 0.0,
+            date: Date::new(),
         }
     }
 
@@ -79,6 +82,7 @@ impl Command {
 
         // TODO
         let mut entry = Entry::new(); // TODO: use from() here
+        entry.set_date(self.options.date);
         entry.set_revenue(self.options.revenue);
         entry.set_expense(self.options.expense);
 
