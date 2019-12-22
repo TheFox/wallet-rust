@@ -79,6 +79,21 @@ impl Date {
         println!("-> Date::day()");
         self.date.day()
     }
+
+    fn ym(&self) -> String {
+        println!("-> Date::ym()");
+
+        let mut items: Vec<String> = vec![];
+
+        if self.has_year() {
+            items.push(self.date.format("%Y").to_string());
+        }
+        if self.has_month() {
+            items.push(self.date.format("%m").to_string());
+        }
+
+        items.join("-")
+    }
 }
 
 impl FromStr for Date {
@@ -243,6 +258,7 @@ mod tests {
         assert!(d1.has_month());
         assert!(d1.has_day());
         assert_eq!("1987-02-21", d1.to_string());
+        assert_eq!("1987-02", d1.ym());
     }
 
     #[test]
@@ -255,6 +271,7 @@ mod tests {
         assert!(d1.has_month());
         assert!(!d1.has_day());
         assert_eq!("1987-02", d1.to_string());
+        assert_eq!("1987-02", d1.ym());
     }
 
     #[test]
@@ -267,6 +284,7 @@ mod tests {
         assert!(!d1.has_month());
         assert!(!d1.has_day());
         assert_eq!("1987", d1.to_string());
+        assert_eq!("1987", d1.ym());
     }
 
     #[test]
@@ -279,6 +297,7 @@ mod tests {
         assert!(d1.has_month());
         assert!(d1.has_day());
         assert_eq!("1987-02-21", d1.to_string());
+        assert_eq!("1987-02", d1.ym());
     }
 
     #[test]
@@ -291,6 +310,7 @@ mod tests {
         assert!(d1.has_month());
         assert!(d1.has_day());
         assert_eq!("02-21", d1.to_string());
+        assert_eq!("02", d1.ym());
     }
 
     #[test]
@@ -303,6 +323,7 @@ mod tests {
         assert!(d1.has_month());
         assert!(d1.has_day());
         assert_eq!("1987-02-21", d1.to_string());
+        assert_eq!("1987-02", d1.ym());
     }
 
     #[test]
@@ -315,6 +336,7 @@ mod tests {
         assert!(d1.has_month());
         assert!(d1.has_day());
         assert_eq!("02-21", d1.to_string());
+        assert_eq!("02", d1.ym());
     }
 
     // TODO
