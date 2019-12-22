@@ -3,7 +3,8 @@ use crate::wallet::Wallet;
 use crate::entry::Entry;
 use crate::types::Number;
 
-// #[derive(Clone, Copy)]
+/// Command options hold all available options for ALL commands.
+/// Not all commands will us all options.
 #[derive(Debug)]
 pub struct CommandOptions {
     pub wallet_path: String,
@@ -29,37 +30,52 @@ impl CommandOptions {
     }
 }
 
-pub trait Command {
-    fn exec(&self);
+/// The Kind of command to execute.
+#[derive(Debug)]
+pub enum CommandKind {
+    None,
+    InitCommand,
+    AddCommand,
+    ListCommand,
+    HtmlCommand,
 }
 
-pub struct InitCommand {
-    pub options: CommandOptions,
+#[derive(Debug)]
+pub struct Command {
+    kind: CommandKind,
+    options: CommandOptions,
 }
 
-pub struct AddCommand {
-    pub options: CommandOptions,
-}
+impl Command {
+    pub fn new(kind: CommandKind, options: CommandOptions) -> Self {
+        println!("-> Command::new()");
 
-pub struct ListCommand {
-    pub options: CommandOptions,
-}
+        Self {
+            kind,
+            options,
+        }
+    }
 
-pub struct HtmlCommand {
-    pub options: CommandOptions,
-}
+    pub fn exec(&self) {
+        println!("-> Command::exec()");
 
-impl Command for InitCommand {
-    fn exec(&self) {
-        println!("-> InitCommand::exec()");
+        match self.kind {
+            CommandKind::InitCommand => self.exec_init(),
+            CommandKind::AddCommand => self.exec_add(),
+            CommandKind::ListCommand => self.exec_list(),
+            CommandKind::HtmlCommand => self.exec_html(),
+            _ => println!("-> unknown kind: {:?}", self.kind),
+            // _ => unreachable!(),
+        }
+    }
 
+    fn exec_init(&self) {
+        println!("-> Command::exec_init()");
         Wallet::new(self.options.get_wallet_path());
     }
-}
 
-impl Command for AddCommand {
-    fn exec(&self) {
-        println!("-> AddCommand::exec()");
+    fn exec_add(&self) {
+        println!("-> Command::exec_add()");
 
         // TODO
         let mut entry = Entry::new(); // TODO: use from() here
@@ -69,20 +85,16 @@ impl Command for AddCommand {
         let wallet = Wallet::new(self.options.get_wallet_path());
         wallet.add(entry);
     }
-}
 
-impl Command for ListCommand {
-    fn exec(&self) {
-        println!("-> ListCommand::exec()");
+    fn exec_list(&self) {
+        println!("-> Command::exec_list()");
 
         let wallet = Wallet::new(self.options.get_wallet_path());
         wallet.list(); // TODO
     }
-}
 
-impl Command for HtmlCommand {
-    fn exec(&self) {
-        println!("-> HtmlCommand::exec()");
+    fn exec_html(&self) {
+        println!("-> Command::exec_html()");
 
         let wallet = Wallet::new(self.options.get_wallet_path());
         wallet.html(); // TODO

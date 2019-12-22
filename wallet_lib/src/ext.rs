@@ -37,7 +37,13 @@ mod tests {
 
     #[test]
     fn test_to_num1(){
-        let s1 = String::from("1.2");
-        assert_eq!(1.2, s1.to_num());
+        let s1 = String::from("1.3");
+        assert_eq!(1.3, s1.to_num());
+    }
+
+    #[test]
+    fn test_to_num2(){
+        let s1 = String::from("1,3");
+        assert_eq!(1.3, s1.replace_comma().to_num());
     }
 }

@@ -3,8 +3,9 @@ extern crate clap;
 use clap::{App, Arg};
 use std::env;
 use wallet_lib::command::CommandOptions;
+use wallet_lib::command::CommandKind;
 use wallet_lib::command::Command;
-use wallet_lib::command::{InitCommand, AddCommand, ListCommand, HtmlCommand};
+// use wallet_lib::command::{InitCommand, AddCommand, ListCommand, HtmlCommand};
 use wallet_lib::ext::StringExt;
 use wallet_lib::types::Number;
 
@@ -85,6 +86,7 @@ fn main() {
 
     // Command Options
     let mut options = CommandOptions::new();
+    let mut cmd_kind = CommandKind::None;
 
     // Get Argument matches.
     let matches = app.get_matches();
@@ -100,6 +102,7 @@ fn main() {
             println!("-> cmd: vars");
             println!("APP_NAME '{}'", APP_NAME);
             println!("APP_VERSION '{}'", APP_VERSION);
+
             return;
         },
         ("init", Some(init_matches)) => {
@@ -107,11 +110,15 @@ fn main() {
             if init_matches.is_present("interactive") {
                 println!("-> interactive is present");
             }
-            let cmd = InitCommand { options };
-            cmd.exec();
+
+            // Cmd
+            cmd_kind = CommandKind::InitCommand;
         },
         ("add", Some(add_matches)) => {
             println!("-> cmd: add");
+
+            // Cmd
+            cmd_kind = CommandKind::AddCommand;
 
             // Interactive
             if add_matches.is_present("interactive") {
@@ -143,26 +150,31 @@ fn main() {
                 println!("-> expense is present: '{}'", vn);
                 options.expense = vn;
             }
-
-            let cmd = AddCommand { options };
-            cmd.exec();
         },
         ("list", Some(_list_matches)) => {
             println!("-> cmd: list");
 
-            let cmd = ListCommand { options };
-            cmd.exec();
+            // Cmd
+            cmd_kind = CommandKind::ListCommand;
         },
         ("html", Some(html_matches)) => {
             println!("-> cmd: html");
             if html_matches.is_present("path") {
                 println!("-> path is present: {}", matches.value_of("wallet").unwrap());
             }
-            let cmd = HtmlCommand { options };
-            cmd.exec();
+
+            // Cmd
+            cmd_kind = CommandKind::HtmlCommand;
         },
         _ => unreachable!(),
     }
+
+    println!("-> cmd: {:?}", cmd_kind);
+    let cmd = Command::new(cmd_kind, options);
+    println!("-> cmd: {:?}", cmd);
+
+    println!("-> exec");
+    cmd.exec();
 
     println!("-> end");
 }

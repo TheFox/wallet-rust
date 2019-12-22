@@ -53,11 +53,10 @@ impl Wallet {
     fn create_dirs(&self) {
         println!("-> Wallet::create_dirs()");
 
-        create_dir_all(self.path.clone()).expect("Cannot create base path.");
-        // TODO
-        // create_dir_all(self.data_dir.clone());
-        // create_dir_all(self.html_dir.clone());
-        // create_dir_all(self.tmp_dir.clone());
+        create_dir_all(&self.path).expect("Cannot create base path.");
+        create_dir_all(&self.data_dir).expect("Cannot create data directory.");
+        create_dir_all(&self.html_dir).expect("Cannot create html directory.");
+        create_dir_all(&self.tmp_dir).expect("Cannot create tmp directory.");
     }
 
     // TODO
@@ -75,4 +74,25 @@ impl Wallet {
     pub fn html(&self) {
         println!("-> Wallet::html()");
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Wallet;
+    // use std::fs;
+    use std::path::Path;
+
+    #[test]
+    fn test_new_wallet() {
+        let w1 = Wallet::new(String::from("../tmp/tests/wallet1"));
+        assert!(Path::new("../tmp/tests/wallet1").exists());
+        assert!(Path::new("../tmp/tests/wallet1/data").exists());
+        assert!(Path::new("../tmp/tests/wallet1/html").exists());
+        assert!(Path::new("../tmp/tests/wallet1/tmp").exists());
+    }
+
+    // #[test]
+    // fn test_wallet_add() {
+    //     let w1 = Wallet::new(String::from("../tmp/tests/wallet2"));
+    // }
 }

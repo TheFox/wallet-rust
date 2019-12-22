@@ -14,9 +14,12 @@ export RUSTFLAGS=-Awarnings
 
 echo "TEST_OPTS: '${TEST_OPTS}'"
 
+mkdir -p tmp/tests
+
+set -x
+
 pushd wallet_lib/ &> /dev/null
-# cargo test ${TEST_OPTS} --lib -- --nocapture
-cargo test ${TEST_OPTS} --lib
+cargo test ${TEST_OPTS} --lib $*
 
 # popd &> /dev/null
 # cargo test ${TEST_OPTS}

@@ -133,28 +133,14 @@ impl FromStr for Date {
                 Some(captures) => {
                     // println!("-> captures: {:?}", captures);
 
-                    match captures.name("y") {
-                        Some(t) => {
-                            // println!("-> y: {:?}", t);
-                            y = t.as_str().parse().expect("Parse field 'y' failed");
-                        },
-                        None => (),
+                    if let Some(t) = captures.name("y") {
+                        y = t.as_str().parse().expect("Parse field 'y' failed");
                     }
-
-                    match captures.name("m") {
-                        Some(t) => {
-                            // println!("-> m: {:?}", t);
-                            m = t.as_str().parse().expect("Parse field 'm' failed");
-                        },
-                        None => (),
+                    if let Some(t) = captures.name("m") {
+                        m = t.as_str().parse().expect("Parse field 'm' failed");
                     }
-
-                    match captures.name("d") {
-                        Some(t) => {
-                            // println!("-> d: {:?}", t);
-                            d = t.as_str().parse().expect("Parse field 'd' failed");
-                        },
-                        None => (),
+                    if let Some(t) = captures.name("d") {
+                        d = t.as_str().parse().expect("Parse field 'd' failed");
                     }
 
                     break;
