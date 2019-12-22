@@ -5,7 +5,6 @@ use std::env;
 use wallet_lib::command::CommandOptions;
 use wallet_lib::command::CommandKind;
 use wallet_lib::command::Command;
-// use wallet_lib::command::{InitCommand, AddCommand, ListCommand, HtmlCommand};
 use wallet_lib::ext::StringExt;
 use wallet_lib::types::Number;
 
@@ -17,13 +16,6 @@ const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 /// Main
 fn main() {
     println!("-> start");
-
-    // let _s1 = String::from("1,23");
-    // println!("-> _s1: '{:?}'", _s1);
-    // println!("-> _s1 rc: '{:?}'", _s1.replace_comma());
-    // println!("-> _s1 num: '{:?}'", _s1.replace_comma().to_num());
-    // let _f1: f64 = _s1.replace_comma().to_num();
-    // println!("-> _f1: '{:?}'", _f1);
 
     let args: Vec<String> = env::args().collect();
     println!("-> args: '{:?}'", args);

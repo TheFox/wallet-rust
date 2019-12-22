@@ -362,14 +362,6 @@ mod tests {
         let d1 = Date::from_str("x");
         println!("-> from_bad1: {:?}", d1);
 
-        // match d1 {
-        //     Err(DateError::InvalidDate) => println!("-> Err(DateError::InvalidDate)"),
-        //     // Err(DateError) => println!("-> Err(DateError)"),
-        //     // Err(e) => println!("-> Err(e) -> {:?}", e),
-        //     _ => println!("-> UNKNOWN"),
-        // }
-        // assert!(false);
-
         assert!(match d1 {
             Err(DateError::InvalidDate) => true,
             _ => false,
