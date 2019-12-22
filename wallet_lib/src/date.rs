@@ -103,7 +103,9 @@ impl FromStr for Date {
     /// Available formats:
     ///
     /// - YYYY-MM-DD
+    /// - YYYY/MM/DD
     /// - YY-MM-DD
+    /// - YY/MM/DD
     /// - YYYY-MM
     /// - MM-DD
     /// - DD.MM.YYYY
@@ -123,7 +125,9 @@ impl FromStr for Date {
         let patterns = vec![
             // The Good
             r"^(?P<y>\d{4})-(?P<m>\d{1,2})-(?P<d>\d{1,2})", // YYYY-MM-DD
+            r"^(?P<y>\d{4})/(?P<m>\d{1,2})/(?P<d>\d{1,2})", // YYYY/MM/DD
             r"^(?P<y>\d{2})-(?P<m>\d{1,2})-(?P<d>\d{1,2})", // YY-MM-DD
+            r"^(?P<y>\d{2})/(?P<m>\d{1,2})/(?P<d>\d{1,2})", // YY/MM/DD
             r"^(?P<y>\d{4})-(?P<m>\d{1,2})", // YYYY-MM
             r"^(?P<m>\d{1,2})-(?P<d>\d{1,2})", // MM-DD
 
@@ -337,6 +341,19 @@ mod tests {
         assert!(d1.has_day());
         assert_eq!("02-21", d1.to_string());
         assert_eq!("02", d1.ym());
+    }
+
+    #[test]
+    fn test_from_ok8() {
+        let d1 = Date::from_str("1987/2/21").unwrap();
+        assert_eq!(1987, d1.year());
+        assert_eq!(2, d1.month());
+        assert_eq!(21, d1.day());
+        assert!(d1.has_year());
+        assert!(d1.has_month());
+        assert!(d1.has_day());
+        assert_eq!("1987-02-21", d1.to_string());
+        assert_eq!("1987-02", d1.ym());
     }
 
     // TODO
