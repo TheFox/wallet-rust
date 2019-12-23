@@ -1,6 +1,10 @@
 
-use std::fs::create_dir_all;
+use std::fs::{read_to_string, create_dir_all, File};
+use std::io::Write;
 use std::path::PathBuf;
+use std::fmt;
+use std::string::ToString;
+use yaml_rust::{YamlLoader, YamlEmitter};
 use crate::entry::Entry;
 
 #[derive(Debug)]
@@ -9,6 +13,8 @@ pub struct Wallet {
     data_dir: PathBuf,
     html_dir: PathBuf,
     tmp_dir: PathBuf,
+    index_file: PathBuf,
+    epics_file: PathBuf,
 }
 
 impl Wallet {
@@ -29,20 +35,30 @@ impl Wallet {
         let mut tmp_dir = basedir.clone();
         tmp_dir.push("tmp");
 
+        let mut index_file = data_dir.clone();
+        index_file.push("index.yml");
+
+        let mut epics_file = data_dir.clone();
+        epics_file.push("epics.yml");
+
         println!("-> basedir  {:?}", basedir);
         println!("-> data_dir {:?}", data_dir);
         println!("-> html_dir {:?}", html_dir);
         println!("-> tmp_dir  {:?}", tmp_dir);
+        println!("-> epics_file {:?}", epics_file);
+        println!("-> index_file {:?}", index_file);
 
-        let _w = Wallet {
+        let w = Wallet {
             path: basedir,
-            data_dir: data_dir,
-            html_dir: html_dir,
-            tmp_dir: tmp_dir,
+            data_dir,
+            html_dir,
+            tmp_dir,
+            index_file,
+            epics_file,
         };
-        _w.init();
+        w.init();
 
-        _w
+        w
     }
 
     pub fn init(&self) {
@@ -63,6 +79,28 @@ impl Wallet {
     pub fn add(&self, entry: Entry) {
         println!("-> Wallet::add()");
         println!("-> entry {:?}", entry);
+
+        // Index
+        let mut index_file = YamlFile::open_index(self.index_file.clone());
+        index_file.add(1 as u8);
+
+        // Epics
+        let mut epics_file = YamlFile::open_epics(self.epics_file.clone());
+        index_file.add(2 as u16);
+        index_file.add(3);
+        index_file.add(entry);
+
+        // Month file
+        // let month_file_name = format!("month_{}.yml", entry.date().fym("_"));
+        // println!("-> month_file_name: {:?}", month_file_name);
+
+        // let mut month_file_path = self.data_dir.clone();
+        // month_file_path.push(month_file_name);
+        // println!("-> month_file_path: {:?}", month_file_path);
+        // println!("-> month_file_path: {}", month_file_path.to_string());
+
+        // let mut month_file = YamlFile::open_month(month_file_path);
+        // month_file.add(entry);
     }
 
     // TODO
@@ -73,6 +111,119 @@ impl Wallet {
     // TODO
     pub fn html(&self) {
         println!("-> Wallet::html()");
+    }
+}
+
+#[derive(Debug)]
+enum YamlFileKind {
+    IndexFile,
+    EpicsFile,
+    MonthFile,
+}
+
+struct YamlFile {
+    kind: YamlFileKind,
+    path: PathBuf,
+    changed: bool,
+    //content
+}
+
+impl YamlFile {
+    fn open_index(path: PathBuf) -> Self {
+        println!("-> YamlFile::open({:?})", path);
+        YamlFile::open(YamlFileKind::IndexFile, path)
+    }
+
+    fn open_epics(path: PathBuf) -> Self {
+        println!("-> YamlFile::open({:?})", path);
+        YamlFile::open(YamlFileKind::EpicsFile, path)
+    }
+
+    // fn open_month(path: PathBuf) -> Self {
+    //     println!("-> YamlFile::open()");
+    //     YamlFile::open(YamlFileKind::MonthFile, path)
+    // }
+
+    fn open(kind: YamlFileKind, path: PathBuf) -> Self {
+        println!("-> YamlFile::open({:?}, {:?})", kind, path);
+
+        let mut _f = Self {
+            kind,
+            path,
+            changed: false,
+        };
+        _f.init();
+        _f
+    }
+
+    fn init(&self) {
+        println!("-> YamlFile::init()");
+
+        if self.path.exists() && self.path.is_file() {
+            // println!("-> read existing file");
+            self.read();
+        } else {
+            // println!("-> create new file");
+        }
+    }
+
+    fn read(&self) {
+        println!("-> YamlFile::read()");
+        let raw = read_to_string(&self.path).expect("Cannot read file");
+        println!("-> raw: '{}'", raw);
+    }
+
+    fn add<T>(&self, i: T){
+        println!("-> Yamlfile::add()");
+
+        match &self.kind {
+            YamlFileKind::MonthFile => {
+                match i {
+                    Entry => (),
+                    _ => unreachable!(),
+                }
+
+                println!("-> Yamlfile::add() Entry");
+            },
+            YamlFileKind => (),
+            _ => unreachable!(),
+        }
+    }
+
+    fn write(&self) {
+        println!("-> YamlFile::write()");
+        // let mut out_str = String::from("Hello");
+        // {
+        //     let mut emitter = YamlEmitter::new(&mut out_str);
+        //     emitter.dump(doc).unwrap(); // dump the YAML object to a String
+        // }
+        // println!("{}", out_str);
+    }
+
+    fn close(&mut self) {
+        println!("-> Yamlfile::close()");
+
+        if !self.changed {
+            println!("-> nothing changed");
+            return;
+        }
+
+        println!("-> content changed");
+
+        self.write();
+        self.changed = false;
+
+        // println!("-> File::create");
+        // let mut file = File::create(&self.path).expect("Cannot open file for writing");
+        // println!("-> file.write_all");
+        // file.write_all(b"Hello, YOU3").expect("Cannot write file");
+    }
+}
+
+impl Drop for YamlFile {
+    fn drop(&mut self) {
+        // println!("-> YamlFile::drop()");
+        self.close();
     }
 }
 

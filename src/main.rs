@@ -184,17 +184,17 @@ fn main() {
 
     // Correct date.
     if !cmd_options.date.has_year() {
-        println!("-> year missing");
+        // println!("-> year missing");
         cmd_options.date.set_year(now.year());
     }
 
     if !cmd_options.date.has_month() {
-        println!("-> month missing");
+        // println!("-> month missing");
         cmd_options.date.set_month(now.month());
     }
 
     if !cmd_options.date.has_day() {
-        println!("-> day missing");
+        // println!("-> day missing");
         cmd_options.date.set_day(now.day());
     }
 

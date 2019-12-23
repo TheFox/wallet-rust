@@ -112,7 +112,8 @@ impl Date {
         self.used |= 1;
     }
 
-    fn ym(&self) -> String {
+    /// Year-Month
+    pub fn ym(&self) -> String {
         // println!("-> Date::ym()");
 
         let mut items: Vec<String> = vec![];
@@ -125,6 +126,22 @@ impl Date {
         }
 
         items.join("-")
+    }
+
+    /// Formatted Year-Month
+    pub fn fym(&self, f: &str) -> String {
+        // println!("-> Date::fym({})", f);
+
+        let mut items: Vec<String> = vec![];
+
+        if self.has_year() {
+            items.push(self.date.format("%Y").to_string());
+        }
+        if self.has_month() {
+            items.push(self.date.format("%m").to_string());
+        }
+
+        items.join(f)
     }
 }
 
@@ -295,6 +312,7 @@ mod tests {
         assert!(d1.has_day());
         assert_eq!("1987-02-21", d1.to_string());
         assert_eq!("1987-02", d1.ym());
+        assert_eq!("1987_02", d1.fym("_"));
     }
 
     #[test]

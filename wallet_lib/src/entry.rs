@@ -25,6 +25,11 @@ impl Entry {
     // TODO: use this instead of Entry::new()
     // pub fn from()
 
+    pub fn date(&self) -> Date {
+        println!("-> Entry.date()");
+        self.date
+    }
+
     pub fn set_date(&mut self, d: Date) {
         println!("-> Entry.set_date({})", d);
         self.date = d;
