@@ -6,6 +6,7 @@ A spreadsheet likewise [Rust](https://www.rust-lang.org/) program to track your 
 
 ```bash
 ./bin/dev.sh -w tmp/wallet add
+./bin/dev.sh -w tmp/wallet add -r 20 -e 10 -d 1
 ```
 
 ## License

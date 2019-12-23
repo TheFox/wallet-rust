@@ -15,7 +15,7 @@ default-run = "wallet"
 [dependencies]
 wallet-lib = { path = "wallet_lib" }
 clap = "^2.33.0"
-chrono = "^0.4.10"
+chrono = "0.4.10"
 
 [workspace]
 members = [

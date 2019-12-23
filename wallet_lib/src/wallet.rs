@@ -4,7 +4,10 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::fmt;
 use std::string::ToString;
-use yaml_rust::{YamlLoader, YamlEmitter};
+use std::vec::Vec;
+// use yaml_rust::linked_hash_map::LinkedHashMap;
+use yaml_rust::{Yaml, YamlLoader, YamlEmitter};
+use yaml_rust::yaml::Hash;
 use crate::entry::Entry;
 
 #[derive(Debug)]
@@ -45,10 +48,10 @@ impl Wallet {
         println!("-> data_dir {:?}", data_dir);
         println!("-> html_dir {:?}", html_dir);
         println!("-> tmp_dir  {:?}", tmp_dir);
-        println!("-> epics_file {:?}", epics_file);
         println!("-> index_file {:?}", index_file);
+        println!("-> epics_file {:?}", epics_file);
 
-        let w = Wallet {
+        let _w = Wallet {
             path: basedir,
             data_dir,
             html_dir,
@@ -56,9 +59,8 @@ impl Wallet {
             index_file,
             epics_file,
         };
-        w.init();
-
-        w
+        _w.init();
+        _w
     }
 
     pub fn init(&self) {
@@ -82,13 +84,13 @@ impl Wallet {
 
         // Index
         let mut index_file = YamlFile::open_index(self.index_file.clone());
-        index_file.add(1 as u8);
+        index_file.add(1);
 
         // Epics
-        let mut epics_file = YamlFile::open_epics(self.epics_file.clone());
-        index_file.add(2 as u16);
-        index_file.add(3);
-        index_file.add(entry);
+        // let mut epics_file = YamlFile::open_epics(self.epics_file.clone());
+        // index_file.add(2 as u16);
+        // index_file.add(3);
+        // index_file.add(entry);
 
         // Month file
         // let month_file_name = format!("month_{}.yml", entry.date().fym("_"));
@@ -125,7 +127,7 @@ struct YamlFile {
     kind: YamlFileKind,
     path: PathBuf,
     changed: bool,
-    //content
+    content: Yaml,
 }
 
 impl YamlFile {
@@ -151,57 +153,133 @@ impl YamlFile {
             kind,
             path,
             changed: false,
+            content: Yaml::Hash(Hash::new()),
         };
         _f.init();
         _f
     }
 
-    fn init(&self) {
+    fn init(&mut self) {
         println!("-> YamlFile::init()");
 
         if self.path.exists() && self.path.is_file() {
             // println!("-> read existing file");
             self.read();
         } else {
-            // println!("-> create new file");
+            println!("-> create new file");
+
+            if let Yaml::Hash(ref mut rcontent) = self.content {
+                match &self.kind {
+                    YamlFileKind::IndexFile => {
+                        println!("-> YamlFile::init() -> IndexFile");
+                        rcontent.insert(Yaml::String(String::from("index")), Yaml::Array(Vec::new()));
+                    },
+                    _ => unreachable!("Not implemented"),
+                }
+            }
         }
     }
 
-    fn read(&self) {
+    fn read(&mut self) {
         println!("-> YamlFile::read()");
         let raw = read_to_string(&self.path).expect("Cannot read file");
-        println!("-> raw: '{}'", raw);
-    }
+        // println!("-> raw: '{}'", raw);
 
-    fn add<T>(&self, i: T){
-        println!("-> Yamlfile::add()");
+        let docs = YamlLoader::load_from_str(&raw).unwrap();
+        println!("-> docs: '{:?}'", docs);
 
-        match &self.kind {
-            YamlFileKind::MonthFile => {
-                match i {
-                    Entry => (),
-                    _ => unreachable!(),
-                }
+        self.content = docs[0].clone();
 
-                println!("-> Yamlfile::add() Entry");
-            },
-            YamlFileKind => (),
-            _ => unreachable!(),
-        }
-    }
+        // let doc: Yaml = docs[0].clone();
+        // println!("-> content: '{:?}'", self.content);
+        // println!("-> test: '{:?}'", self.content["test"]);
+        // println!("-> test: '{:?}'", doc["test"].as_i64());
+        // println!("-> test: '{:?}'", doc["test"].as_i64().unwrap());
 
-    fn write(&self) {
-        println!("-> YamlFile::write()");
-        // let mut out_str = String::from("Hello");
-        // {
-        //     let mut emitter = YamlEmitter::new(&mut out_str);
-        //     emitter.dump(doc).unwrap(); // dump the YAML object to a String
+        // self.content["test2"] = Yaml::String(String::from("hi"));
+
+        // self.content.insert("a", 10);
+
+        // match &self.content {
+        //     Yaml::Hash(x) => println!("-> Hash"),
+        //     _ => unreachable!(),
         // }
-        // println!("{}", out_str);
+
+        // if let Yaml::Hash(ref mut x) = self.content {
+        //     println!("-> Hash: {:?}", x);
+        //     println!("-> test: {:?}", x.get(&Yaml::String(String::from("test"))));
+        //     x.insert(Yaml::String(String::from("test")), Yaml::Integer(567));
+        // }
     }
 
+    fn add<T>(&mut self, i: T){
+        println!("-> YamlFile::add() -> {:?}", self.kind);
+
+        if let Yaml::Hash(ref mut content_ref) = self.content {
+            println!("-> content_ref: {:?}", content_ref);
+
+
+            match &self.kind {
+                YamlFileKind::IndexFile => {
+                    println!("-> IndexFile");
+
+                    let key = Yaml::String("index".to_string());
+
+                    println!("-> index A: {:?}", content_ref[&key]);
+                    // content_ref[&key].push(key);
+
+                    if let Yaml::Array(ref mut index) = content_ref[&key] {
+                        println!("-> index B: {:?}", index);
+                        index.push(key);
+                    }
+
+                    // if let Yaml::Array(ref mut x) = self.content["index"] {
+                    //     // x.insert(Yaml::String(String::from("test")), Yaml::Integer(567))
+                    //
+                    // }
+                    // x.push(Yaml::String(String::from("test")));
+                },
+                YamlFileKind::MonthFile => {
+                    match i {
+                        Entry => (),
+                        _ => unreachable!(),
+                    }
+
+                    println!("-> YamlFile::add() Entry");
+                },
+                _ => unreachable!("Not implemented"),
+            }
+        }
+
+        self.changed = true;
+    }
+
+    fn write(&mut self) {
+        println!("-> YamlFile::write()");
+        let mut out_str = String::new();
+        {
+            let mut emitter = YamlEmitter::new(&mut out_str);
+            emitter.dump(&self.content).unwrap();
+        }
+        out_str.push_str("\n");
+        println!("out: '{}'", out_str);
+
+        // let x: String = b"hello";
+
+        println!("-> File::create");
+        let mut file = File::create(&self.path).expect("Cannot open file for writing");
+        println!("-> file.write_all");
+        // file.write_all(b"test: hello").expect("Cannot write file");
+        file.write_all(out_str.as_bytes()).expect("Cannot write file");
+
+        self.changed = false;
+    }
+
+    /// Write file if content has changed.
     fn close(&mut self) {
-        println!("-> Yamlfile::close()");
+        println!("-> YamlFile::close()");
+
+        self.changed = true;
 
         if !self.changed {
             println!("-> nothing changed");
@@ -209,14 +287,7 @@ impl YamlFile {
         }
 
         println!("-> content changed");
-
         self.write();
-        self.changed = false;
-
-        // println!("-> File::create");
-        // let mut file = File::create(&self.path).expect("Cannot open file for writing");
-        // println!("-> file.write_all");
-        // file.write_all(b"Hello, YOU3").expect("Cannot write file");
     }
 }
 
