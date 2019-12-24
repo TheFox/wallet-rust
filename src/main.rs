@@ -1,6 +1,6 @@
 
 extern crate clap;
-use clap::{App, Arg};
+use clap::{App, Arg, ArgMatches};
 use std::env;
 use std::str::FromStr;
 use chrono::{Local, DateTime, Datelike};
@@ -124,7 +124,7 @@ fn main() {
             cmd_kind = CommandKind::InitCommand;
         },
         ("add", Some(add_matches)) => {
-            println!("-> cmd: add");
+            println!("-> cmd: add ({:?})", add_matches);
 
             // Cmd
             cmd_kind = CommandKind::AddCommand;
@@ -161,14 +161,7 @@ fn main() {
             }
 
             // Date
-            if add_matches.is_present("date") {
-                // &str
-                let vs = add_matches.value_of("date").unwrap();
-                // println!("-> vs '{:?}'", vs);
-
-                cmd_options.date = Date::from_str(vs).expect("Unable to parse given Date");
-                // println!("-> date '{:?}'", cmd_options.date);
-            }
+            set_date(add_matches, &mut cmd_options);
 
             // ID
             if add_matches.is_present("id") {
@@ -236,4 +229,19 @@ fn main() {
     cmd.exec();
 
     println!("-> end");
+}
+
+fn set_date(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    println!("-> set_date()");
+
+    if !matches.is_present("date") {
+        return;
+    }
+
+    // &str
+    let vs = matches.value_of("date").unwrap();
+    println!("-> vs '{:?}'", vs);
+
+    cmd_options.date = Date::from_str(vs).expect("Unable to parse given Date");
+    println!("-> date '{:?}'", cmd_options.date);
 }
