@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use std::fmt;
 use std::string::ToString;
 use std::vec::Vec;
+use std::fmt::{Display, Formatter, Result as FmtRes};
 // use yaml_rust::linked_hash_map::LinkedHashMap;
 use yaml_rust::{Yaml, YamlLoader, YamlEmitter};
 use yaml_rust::yaml::Hash;
@@ -20,29 +21,45 @@ pub struct Wallet {
     epics_file: PathBuf,
 }
 
+pub struct AddedResult {
+    month_file_name: String,
+}
+
+pub enum AddResult {
+    No,
+    Added(AddedResult),
+}
+
+// impl ToString for AddResult {
+//     fn to_string(&self) -> String {
+//         match &self {
+//             AddResult::Added(_) => "YES",
+//             _ => "No",
+//         }.to_string()
+//     }
+// }
+
+impl Display for AddResult {
+    fn fmt(&self, f: &mut Formatter) -> FmtRes {
+        match self {
+            AddResult::Added(_) => write!(f, "Yes, Sir"),
+            _ => write!(f, "No, Sir"),
+        }
+    }
+}
+
 impl Wallet {
     pub fn new(path: String) -> Self {
         println!("-> Wallet::new({})", path);
 
-        // let basedir = PathBuf::new(path.clone());
-
         let mut basedir = PathBuf::new();
         basedir.push(path);
 
-        let mut data_dir = basedir.clone();
-        data_dir.push("data");
-
-        let mut html_dir = basedir.clone();
-        html_dir.push("html");
-
-        let mut tmp_dir = basedir.clone();
-        tmp_dir.push("tmp");
-
-        let mut index_file = data_dir.clone();
-        index_file.push("index.yml");
-
-        let mut epics_file = data_dir.clone();
-        epics_file.push("epics.yml");
+        let data_dir = basedir.join("data");
+        let html_dir = basedir.join("html");
+        let tmp_dir = basedir.join("tmp");
+        let index_file = data_dir.join("index.yml");
+        let epics_file = data_dir.join("epics.yml");
 
         println!("-> basedir  {:?}", basedir);
         println!("-> data_dir {:?}", data_dir);
@@ -78,7 +95,7 @@ impl Wallet {
     }
 
     // TODO
-    pub fn add(&self, entry: Entry, force: bool) -> bool {
+    pub fn add(&self, entry: Entry, force: bool) -> AddResult {
         println!("-> Wallet::add(f={:?})", force);
         println!("-> entry {:?}", entry);
 
@@ -86,7 +103,7 @@ impl Wallet {
         let mut index_file = YamlFile::open_index(self.index_file.clone());
         println!("-> exists: {:?}", index_file.exists(entry.id()));
         if !force && index_file.exists(entry.id()) {
-            return false;
+            return AddResult::No;
         }
         index_file.add(entry.id());
 
@@ -97,18 +114,25 @@ impl Wallet {
         // index_file.add(entry);
 
         // Month file
-        // let month_file_name = format!("month_{}.yml", entry.date().fym("_"));
-        // println!("-> month_file_name: {:?}", month_file_name);
+        let month_file_name = format!("month_{}.yml", entry.date().fym("_"));
+        println!("-> month_file_name: {:?}", month_file_name);
 
         // let mut month_file_path = self.data_dir.clone();
         // month_file_path.push(month_file_name);
-        // println!("-> month_file_path: {:?}", month_file_path);
+        let mut month_file_path = self.data_dir.join(month_file_name.clone());
+        println!("-> month_file_path: {:?}", month_file_path);
         // println!("-> month_file_path: {}", month_file_path.to_string());
 
         // let mut month_file = YamlFile::open_month(month_file_path);
         // month_file.add(entry);
 
-        true
+        // AddResult::Added {
+        //
+        // }
+
+        AddResult::Added(AddedResult {
+            month_file_name,
+        })
     }
 
     // TODO
@@ -277,7 +301,8 @@ impl YamlFile {
         println!("-> File::create");
         let mut file = File::create(&self.path)
             .expect("Cannot open file for writing");
-        // println!("-> file.write_all");
+
+            // println!("-> file.write_all");
         file.write_all(out_str.as_bytes())
             .expect("Cannot write file");
 

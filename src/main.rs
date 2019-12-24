@@ -243,5 +243,5 @@ fn set_date(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     println!("-> vs '{:?}'", vs);
 
     cmd_options.date = Date::from_str(vs).expect("Unable to parse given Date");
-    println!("-> date '{:?}'", cmd_options.date);
+    // println!("-> date '{:?}'", cmd_options.date);
 }

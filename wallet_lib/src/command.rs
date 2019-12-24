@@ -104,7 +104,8 @@ impl Command {
 
         let wallet = Wallet::new(self.options.get_wallet_path());
         let added = wallet.add(entry, self.options.force);
-        println!("Added: {}", added.yn());
+        // println!("Added: {}", added);
+        println!("Added: {}", added.to_string());
     }
 
     fn exec_list(&self) {
