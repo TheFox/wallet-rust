@@ -13,7 +13,7 @@ pub struct CommandOptions {
     pub revenue: Number,
     pub expense: Number,
     pub date: Date,
-    pub id: String,
+    pub id: Option<String>,
     pub force: bool,
 }
 
@@ -26,7 +26,7 @@ impl CommandOptions {
             revenue: 0.0,
             expense: 0.0,
             date: Date::new(),
-            id: String::new(),
+            id: None,
             force: false,
         }
     }
@@ -84,9 +84,13 @@ impl Command {
     fn exec_add(&self) {
         println!("-> Command::exec_add()");
 
-        // TODO
-        let mut entry = Entry::new(); // TODO: use from() here
-        entry.set_id(self.options.id.clone());
+        println!("-> ID: '{:?}'", self.options.id);
+
+        let mut entry = Entry::new(); // TODO: use from_command_options() here
+        if let Some(ref id) = self.options.id {
+            println!("-> take ID: {:?}", id);
+            entry.set_id(id.clone());
+        }
         entry.set_date(self.options.date);
         entry.set_revenue(self.options.revenue);
         entry.set_expense(self.options.expense);

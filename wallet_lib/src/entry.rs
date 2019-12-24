@@ -1,4 +1,5 @@
 
+use uuid::Uuid;
 use crate::date::Date;
 use crate::types::Number;
 
@@ -13,10 +14,10 @@ pub struct Entry {
 
 impl Entry {
     pub fn new() -> Self {
-        // println!("-> Entry::new()");
+        println!("-> Entry::new()");
 
         Self {
-            id: String::new(), // TODO UUID
+            id: Uuid::new_v4().to_string(),
             date: Date::new(),
             revenue: 0.0,
             expense: 0.0,
@@ -28,7 +29,7 @@ impl Entry {
     // pub fn from()
 
     pub fn id(&self) -> String {
-        println!("-> Entry::id()");
+        // println!("-> Entry::id()");
         self.id.clone()
     }
 

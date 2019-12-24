@@ -21,7 +21,7 @@ fn main() {
     println!("-> start");
 
     let args: Vec<String> = env::args().collect();
-    println!("-> args: '{:?}'", args);
+    // println!("-> args: '{:?}'", args);
 
     // Vars Sub Command
     let vars_subcmd = App::new("vars")
@@ -99,7 +99,7 @@ fn main() {
 
     // Get Argument matches.
     let matches = app.get_matches();
-    println!("-> matches '{:?}'", matches);
+    // println!("-> matches '{:?}'", matches);
 
     if matches.is_present("wallet") {
         println!("-> wallet is present: {:?}", matches.value_of("wallet").unwrap());
@@ -178,7 +178,7 @@ fn main() {
 
                 println!("-> id is present: '{:?}'", vs);
 
-                cmd_options.id = vs;
+                cmd_options.id = Some(vs);
             }
 
             // Force
