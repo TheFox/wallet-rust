@@ -53,7 +53,16 @@ fn main() {
             .short("d")
             .long("date")
             .help("Date")
-            .takes_value(true));
+            .takes_value(true))
+        .arg(Arg::with_name("id")
+            .long("id")
+            .help("ID")
+            .takes_value(true))
+        .arg(Arg::with_name("force")
+            .short("f")
+            .long("force")
+            .help("Force add, even if ID already exists.")
+            .takes_value(false));
 
     // List Sub Command
     let list_subcmd = App::new("list")
