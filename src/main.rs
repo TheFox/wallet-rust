@@ -144,7 +144,7 @@ fn main() {
                 let vn: Number = vs.replace_comma().to_num();
 
                 // println!("-> revenue is present: '{}'", vn);
-                cmd_options.revenue = vn;
+                cmd_options.revenue = Some(vn);
             }
 
             // Expense
@@ -157,7 +157,7 @@ fn main() {
                 let vn: Number = vs.replace_comma().to_num();
 
                 // println!("-> expense is present: '{}'", vn);
-                cmd_options.expense = vn;
+                cmd_options.expense = Some(vn);
             }
 
             // Date

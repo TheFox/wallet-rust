@@ -10,8 +10,8 @@ use crate::ext::BoolExt;
 #[derive(Debug)]
 pub struct CommandOptions {
     pub wallet_path: String,
-    pub revenue: Number,
-    pub expense: Number,
+    pub revenue: Option<Number>,
+    pub expense: Option<Number>,
     pub date: Date,
     pub id: Option<String>,
     pub force: bool,
@@ -23,8 +23,8 @@ impl CommandOptions {
     pub fn new() -> Self {
         CommandOptions {
             wallet_path: String::new(),
-            revenue: 0.0,
-            expense: 0.0,
+            revenue: None,
+            expense: None,
             date: Date::new(),
             id: None,
             force: false,
@@ -85,6 +85,8 @@ impl Command {
         println!("-> Command::exec_add()");
 
         println!("-> ID: '{:?}'", self.options.id);
+        println!("-> revenue: '{:?}'", self.options.revenue);
+        println!("-> expense: '{:?}'", self.options.expense);
 
         let mut entry = Entry::new(); // TODO: use from_command_options() here
         if let Some(ref id) = self.options.id {
@@ -92,8 +94,13 @@ impl Command {
             entry.set_id(id.clone());
         }
         entry.set_date(self.options.date);
-        entry.set_revenue(self.options.revenue);
-        entry.set_expense(self.options.expense);
+
+        if let Some(revenue) = self.options.revenue {
+            entry.set_revenue(revenue);
+        }
+        if let Some(expense) = self.options.expense {
+            entry.set_expense(expense);
+        }
 
         let wallet = Wallet::new(self.options.get_wallet_path());
         let added = wallet.add(entry, self.options.force);
