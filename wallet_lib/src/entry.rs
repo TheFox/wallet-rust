@@ -32,6 +32,11 @@ impl Entry {
         self.id.clone()
     }
 
+    pub fn set_id(&mut self, id: String) {
+        println!("-> Entry::set_id({})", id);
+        self.id = id;
+    }
+
     pub fn date(&self) -> Date {
         println!("-> Entry::date()");
         self.date

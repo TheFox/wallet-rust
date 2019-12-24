@@ -3,6 +3,7 @@ use crate::wallet::Wallet;
 use crate::entry::Entry;
 use crate::types::Number;
 use crate::date::Date;
+use crate::ext::BoolExt;
 
 /// Command options hold all available options for ALL commands.
 /// Not all commands will us all options.
@@ -12,6 +13,8 @@ pub struct CommandOptions {
     pub revenue: Number,
     pub expense: Number,
     pub date: Date,
+    pub id: String,
+    pub force: bool,
 }
 
 /// Common Options for commands.
@@ -23,6 +26,8 @@ impl CommandOptions {
             revenue: 0.0,
             expense: 0.0,
             date: Date::new(),
+            id: String::new(),
+            force: false,
         }
     }
 
@@ -67,8 +72,7 @@ impl Command {
             CommandKind::AddCommand => self.exec_add(),
             CommandKind::ListCommand => self.exec_list(),
             CommandKind::HtmlCommand => self.exec_html(),
-            _ => println!("-> unknown kind: {:?}", self.kind),
-            // _ => unreachable!(),
+            _ => unreachable!("Command not implemented"),
         }
     }
 
@@ -82,12 +86,14 @@ impl Command {
 
         // TODO
         let mut entry = Entry::new(); // TODO: use from() here
+        entry.set_id(self.options.id.clone());
         entry.set_date(self.options.date);
         entry.set_revenue(self.options.revenue);
         entry.set_expense(self.options.expense);
 
         let wallet = Wallet::new(self.options.get_wallet_path());
-        wallet.add(entry);
+        let added = wallet.add(entry, self.options.force);
+        println!("Added: {}", added.yn());
     }
 
     fn exec_list(&self) {

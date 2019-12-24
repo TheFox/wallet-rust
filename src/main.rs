@@ -169,6 +169,25 @@ fn main() {
                 cmd_options.date = Date::from_str(vs).expect("Unable to parse given Date");
                 // println!("-> date '{:?}'", cmd_options.date);
             }
+
+            // ID
+            if add_matches.is_present("id") {
+                // Convert from &str to String.
+                let vs = add_matches.value_of("id").unwrap().to_string();
+                println!("-> vs {:?}", vs);
+
+                println!("-> id is present: '{:?}'", vs);
+
+                cmd_options.id = vs;
+            }
+
+            // Force
+            if add_matches.is_present("force") {
+                let v = add_matches.value_of("force");
+                println!("-> force is present: '{:?}'", v);
+
+                cmd_options.force = true;
+            }
         },
         ("list", Some(_list_matches)) => {
             println!("-> cmd: list");

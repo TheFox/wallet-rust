@@ -78,13 +78,17 @@ impl Wallet {
     }
 
     // TODO
-    pub fn add(&self, entry: Entry) {
-        println!("-> Wallet::add()");
-        println!("-> entry {:?}", entry);
+    pub fn add(&self, entry: Entry, force: bool) -> bool {
+        println!("-> Wallet::add(f={:?})", force);
+        // println!("-> entry {:?}", entry);
 
         // Index
         let mut index_file = YamlFile::open_index(self.index_file.clone());
-        index_file.add(String::from("OK"));
+        println!("-> exists: {:?}", index_file.exists(entry.id()));
+        if !force && index_file.exists(entry.id()) {
+            return false;
+        }
+        index_file.add(entry.id());
 
         // Epics
         // let mut epics_file = YamlFile::open_epics(self.epics_file.clone());
@@ -103,6 +107,8 @@ impl Wallet {
 
         // let mut month_file = YamlFile::open_month(month_file_path);
         // month_file.add(entry);
+
+        true
     }
 
     // TODO
@@ -171,8 +177,10 @@ impl YamlFile {
             if let Yaml::Hash(ref mut content_ref) = self.content {
                 match &self.kind {
                     YamlFileKind::IndexFile => {
-                        println!("-> YamlFile::init() -> IndexFile");
-                        content_ref.insert(Yaml::String(String::from("index")), Yaml::Array(Vec::new()));
+                        println!("-> IndexFile");
+                        let index_key = Yaml::String("index".to_string());
+                        let index_val = Yaml::Array(Vec::new());
+                        content_ref.insert(index_key, index_val);
                     },
                     _ => unreachable!("Not implemented"),
                 }
@@ -189,31 +197,10 @@ impl YamlFile {
         println!("-> docs: '{:?}'", docs);
 
         self.content = docs[0].clone();
-
-        // let doc: Yaml = docs[0].clone();
-        // println!("-> content: '{:?}'", self.content);
-        // println!("-> test: '{:?}'", self.content["test"]);
-        // println!("-> test: '{:?}'", doc["test"].as_i64());
-        // println!("-> test: '{:?}'", doc["test"].as_i64().unwrap());
-
-        // self.content["test2"] = Yaml::String(String::from("hi"));
-
-        // self.content.insert("a", 10);
-
-        // match &self.content {
-        //     Yaml::Hash(x) => println!("-> Hash"),
-        //     _ => unreachable!(),
-        // }
-
-        // if let Yaml::Hash(ref mut x) = self.content {
-        //     println!("-> Hash: {:?}", x);
-        //     println!("-> test: {:?}", x.get(&Yaml::String(String::from("test"))));
-        //     x.insert(Yaml::String(String::from("test")), Yaml::Integer(567));
-        // }
     }
 
-    fn add<T>(&mut self, i: T){
-        println!("-> YamlFile::add() -> {:?}", self.kind);
+    fn add<T: ToString>(&mut self, i: T) {
+        println!("-> YamlFile::add() -> {:?} '{:?}'", self.kind, i.to_string());
 
         if let Yaml::Hash(ref mut content_ref) = self.content {
             println!("-> content_ref: {:?}", content_ref);
@@ -222,16 +209,23 @@ impl YamlFile {
                 YamlFileKind::IndexFile => {
                     println!("-> IndexFile");
 
-                    // let key = Yaml::String("index".to_string());
-                    let key = Yaml::String(i);
+                    let index_key = Yaml::String("index".to_string());
 
-                    println!("-> key: '{:?}'", key);
-                    println!("-> index A: {:?}", content_ref[&key]);
-                    // content_ref[&key].push(key);
+                    println!("-> index_key: '{:?}'", index_key);
+                    println!("-> val: {:?}", content_ref[&index_key]);
 
-                    if let Yaml::Array(ref mut index) = content_ref[&key] {
-                        println!("-> index B: {:?}", index);
-                        index.push(key);
+                    // content_ref[&key].push(i);
+
+                    // let key2 = Yaml::String(i.to_string());
+                    // println!("-> key2: {:?}", key2);
+                    // println!("-> key2: {:?}", content_ref["OK"].is_badvalue());
+
+                    if let Yaml::Array(ref mut index_ref) = content_ref[&index_key] {
+                        println!("-> index_ref: {:?}", index_ref);
+                        let v = Yaml::String(i.to_string());
+
+                        println!("-> v: {:?}", v);
+                        index_ref.push(v);
                     }
                 },
                 YamlFileKind::MonthFile => {
@@ -247,6 +241,37 @@ impl YamlFile {
         }
 
         self.changed = true;
+    }
+
+    fn exists(&self, i: String) -> bool {
+        println!("-> YamlFile::exists({:?})", i);
+
+        if let Yaml::Hash(ref content_ref) = self.content {
+            println!("-> content_ref: {:?}", content_ref);
+
+            match &self.kind {
+                YamlFileKind::IndexFile => {
+                    println!("-> IndexFile");
+
+                    let index_key = Yaml::String("index".to_string());
+
+                    println!("-> index_key: '{:?}'", index_key);
+                    println!("-> val: {:?}", content_ref[&index_key]);
+
+                    if let Yaml::Array(ref index_ref) = content_ref[&index_key] {
+                        println!("-> index_ref: {:?}", index_ref);
+                        let v = Yaml::String(i.to_string());
+
+                        println!("-> v: {:?}", v);
+                        println!("-> contains: {:?}", index_ref.contains(&v));
+                        return index_ref.contains(&v);
+                    }
+                },
+                _ => unreachable!("Not implemented"),
+            }
+        }
+
+        false
     }
 
     fn write(&mut self) {
