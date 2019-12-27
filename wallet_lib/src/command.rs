@@ -76,11 +76,13 @@ impl Command {
         }
     }
 
+    /// Init
     fn exec_init(&self) {
         println!("-> Command::exec_init()");
         Wallet::new(self.options.get_wallet_path());
     }
 
+    /// Add
     fn exec_add(&self) {
         println!("-> Command::exec_add()");
 
@@ -108,6 +110,7 @@ impl Command {
         println!("Added: {}", added.to_string());
     }
 
+    /// List
     fn exec_list(&self) {
         println!("-> Command::exec_list()");
 
@@ -115,6 +118,7 @@ impl Command {
         wallet.list(); // TODO
     }
 
+    /// HTML
     fn exec_html(&self) {
         println!("-> Command::exec_html()");
 

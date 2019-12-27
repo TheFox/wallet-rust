@@ -1,6 +1,8 @@
 /// Extern Implementations
 
 use crate::types::Number;
+use crate::yaml::ToYaml;
+use yaml_rust::Yaml;
 
 pub trait StringExt {
     fn replace_comma(&self) -> String;
@@ -22,6 +24,12 @@ impl StringExt for String {
         // println!("-> String.to_num() -> {:?}", self);
 
         self.parse().expect("Failed to convert String to Number")
+    }
+}
+
+impl ToYaml for String {
+    fn to_yaml(self) -> Yaml {
+        Yaml::String(self)
     }
 }
 

@@ -14,6 +14,9 @@ export RUSTFLAGS=-Awarnings
 
 echo "TEST_OPTS: '${TEST_OPTS}'"
 
+# Clean up
+rm -rf tmp/tests
+
 mkdir -p tmp/tests
 
 set -x

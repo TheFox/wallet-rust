@@ -1,7 +1,11 @@
 
+use std::fmt::{Display, Formatter, Result as FmtRes};
 use uuid::Uuid;
 use crate::date::Date;
 use crate::types::Number;
+use crate::yaml::ToYaml;
+use yaml_rust::Yaml;
+use yaml_rust::yaml::Hash;
 
 #[derive(Debug)]
 pub struct Entry {
@@ -69,6 +73,29 @@ impl Entry {
         // println!("-> Entry::calc() -> r={} e={}", self.revenue, self.expense);
         self.balance = self.revenue + self.expense;
         // println!("-> b={}", self.balance);
+    }
+}
+
+impl Display for Entry {
+    fn fmt(&self, f: &mut Formatter) -> FmtRes {
+        write!(f, "{}", self.id)
+    }
+}
+
+impl ToYaml for Entry {
+    fn to_yaml(self) -> Yaml {
+        println!("-> Entry::to_yaml()");
+
+        let mut entry = Hash::new();
+        entry.insert("id".to_string().to_yaml(), self.id().to_yaml());
+        entry.insert("date".to_string().to_yaml(), self.date().to_string().to_yaml());
+        entry.insert("revenue".to_string().to_yaml(), Yaml::Real(self.revenue.to_string()));
+        entry.insert("expense".to_string().to_yaml(), Yaml::Real(self.expense.to_string()));
+        // entry.insert("category".to_string().to_yaml(), self.category().to_yaml());
+        // entry.insert("epic".to_string().to_yaml(), self.epic().to_yaml());
+        // entry.insert("comment".to_string().to_yaml(), self.comment().to_yaml());
+
+        Yaml::Hash(entry)
     }
 }
 
