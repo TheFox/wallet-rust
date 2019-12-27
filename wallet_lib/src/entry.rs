@@ -14,6 +14,7 @@ pub struct Entry {
     revenue: Number,
     expense: Number,
     balance: Number,
+    category: String,
 }
 
 impl Entry {
@@ -26,6 +27,7 @@ impl Entry {
             revenue: 0.0,
             expense: 0.0,
             balance: 0.0,
+            category: String::from("default"),
         }
     }
 
@@ -64,6 +66,15 @@ impl Entry {
         self.calc();
     }
 
+    pub fn category(&self) -> String {
+        self.category.clone()
+    }
+
+    pub fn set_category(&mut self, v: String) {
+        // println!("-> Entry::set_category({})", v);
+        self.category = v;
+    }
+
     pub fn get_balance(&self) -> Number {
         // println!("-> Entry::get_balance() -> {}", self.balance);
         self.balance
@@ -89,9 +100,9 @@ impl ToYaml for Entry {
         let mut entry = Hash::new();
         entry.insert("id".to_string().to_yaml(), self.id().to_yaml());
         entry.insert("date".to_string().to_yaml(), self.date().to_string().to_yaml());
-        entry.insert("revenue".to_string().to_yaml(), Yaml::Real(self.revenue.to_string()));
-        entry.insert("expense".to_string().to_yaml(), Yaml::Real(self.expense.to_string()));
-        // entry.insert("category".to_string().to_yaml(), self.category().to_yaml());
+        entry.insert("revenue".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.revenue)));
+        entry.insert("expense".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.expense)));
+        entry.insert("category".to_string().to_yaml(), self.category().to_yaml());
         // entry.insert("epic".to_string().to_yaml(), self.epic().to_yaml());
         // entry.insert("comment".to_string().to_yaml(), self.comment().to_yaml());
 

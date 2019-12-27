@@ -114,7 +114,7 @@ impl YamlFile {
                     let index_key = "index".to_string().to_yaml();
 
                     if let Yaml::Array(ref mut index_ref) = content_ref[&index_key] {
-                        println!("-> index_ref: {:?}", index_ref);
+                        // println!("-> index_ref: {:?}", index_ref);
                         index_ref.push(i.to_yaml());
                     }
                 },
@@ -136,19 +136,19 @@ impl YamlFile {
                             println!("-> index_key: {:?}", index_key);
 
                             if let Yaml::Hash(ref mut index_ref) = content_ref[&index_key] {
-                                println!("-> index_ref: {:?}", index_ref);
-                                println!("-> key: {:?}", index_ref.contains_key(&entry_ref[&date_key]));
+                                // println!("-> index_ref: {:?}", index_ref);
+                                // println!("-> key: {:?}", index_ref.contains_key(&entry_ref[&date_key]));
 
                                 if !index_ref.contains_key(&entry_ref[&date_key]) {
                                     println!("-> create new day");
                                     index_ref.insert(entry_ref[&date_key].clone(), Yaml::Array(Vec::new()));
                                 }
 
-                                println!("-> index_ref: {:?}", index_ref);
+                                // println!("-> index_ref: {:?}", index_ref);
                                 println!("-> date_key: {:?}", date_key);
 
                                 if let Yaml::Array(ref mut day_ref) = index_ref[&entry_ref[&date_key]] {
-                                    println!("-> day_ref: {:?}", day_ref);
+                                    // println!("-> day_ref: {:?}", day_ref);
                                     day_ref.push(v);
                                 }
                             }

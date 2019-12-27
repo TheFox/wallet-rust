@@ -49,6 +49,11 @@ fn main() {
             .long("expense")
             .help("Set a Expense.")
             .takes_value(true))
+        .arg(Arg::with_name("category")
+            .short("c")
+            .long("category")
+            .help("Category")
+            .takes_value(true))
         .arg(Arg::with_name("date")
             .short("d")
             .long("date")
@@ -160,6 +165,9 @@ fn main() {
                 cmd_options.expense = Some(vn);
             }
 
+            // Category
+            set_category(add_matches, &mut cmd_options);
+
             // Date
             set_date(add_matches, &mut cmd_options);
 
@@ -229,6 +237,20 @@ fn main() {
     cmd.exec();
 
     println!("-> end");
+}
+
+fn set_category(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    println!("-> set_category()");
+
+    if !matches.is_present("category") {
+        return;
+    }
+
+    // &str
+    let vs = matches.value_of("category").unwrap();
+    println!("-> vs '{:?}'", vs);
+
+    cmd_options.category = Some(vs.to_string());
 }
 
 fn set_date(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
