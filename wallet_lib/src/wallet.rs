@@ -91,11 +91,14 @@ impl Wallet {
         // Index
         let mut index_file = YamlFile::open_index(self.index_file.clone());
         println!("-> exists: {:?}", index_file.exists(entry.id()));
-        if !force && index_file.exists(entry.id()) {
-            return AddResult::ExistsInIndex;
+
+        if index_file.exists(entry.id()) {
+            if ! force {
+                return AddResult::ExistsInIndex;
+            }
+        } else {
+            index_file.add(entry.id());
         }
-        index_file.add(entry.id());
-        // index_file.add(&entry);
 
         // TODO
         // Epics
@@ -109,7 +112,7 @@ impl Wallet {
         println!("-> month_file_path: {:?}", month_file_path);
 
         let mut month_file = YamlFile::open_month(month_file_path);
-        // month_file.add(entry);
+        month_file.add(entry);
 
         AddResult::Added(AddedResult {
             month_file_name,
@@ -129,9 +132,11 @@ impl Wallet {
 
 #[cfg(test)]
 mod tests {
-    use super::Wallet;
-    // use std::fs;
     use std::path::Path;
+    use std::str::FromStr;
+    use super::{Wallet, AddResult, AddedResult};
+    use crate::entry::Entry;
+    use crate::date::Date;
 
     #[test]
     fn test_new_wallet() {
@@ -142,8 +147,25 @@ mod tests {
         assert!(Path::new("../tmp/tests/wallet1/tmp").exists());
     }
 
-    // #[test]
-    // fn test_wallet_add() {
-    //     let w1 = Wallet::new(String::from("../tmp/tests/wallet2"));
-    // }
+    #[test]
+    fn test_wallet_add() {
+        let d1 = Date::from_str("1987-02-21").unwrap();
+
+        let mut e1 = Entry::new();
+        e1.set_date(d1);
+
+        let w1 = Wallet::new(String::from("../tmp/tests/wallet2"));
+        assert!(match w1.add(e1, false) {
+            AddResult::Added(res) => {
+                match res {
+                    AddedResult { month_file_name } => {
+                        assert_eq!("month_1987_02.yml", month_file_name);
+                        true
+                    },
+                    _ => false,
+                }
+            },
+            _ => false,
+        });
+    }
 }
