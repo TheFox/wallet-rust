@@ -15,6 +15,7 @@ pub struct CommandOptions {
     pub revenue: Option<Number>,
     pub expense: Option<Number>,
     pub category: Option<String>,
+    pub comment: Option<String>,
     pub force: bool,
 }
 
@@ -29,6 +30,7 @@ impl CommandOptions {
             revenue: None,
             expense: None,
             category: None,
+            comment: None,
             force: false,
         }
     }
@@ -107,6 +109,9 @@ impl Command {
         }
         if let Some(category) = &self.options.category {
             entry.set_category(category.to_string());
+        }
+        if let Some(comment) = &self.options.comment {
+            entry.set_comment(comment.to_string());
         }
 
         let wallet = Wallet::new(self.options.get_wallet_path());

@@ -54,6 +54,11 @@ fn main() {
             .long("category")
             .help("Category")
             .takes_value(true))
+        .arg(Arg::with_name("comment")
+            .short("o")
+            .long("comment")
+            .help("Comment")
+            .takes_value(true))
         .arg(Arg::with_name("date")
             .short("d")
             .long("date")
@@ -171,6 +176,8 @@ fn main() {
             // Category
             set_category(add_matches, &mut cmd_options);
 
+            // Comment
+            set_comment(add_matches, &mut cmd_options);
 
             // ID
             if add_matches.is_present("id") {
@@ -267,4 +274,18 @@ fn set_category(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     println!("-> vs '{:?}'", vs);
 
     cmd_options.category = Some(vs.to_string());
+}
+
+fn set_comment(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    println!("-> set_comment()");
+
+    if !matches.is_present("comment") {
+        return;
+    }
+
+    // &str
+    let vs = matches.value_of("comment").unwrap();
+    println!("-> vs '{:?}'", vs);
+
+    cmd_options.comment = Some(vs.to_string());
 }

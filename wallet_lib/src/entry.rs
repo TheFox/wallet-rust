@@ -15,6 +15,7 @@ pub struct Entry {
     expense: Number,
     balance: Number,
     category: String,
+    comment: String,
 }
 
 impl Entry {
@@ -28,6 +29,7 @@ impl Entry {
             expense: 0.0,
             balance: 0.0,
             category: String::from("default"),
+            comment: String::new(),
         }
     }
 
@@ -75,6 +77,15 @@ impl Entry {
         self.category = v;
     }
 
+    pub fn comment(&self) -> String {
+        self.comment.clone()
+    }
+
+    pub fn set_comment(&mut self, v: String) {
+        // println!("-> Entry::set_comment({})", v);
+        self.comment = v;
+    }
+
     pub fn get_balance(&self) -> Number {
         // println!("-> Entry::get_balance() -> {}", self.balance);
         self.balance
@@ -104,7 +115,7 @@ impl ToYaml for Entry {
         entry.insert("expense".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.expense)));
         entry.insert("category".to_string().to_yaml(), self.category().to_yaml());
         // entry.insert("epic".to_string().to_yaml(), self.epic().to_yaml());
-        // entry.insert("comment".to_string().to_yaml(), self.comment().to_yaml());
+        entry.insert("comment".to_string().to_yaml(), self.comment().to_yaml());
 
         Yaml::Hash(entry)
     }
