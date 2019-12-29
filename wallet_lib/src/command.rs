@@ -17,6 +17,7 @@ pub struct CommandOptions {
     pub category: Option<String>,
     pub comment: Option<String>,
     pub force: bool,
+    pub epic: Option<String>,
 }
 
 /// Common Options for commands.
@@ -32,6 +33,7 @@ impl CommandOptions {
             category: None,
             comment: None,
             force: false,
+            epic: None,
         }
     }
 
@@ -112,6 +114,9 @@ impl Command {
         }
         if let Some(comment) = &self.options.comment {
             entry.set_comment(comment.to_string());
+        }
+        if let Some(epic) = &self.options.epic {
+            entry.set_epic(epic.to_string());
         }
 
         let wallet = Wallet::new(self.options.get_wallet_path());

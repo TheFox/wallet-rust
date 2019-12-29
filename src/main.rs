@@ -72,7 +72,12 @@ fn main() {
             .short("f")
             .long("force")
             .help("Force add, even if ID already exists.")
-            .takes_value(false));
+            .takes_value(false))
+        .arg(Arg::with_name("epic")
+            .short("x")
+            .long("epic")
+            .help("Epic")
+            .takes_value(true));
 
     // List Sub Command
     let list_subcmd = App::new("list")
@@ -178,6 +183,9 @@ fn main() {
 
             // Comment
             set_comment(add_matches, &mut cmd_options);
+
+            // Epic
+            set_epic(add_matches, &mut cmd_options);
 
             // ID
             if add_matches.is_present("id") {
@@ -288,4 +296,18 @@ fn set_comment(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     println!("-> vs '{:?}'", vs);
 
     cmd_options.comment = Some(vs.to_string());
+}
+
+fn set_epic(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    println!("-> set_epic()");
+
+    if !matches.is_present("epic") {
+        return;
+    }
+
+    // &str
+    let vs = matches.value_of("epic").unwrap();
+    println!("-> vs '{:?}'", vs);
+
+    cmd_options.epic = Some(vs.to_string());
 }

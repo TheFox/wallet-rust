@@ -16,6 +16,7 @@ pub struct Entry {
     balance: Number,
     category: String,
     comment: String,
+    epic: String,
 }
 
 impl Entry {
@@ -30,6 +31,7 @@ impl Entry {
             balance: 0.0,
             category: String::from("default"),
             comment: String::new(),
+            epic: String::from("default"),
         }
     }
 
@@ -86,6 +88,15 @@ impl Entry {
         self.comment = v;
     }
 
+    pub fn epic(&self) -> String {
+        self.epic.clone()
+    }
+
+    pub fn set_epic(&mut self, v: String) {
+        // println!("-> Entry::set_epic({})", v);
+        self.epic = v;
+    }
+
     pub fn get_balance(&self) -> Number {
         // println!("-> Entry::get_balance() -> {}", self.balance);
         self.balance
@@ -99,6 +110,7 @@ impl Entry {
 }
 
 impl Display for Entry {
+    /// Needed?
     fn fmt(&self, f: &mut Formatter) -> FmtRes {
         write!(f, "{}", self.id)
     }
@@ -114,8 +126,8 @@ impl ToYaml for Entry {
         entry.insert("revenue".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.revenue)));
         entry.insert("expense".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.expense)));
         entry.insert("category".to_string().to_yaml(), self.category().to_yaml());
-        // entry.insert("epic".to_string().to_yaml(), self.epic().to_yaml());
         entry.insert("comment".to_string().to_yaml(), self.comment().to_yaml());
+        entry.insert("epic".to_string().to_yaml(), self.epic().to_yaml());
 
         Yaml::Hash(entry)
     }

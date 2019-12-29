@@ -59,11 +59,19 @@ impl YamlFile {
         } else {
             println!("-> create new file");
 
+            self.changed = true;
+
             if let Yaml::Hash(ref mut content_ref) = self.content {
                 match &self.kind {
                     YamlFileKind::IndexFile => {
                         println!("-> IndexFile");
                         let index_key = Yaml::String("index".to_string());
+                        let index_val = Yaml::Array(Vec::new());
+                        content_ref.insert(index_key, index_val);
+                    },
+                    YamlFileKind::EpicsFile => {
+                        println!("-> EpicsFile");
+                        let index_key = Yaml::String("epics".to_string());
                         let index_val = Yaml::Array(Vec::new());
                         content_ref.insert(index_key, index_val);
                     },
@@ -109,13 +117,23 @@ impl YamlFile {
 
             match &self.kind {
                 YamlFileKind::IndexFile => {
-                    println!("-> YamlFile::add() IndexFile");
+                    println!("-> IndexFile");
 
                     let index_key = "index".to_string().to_yaml();
 
                     if let Yaml::Array(ref mut index_ref) = content_ref[&index_key] {
                         // println!("-> index_ref: {:?}", index_ref);
                         index_ref.push(i.to_yaml());
+                    }
+                },
+                YamlFileKind::EpicsFile => {
+                    println!("-> EpicsFile");
+
+                    let index_key = "epics".to_string().to_yaml();
+
+                    if let Yaml::Array(ref mut index_ref) = content_ref[&index_key] {
+                        println!("-> index_ref: {:?}", index_ref);
+                        // index_ref.push(i.to_yaml());
                     }
                 },
                 YamlFileKind::MonthFile => {
@@ -248,7 +266,6 @@ mod tests {
     use std::fs::remove_file;
     use std::str::FromStr;
     use super::{YamlFile, ToYaml};
-    // use crate::ext::;
     use crate::entry::Entry;
     use crate::date::Date;
 
@@ -262,6 +279,22 @@ mod tests {
 
         let p1 = PathBuf::from(ps1);
         assert!(p1.is_file());
+    }
+
+    #[test]
+    fn test_yaml_epics() {
+        // let e1 = Epic::new();
+
+        let ps1 = "../tmp/tests/epics.yml";
+        let p1 = PathBuf::from(ps1);
+        let mut f1 = YamlFile::open_epics(p1);
+        // f1.add("hi".to_string());
+        f1.close();
+
+        let p1 = PathBuf::from(ps1);
+        assert!(p1.is_file());
+
+        // assert!(false);
     }
 
     #[test]

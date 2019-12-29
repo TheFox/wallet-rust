@@ -100,9 +100,11 @@ impl Wallet {
             index_file.add(entry.id());
         }
 
-        // TODO
         // Epics
-        // let mut epics_file = YamlFile::open_epics(self.epics_file.clone());
+        let mut epics_file = YamlFile::open_epics(self.epics_file.clone());
+        // TODO: create epic
+        // let existing_epic = epics_file.find();
+        // epics_file.add(entry.epic());
 
         // Month file
         let month_file_name = format!("month_{}.yml", entry.date().fym("_"));
