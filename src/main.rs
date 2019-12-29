@@ -139,6 +139,9 @@ fn main() {
                 println!("-> interactive is present");
             }
 
+            // Date
+            set_date(add_matches, &mut cmd_options);
+
             // Revenue
             if add_matches.is_present("revenue") {
                 // Convert from &str to String.
@@ -168,8 +171,6 @@ fn main() {
             // Category
             set_category(add_matches, &mut cmd_options);
 
-            // Date
-            set_date(add_matches, &mut cmd_options);
 
             // ID
             if add_matches.is_present("id") {
@@ -239,20 +240,6 @@ fn main() {
     println!("-> end");
 }
 
-fn set_category(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    println!("-> set_category()");
-
-    if !matches.is_present("category") {
-        return;
-    }
-
-    // &str
-    let vs = matches.value_of("category").unwrap();
-    println!("-> vs '{:?}'", vs);
-
-    cmd_options.category = Some(vs.to_string());
-}
-
 fn set_date(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     println!("-> set_date()");
 
@@ -266,4 +253,18 @@ fn set_date(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
 
     cmd_options.date = Date::from_str(vs).expect("Unable to parse given Date");
     // println!("-> date '{:?}'", cmd_options.date);
+}
+
+fn set_category(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    println!("-> set_category()");
+
+    if !matches.is_present("category") {
+        return;
+    }
+
+    // &str
+    let vs = matches.value_of("category").unwrap();
+    println!("-> vs '{:?}'", vs);
+
+    cmd_options.category = Some(vs.to_string());
 }

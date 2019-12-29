@@ -10,11 +10,11 @@ use crate::ext::BoolExt;
 #[derive(Debug)]
 pub struct CommandOptions {
     pub wallet_path: String,
+    pub id: Option<String>,
+    pub date: Date,
     pub revenue: Option<Number>,
     pub expense: Option<Number>,
     pub category: Option<String>,
-    pub date: Date,
-    pub id: Option<String>,
     pub force: bool,
 }
 
@@ -24,11 +24,11 @@ impl CommandOptions {
     pub fn new() -> Self {
         CommandOptions {
             wallet_path: String::new(),
+            id: None,
+            date: Date::new(),
             revenue: None,
             expense: None,
             category: None,
-            date: Date::new(),
-            id: None,
             force: false,
         }
     }
@@ -106,7 +106,6 @@ impl Command {
             entry.set_expense(expense);
         }
         if let Some(category) = &self.options.category {
-            // println!("-> set_category()");
             entry.set_category(category.to_string());
         }
 
