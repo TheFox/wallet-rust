@@ -52,6 +52,8 @@ impl BoolExt for bool {
 #[cfg(test)]
 mod tests {
     use super::{StringExt, BoolExt};
+    use crate::yaml::ToYaml;
+    use yaml_rust::Yaml;
 
     #[test]
     fn test_strext_replace_comma1() {
@@ -69,6 +71,20 @@ mod tests {
     fn test_strext_to_num2() {
         let s1 = String::from("1,3");
         assert_eq!(1.3, s1.replace_comma().to_num());
+    }
+
+    #[test]
+    fn test_strext_to_toyaml1() {
+        let s1 = String::from("hello1").to_yaml();
+
+        assert!(match s1 {
+            Yaml::String(s2) => {
+                // println!("s2 '{}'", s2);
+                assert_eq!("hello1", s2);
+                true
+            }
+            _ => false,
+        });
     }
 
     #[test]
