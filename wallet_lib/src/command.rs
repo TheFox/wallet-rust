@@ -1,6 +1,7 @@
 
 use crate::wallet::Wallet;
 use crate::entry::Entry;
+use crate::epic::Epic;
 use crate::types::Number;
 use crate::date::Date;
 use crate::ext::BoolExt;
@@ -11,6 +12,7 @@ use crate::ext::BoolExt;
 pub struct CommandOptions {
     pub wallet_path: String,
     pub id: Option<String>,
+    pub title: Option<String>,
     pub date: Date,
     pub revenue: Option<Number>,
     pub expense: Option<Number>,
@@ -18,6 +20,8 @@ pub struct CommandOptions {
     pub comment: Option<String>,
     pub force: bool,
     pub epic: Option<String>,
+    pub handle: Option<String>,
+    pub bgcolor: Option<String>,
 }
 
 /// Common Options for commands.
@@ -27,6 +31,7 @@ impl CommandOptions {
         CommandOptions {
             wallet_path: String::new(),
             id: None,
+            title: None,
             date: Date::new(),
             revenue: None,
             expense: None,
@@ -34,6 +39,8 @@ impl CommandOptions {
             comment: None,
             force: false,
             epic: None,
+            handle: None,
+            bgcolor: None,
         }
     }
 
@@ -50,6 +57,7 @@ pub enum CommandKind {
     None,
     InitCommand,
     AddCommand,
+    EpicCommand,
     ListCommand,
     HtmlCommand,
 }
@@ -76,6 +84,7 @@ impl Command {
         match self.kind {
             CommandKind::InitCommand => self.exec_init(),
             CommandKind::AddCommand => self.exec_add(),
+            CommandKind::EpicCommand => self.exec_epic(),
             CommandKind::ListCommand => self.exec_list(),
             CommandKind::HtmlCommand => self.exec_html(),
             _ => unreachable!("Command not implemented"),
@@ -92,13 +101,13 @@ impl Command {
     fn exec_add(&self) {
         println!("-> Command::exec_add()");
 
-        println!("-> ID: '{:?}'", self.options.id);
-        println!("-> revenue: '{:?}'", self.options.revenue);
-        println!("-> expense: '{:?}'", self.options.expense);
+        // println!("-> ID: '{:?}'", self.options.id);
+        // println!("-> revenue: '{:?}'", self.options.revenue);
+        // println!("-> expense: '{:?}'", self.options.expense);
 
-        let mut entry = Entry::new(); // TODO: use from_command_options() here
+        let mut entry = Entry::new(); // TODO: use from trait here
         if let Some(ref id) = self.options.id {
-            println!("-> take ID: {:?}", id);
+            // println!("-> take ID: {:?}", id);
             entry.set_id(id.clone());
         }
         entry.set_date(self.options.date);
@@ -123,6 +132,29 @@ impl Command {
         let added = wallet.add(entry, self.options.force);
         // println!("Added: {}", added);
         println!("Added: {}", added.to_string());
+    }
+
+    /// Epic
+    fn exec_epic(&self) {
+        println!("-> Command::exec_epic()");
+
+        // TODO: --remove
+
+        let mut epic = Epic::new();
+
+        if let Some(handle) = &self.options.handle {
+            epic.set_handle(handle.to_string());
+        }
+        if let Some(title) = &self.options.title {
+            epic.set_title(title.to_string());
+        }
+        if let Some(bgcolor) = &self.options.bgcolor {
+            epic.set_bgcolor(bgcolor.to_string());
+        }
+
+        let wallet = Wallet::new(self.options.get_wallet_path());
+        let added = wallet.add_epic(epic);
+        println!("Added: {}", added.yn());
     }
 
     /// List

@@ -6,8 +6,8 @@ use std::fmt;
 use std::fmt::{Display, Formatter, Result as FmtRes};
 use std::vec::Vec;
 use crate::entry::Entry;
+use crate::epic::Epic;
 use crate::yaml::YamlFile;
-// use crate::yaml::ToYaml;
 
 #[derive(Debug)]
 pub struct Wallet {
@@ -90,7 +90,7 @@ impl Wallet {
 
         // Index
         let mut index_file = YamlFile::open_index(self.index_file.clone());
-        println!("-> exists: {:?}", index_file.exists(entry.id()));
+        // println!("-> exists: {:?}", index_file.exists(entry.id()));
 
         if index_file.exists(entry.id()) {
             if ! force {
@@ -102,9 +102,24 @@ impl Wallet {
 
         // Epics
         let mut epics_file = YamlFile::open_epics(self.epics_file.clone());
+        if epics_file.exists(entry.epic()) {
+            println!("-> epic exist");
+        } else {
+            println!("-> NO epic");
+            let mut epic = Epic::new();
+            epic.set_handle(entry.epic());
+            epics_file.add(epic);
+        }
         // TODO: create epic
         // let existing_epic = epics_file.find();
         // epics_file.add(entry.epic());
+        // let epic_opt: Option<Epic> = epics_file.find(entry.epic());
+        // match epic_opt {
+        //     Some(epic) => {
+        //         println!("-> epic {:?}", epic);
+        //     },
+        //     _ => (),
+        // }
 
         // Month file
         let month_file_name = format!("month_{}.yml", entry.date().fym("_"));
@@ -119,6 +134,18 @@ impl Wallet {
         AddResult::Added(AddedResult {
             month_file_name,
         })
+    }
+
+    pub fn add_epic(&self, epic: Epic) -> bool {
+        let mut epics_file = YamlFile::open_epics(self.epics_file.clone());
+
+        if epics_file.exists(epic.handle()) {
+            false
+        } else {
+            println!("-> NO epic");
+            epics_file.add(epic);
+            true
+        }
     }
 
     // TODO
@@ -136,8 +163,10 @@ impl Wallet {
 mod tests {
     use std::path::Path;
     use std::str::FromStr;
+    use std::string::ToString;
     use super::{Wallet, AddResult, AddedResult};
     use crate::entry::Entry;
+    use crate::epic::Epic;
     use crate::date::Date;
 
     #[test]
@@ -150,7 +179,7 @@ mod tests {
     }
 
     #[test]
-    fn test_wallet_add() {
+    fn test_wallet_add_entry() {
         let d1 = Date::from_str("1987-02-21").unwrap();
 
         let mut e1 = Entry::new();
@@ -169,5 +198,16 @@ mod tests {
             },
             _ => false,
         });
+    }
+
+    #[test]
+    fn test_wallet_add_epic() {
+        let mut e1 = Epic::new();
+        e1.set_handle("h1".to_string());
+        e1.set_title("t1".to_string());
+        e1.set_bgcolor("#ff0000".to_string());
+
+        let w1 = Wallet::new(String::from("../tmp/tests/wallet3"));
+        assert!(w1.add_epic(e1));
     }
 }

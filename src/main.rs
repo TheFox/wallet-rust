@@ -79,6 +79,23 @@ fn main() {
             .help("Epic")
             .takes_value(true));
 
+    // Epic Sub Command
+    let epic_subcmd = App::new("epic")
+        .about("Add a new epic.")
+        .arg(Arg::with_name("title")
+            .short("t")
+            .long("title")
+            .help("Title")
+            .takes_value(true))
+        .arg(Arg::with_name("handle")
+            .long("handle")
+            .help("Handle (For example 'myepic')")
+            .takes_value(true))
+        .arg(Arg::with_name("bgcolor")
+            .long("bgcolor")
+            .help("Background Color (HTML)")
+            .takes_value(true));
+
     // List Sub Command
     let list_subcmd = App::new("list")
         .about("List entries.");
@@ -104,6 +121,7 @@ fn main() {
         .subcommand(vars_subcmd)
         .subcommand(init_subcmd)
         .subcommand(add_subcmd)
+        .subcommand(epic_subcmd)
         .subcommand(list_subcmd)
         .subcommand(html_subcmd)
         .arg(wallet_arg);
@@ -206,6 +224,16 @@ fn main() {
                 cmd_options.force = true;
             }
         },
+        ("epic", Some(epic_matches)) => {
+            println!("-> cmd: epic ({:?})", epic_matches);
+
+            // Cmd
+            cmd_kind = CommandKind::EpicCommand;
+
+            set_handle(epic_matches, &mut cmd_options);
+            set_title(epic_matches, &mut cmd_options);
+            set_bgcolor(epic_matches, &mut cmd_options);
+        },
         ("list", Some(_list_matches)) => {
             println!("-> cmd: list");
 
@@ -223,6 +251,46 @@ fn main() {
         },
         _ => unreachable!(),
     }
+
+    println!("-> date: {:?}", cmd_options.date);
+
+    println!("-> cmd: {:?}", cmd_kind);
+    let cmd = Command::new(cmd_kind, cmd_options);
+    println!("-> cmd: {:?}", cmd);
+
+    println!("-> exec");
+    cmd.exec();
+
+    println!("-> end");
+}
+
+fn set_title(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    // println!("-> set_title()");
+
+    if !matches.is_present("title") {
+        return;
+    }
+
+    // &str
+    let vs = matches.value_of("title").unwrap();
+    // println!("-> vs '{:?}'", vs);
+
+    cmd_options.title = Some(vs.to_string());
+}
+
+fn set_date(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    // println!("-> set_date()");
+
+    if !matches.is_present("date") {
+        return;
+    }
+
+    // &str
+    let vs = matches.value_of("date").unwrap();
+    // println!("-> vs '{:?}'", vs);
+
+    cmd_options.date = Date::from_str(vs).expect("Unable to parse given Date");
+    // println!("-> date '{:?}'", cmd_options.date);
 
     // Now
     let now: DateTime<Local> = Local::now();
@@ -242,36 +310,10 @@ fn main() {
         // println!("-> day missing");
         cmd_options.date.set_day(now.day());
     }
-
-    println!("-> date: {:?}", cmd_options.date);
-
-    println!("-> cmd: {:?}", cmd_kind);
-    let cmd = Command::new(cmd_kind, cmd_options);
-    println!("-> cmd: {:?}", cmd);
-
-    println!("-> exec");
-    cmd.exec();
-
-    println!("-> end");
-}
-
-fn set_date(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    println!("-> set_date()");
-
-    if !matches.is_present("date") {
-        return;
-    }
-
-    // &str
-    let vs = matches.value_of("date").unwrap();
-    println!("-> vs '{:?}'", vs);
-
-    cmd_options.date = Date::from_str(vs).expect("Unable to parse given Date");
-    // println!("-> date '{:?}'", cmd_options.date);
 }
 
 fn set_category(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    println!("-> set_category()");
+    // println!("-> set_category()");
 
     if !matches.is_present("category") {
         return;
@@ -279,13 +321,13 @@ fn set_category(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
 
     // &str
     let vs = matches.value_of("category").unwrap();
-    println!("-> vs '{:?}'", vs);
+    // println!("-> vs '{:?}'", vs);
 
     cmd_options.category = Some(vs.to_string());
 }
 
 fn set_comment(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    println!("-> set_comment()");
+    // println!("-> set_comment()");
 
     if !matches.is_present("comment") {
         return;
@@ -293,13 +335,13 @@ fn set_comment(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
 
     // &str
     let vs = matches.value_of("comment").unwrap();
-    println!("-> vs '{:?}'", vs);
+    // println!("-> vs '{:?}'", vs);
 
     cmd_options.comment = Some(vs.to_string());
 }
 
 fn set_epic(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    println!("-> set_epic()");
+    // println!("-> set_epic()");
 
     if !matches.is_present("epic") {
         return;
@@ -307,7 +349,35 @@ fn set_epic(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
 
     // &str
     let vs = matches.value_of("epic").unwrap();
-    println!("-> vs '{:?}'", vs);
+    // println!("-> vs '{:?}'", vs);
 
     cmd_options.epic = Some(vs.to_string());
+}
+
+fn set_handle(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    // println!("-> set_handle()");
+
+    if !matches.is_present("handle") {
+        return;
+    }
+
+    // &str
+    let vs = matches.value_of("handle").unwrap();
+    // println!("-> vs '{:?}'", vs);
+
+    cmd_options.handle = Some(vs.to_string());
+}
+
+fn set_bgcolor(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    // println!("-> set_bgcolor()");
+
+    if !matches.is_present("bgcolor") {
+        return;
+    }
+
+    // &str
+    let vs = matches.value_of("bgcolor").unwrap();
+    // println!("-> vs '{:?}'", vs);
+
+    cmd_options.bgcolor = Some(vs.to_string());
 }

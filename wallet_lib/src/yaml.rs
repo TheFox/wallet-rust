@@ -6,6 +6,7 @@ use std::string::ToString;
 use std::fmt::{Display, Formatter, Result as FmtRes};
 use yaml_rust::{Yaml, YamlLoader, YamlEmitter};
 use yaml_rust::yaml::Hash;
+use crate::epic::Epic;
 
 #[derive(Debug)]
 enum YamlFileKind {
@@ -105,7 +106,7 @@ impl YamlFile {
         self.content = docs[0].clone();
     }
 
-    pub fn add<T: ToYaml>(&mut self, i: T) {
+    pub fn add<T: ToYaml>(&mut self, obj: T) {
         println!("-> YamlFile::add() -> {:?}", self.kind);
         // println!("-> YamlFile::add() -> {:?} '{:?}'", self.kind, i.to_string());
 
@@ -123,7 +124,7 @@ impl YamlFile {
 
                     if let Yaml::Array(ref mut index_ref) = content_ref[&index_key] {
                         // println!("-> index_ref: {:?}", index_ref);
-                        index_ref.push(i.to_yaml());
+                        index_ref.push(obj.to_yaml());
                     }
                 },
                 YamlFileKind::EpicsFile => {
@@ -132,38 +133,38 @@ impl YamlFile {
                     let index_key = "epics".to_string().to_yaml();
 
                     if let Yaml::Array(ref mut index_ref) = content_ref[&index_key] {
-                        println!("-> index_ref: {:?}", index_ref);
-                        // index_ref.push(i.to_yaml());
+                        // println!("-> index_ref: {:?}", index_ref);
+                        index_ref.push(obj.to_yaml());
                     }
                 },
                 YamlFileKind::MonthFile => {
                     println!("-> YamlFile::add() MonthFile");
 
-                    let v = i.to_yaml();
+                    let v = obj.to_yaml();
 
                     if let Yaml::Hash(ref entry_ref) = v {
-                        println!("-> entry_ref: {:?}", entry_ref);
+                        // println!("-> entry_ref: {:?}", entry_ref);
 
                         let date_key = "date".to_string().to_yaml();
-                        println!("-> date_key: {:?}", date_key);
+                        // println!("-> date_key: {:?}", date_key);
 
                         if let Yaml::String(ref date_ref) = entry_ref[&date_key] {
-                            println!("-> date_ref: {:?}", date_ref);
+                            // println!("-> date_ref: {:?}", date_ref);
 
                             let index_key = "days".to_string().to_yaml();
-                            println!("-> index_key: {:?}", index_key);
+                            // println!("-> index_key: {:?}", index_key);
 
                             if let Yaml::Hash(ref mut index_ref) = content_ref[&index_key] {
                                 // println!("-> index_ref: {:?}", index_ref);
                                 // println!("-> key: {:?}", index_ref.contains_key(&entry_ref[&date_key]));
 
                                 if !index_ref.contains_key(&entry_ref[&date_key]) {
-                                    println!("-> create new day");
+                                    // println!("-> create new day");
                                     index_ref.insert(entry_ref[&date_key].clone(), Yaml::Array(Vec::new()));
                                 }
 
                                 // println!("-> index_ref: {:?}", index_ref);
-                                println!("-> date_key: {:?}", date_key);
+                                // println!("-> date_key: {:?}", date_key);
 
                                 if let Yaml::Array(ref mut day_ref) = index_ref[&entry_ref[&date_key]] {
                                     // println!("-> day_ref: {:?}", day_ref);
@@ -180,8 +181,11 @@ impl YamlFile {
         self.changed = true;
     }
 
-    pub fn exists(&self, i: String) -> bool {
-        println!("-> YamlFile::exists({:?})", i);
+    // pub fn exists(&self, id: String) -> bool {
+    pub fn exists<T: ToYaml>(&self, id: T) -> bool {
+        println!("-> YamlFile::exists()");
+
+        // let str1 = id.to_string();
 
         if let Yaml::Hash(ref content_ref) = self.content {
             // println!("-> content_ref: {:?}", content_ref);
@@ -197,11 +201,53 @@ impl YamlFile {
 
                     if let Yaml::Array(ref index_ref) = content_ref[&index_key] {
                         // println!("-> index_ref: {:?}", index_ref);
-                        let v = Yaml::String(i.to_string());
+                        // let v = Yaml::String(id.to_string());
+                        // let v = id.to_string().to_yaml();
+                        let v = id.to_yaml();
 
                         // println!("-> v: {:?}", v);
                         // println!("-> contains: {:?}", index_ref.contains(&v));
                         return index_ref.contains(&v);
+                    }
+                },
+                YamlFileKind::EpicsFile => {
+                    // println!("-> EpicsFile");
+
+                    let index_key = "epics".to_string().to_yaml();
+
+                    if let Yaml::Array(ref index_ref) = content_ref[&index_key] {
+                        // println!("-> index_ref: {:?}", index_ref);
+
+                        let idy = id.to_yaml();
+
+                        // Filter
+                        let mut filter = index_ref.iter().filter(|x| -> bool {
+                            // println!("-> x: {:?}", x);
+
+                            if let Yaml::Hash(ref epic_ref) = x {
+                                // println!("-> epic_ref: {:?}", epic_ref);
+
+                                let handle_key = "handle".to_string().to_yaml();
+                                // println!("-> id: '{:?}'", id);
+                                // println!("-> handle A: '{:?}'", epic_ref[&handle_key]);
+                                // println!("-> eq: '{:?}'", epic_ref[&handle_key] == id.to_yaml());
+                                // println!("-> eq: '{:?}'", epic_ref[&handle_key] == idy);
+
+                                // if let Yaml::String(handle_ref) = &epic_ref[&handle_key] {
+                                //     println!("-> handle B: {:?}", handle_ref);
+                                // //     return handle_ref == &id;
+                                //     // return handle_ref == &id.to_yaml();
+                                // }
+                                return epic_ref[&handle_key] == idy;
+                            }
+
+                            false
+                        });
+
+                        // Find
+                        if let Some(_) = filter.next() {
+                            return true;
+                        }
                     }
                 },
                 _ => unreachable!("Not implemented"),
@@ -234,10 +280,7 @@ impl YamlFile {
 
     /// Write file if content has changed.
     fn close(&mut self) {
-        println!("-> YamlFile::close()");
-
-        // Debug
-        // self.changed = true;
+        // println!("-> YamlFile::close()");
 
         if !self.changed {
             // println!("-> nothing changed");
@@ -267,6 +310,7 @@ mod tests {
     use std::str::FromStr;
     use super::{YamlFile, ToYaml};
     use crate::entry::Entry;
+    use crate::epic::Epic;
     use crate::date::Date;
 
     #[test]
@@ -277,19 +321,25 @@ mod tests {
         f1.add("hi".to_string());
         f1.close();
 
+        assert!(f1.exists("hi".to_string()));
+
         let p1 = PathBuf::from(ps1);
         assert!(p1.is_file());
     }
 
     #[test]
     fn test_yaml_epics() {
-        // let e1 = Epic::new();
+        let mut e1 = Epic::new();
+        e1.set_handle("h1".to_string());
 
         let ps1 = "../tmp/tests/epics.yml";
         let p1 = PathBuf::from(ps1);
         let mut f1 = YamlFile::open_epics(p1);
-        // f1.add("hi".to_string());
+        f1.add(e1);
         f1.close();
+
+        assert!(f1.exists("h1".to_string()));
+        assert!(!f1.exists("h2".to_string()));
 
         let p1 = PathBuf::from(ps1);
         assert!(p1.is_file());
