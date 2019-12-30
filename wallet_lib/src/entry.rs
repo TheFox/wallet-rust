@@ -10,6 +10,7 @@ use yaml_rust::yaml::Hash;
 #[derive(Debug)]
 pub struct Entry {
     id: String,
+    title: String,
     date: Date,
     revenue: Number,
     expense: Number,
@@ -25,6 +26,7 @@ impl Entry {
 
         Self {
             id: Uuid::new_v4().to_string(),
+            title: String::new(),
             date: Date::new(),
             revenue: 0.0,
             expense: 0.0,
@@ -46,6 +48,15 @@ impl Entry {
     pub fn set_id(&mut self, id: String) {
         println!("-> Entry::set_id({})", id);
         self.id = id;
+    }
+
+    pub fn title(&self) -> String {
+        self.title.clone()
+    }
+
+    pub fn set_title(&mut self, title: String) {
+        println!("-> Entry::set_title({})", title);
+        self.title = title;
     }
 
     pub fn date(&self) -> Date {
@@ -122,6 +133,7 @@ impl ToYaml for Entry {
 
         let mut entry = Hash::new();
         entry.insert("id".to_string().to_yaml(), self.id().to_yaml());
+        entry.insert("title".to_string().to_yaml(), self.title().to_yaml());
         entry.insert("date".to_string().to_yaml(), self.date().to_string().to_yaml());
         entry.insert("revenue".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.revenue)));
         entry.insert("expense".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.expense)));

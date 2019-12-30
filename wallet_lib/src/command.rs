@@ -112,6 +112,9 @@ impl Command {
         }
         entry.set_date(self.options.date);
 
+        if let Some(title) = &self.options.title {
+            entry.set_title(title.to_string());
+        }
         if let Some(revenue) = self.options.revenue {
             entry.set_revenue(revenue);
         }

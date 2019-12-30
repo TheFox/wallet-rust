@@ -39,6 +39,11 @@ fn main() {
             .long("interactive")
             .help("Run the Add command in interactive mode.")
             .takes_value(false))
+        .arg(Arg::with_name("title")
+            .short("t")
+            .long("title")
+            .help("Title")
+            .takes_value(true))
         .arg(Arg::with_name("revenue")
             .short("r")
             .long("revenue")
@@ -166,6 +171,9 @@ fn main() {
             if add_matches.is_present("interactive") {
                 println!("-> interactive is present");
             }
+
+            // Title
+            set_title(add_matches, &mut cmd_options);
 
             // Date
             set_date(add_matches, &mut cmd_options);
