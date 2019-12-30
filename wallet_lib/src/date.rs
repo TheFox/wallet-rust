@@ -6,6 +6,7 @@ use std::num::ParseIntError;
 // use std::num::IntErrorKind;
 use regex::Regex;
 use std::vec;
+use std::convert::From;
 
 #[derive(Debug)]
 pub enum DateError {
@@ -143,6 +144,25 @@ impl Date {
 
         items.join(f)
     }
+
+    /// Year-Month-Day
+    pub fn ymd(&self) -> String {
+        // println!("-> Date::ymd()");
+
+        let mut items: Vec<String> = vec![];
+
+        if self.has_year() {
+            items.push(self.date.format("%Y").to_string());
+        }
+        if self.has_month() {
+            items.push(self.date.format("%m").to_string());
+        }
+        if self.has_day() {
+            items.push(self.date.format("%d").to_string());
+        }
+
+        items.join("-")
+    }
 }
 
 impl FromStr for Date {
@@ -224,6 +244,10 @@ impl FromStr for Date {
             y = 1970;
         } else {
             usage |= 1 << (Parts::Year as u8 - 1);
+
+            if y < 100 {
+                y += 2000;
+            }
         }
 
         // Month Usage
@@ -241,7 +265,7 @@ impl FromStr for Date {
         }
 
         // println!("-> usage: {}", usage);
-        // println!("-> ymd: {}-{}-{}", y, m, d);
+        println!("-> ymd: {}-{}-{}", y, m, d);
 
         if usage == 0 {
             Err(DateError::InvalidDate)
@@ -256,6 +280,18 @@ impl FromStr for Date {
 
             Ok(d)
         }
+    }
+}
+
+impl From<String> for Date {
+    fn from(s: String) -> Date {
+        Date::from_str(&s).unwrap()
+    }
+}
+
+impl From<&str> for Date {
+    fn from(s: &str) -> Date {
+        Date::from_str(s).unwrap()
     }
 }
 
@@ -295,6 +331,7 @@ mod tests {
     // use super::{Date, FromStr};
     use super::{Date, DateError};
     use std::str::FromStr;
+    use std::convert::From;
 
     #[test]
     fn test_new_date() {
@@ -302,7 +339,7 @@ mod tests {
     }
 
     #[test]
-    fn test_from_ok1() {
+    fn test_date_fromstr_ok1() {
         let d1 = Date::from_str("1987-02-21").unwrap();
         assert_eq!(1987, d1.year());
         assert_eq!(2, d1.month());
@@ -316,7 +353,7 @@ mod tests {
     }
 
     #[test]
-    fn test_from_ok2() {
+    fn test_date_fromstr_ok2() {
         let d1 = Date::from_str("1987-02").unwrap();
         assert_eq!(1987, d1.year());
         assert_eq!(2, d1.month());
@@ -329,7 +366,20 @@ mod tests {
     }
 
     #[test]
-    fn test_from_ok3() {
+    fn test_date_fromstr_ok3() {
+        let d1 = Date::from_str("19-2-23").unwrap();
+        assert_eq!(2019, d1.year());
+        assert_eq!(2, d1.month());
+        assert_eq!(23, d1.day());
+        assert!(d1.has_year());
+        assert!(d1.has_month());
+        assert!(d1.has_day());
+        assert_eq!("2019-02-23", d1.to_string());
+        assert_eq!("2019-02-23", d1.ymd());
+    }
+
+    #[test]
+    fn test_date_fromstr_ok4() {
         let d1 = Date::from_str("1987").unwrap();
         assert_eq!(1987, d1.year());
         assert_eq!(1, d1.month());
@@ -342,7 +392,7 @@ mod tests {
     }
 
     #[test]
-    fn test_from_ok4() {
+    fn test_date_fromstr_ok5() {
         let d1 = Date::from_str("21.2.1987").unwrap();
         assert_eq!(1987, d1.year());
         assert_eq!(2, d1.month());
@@ -355,7 +405,7 @@ mod tests {
     }
 
     #[test]
-    fn test_from_ok5() {
+    fn test_date_fromstr_ok6() {
         let d1 = Date::from_str("21.2").unwrap();
         assert_eq!(1970, d1.year());
         assert_eq!(2, d1.month());
@@ -368,7 +418,7 @@ mod tests {
     }
 
     #[test]
-    fn test_from_ok6() {
+    fn test_date_fromstr_ok7() {
         let d1 = Date::from_str("2/21/1987").unwrap();
         assert_eq!(1987, d1.year());
         assert_eq!(2, d1.month());
@@ -381,7 +431,7 @@ mod tests {
     }
 
     #[test]
-    fn test_from_ok7() {
+    fn test_date_fromstr_ok8() {
         let d1 = Date::from_str("2/21").unwrap();
         assert_eq!(1970, d1.year());
         assert_eq!(2, d1.month());
@@ -394,7 +444,7 @@ mod tests {
     }
 
     #[test]
-    fn test_from_ok8() {
+    fn test_date_fromstr_ok9() {
         let d1 = Date::from_str("1987/2/21").unwrap();
         assert_eq!(1987, d1.year());
         assert_eq!(2, d1.month());
@@ -406,9 +456,8 @@ mod tests {
         assert_eq!("1987-02", d1.ym());
     }
 
-    // TODO
     #[test]
-    fn test_from_bad1() {
+    fn test_date_fromstr_bad1() {
         let d1 = Date::from_str("x");
         println!("-> from_bad1: {:?}", d1);
 
@@ -419,19 +468,37 @@ mod tests {
     }
 
     #[test]
-    fn test_display() {
+    fn test_date_fromtrait_ok1() {
+        let d1 = Date::from("1987-02-21");
+        println!("-> test_date_fromtrait_ok1: {:?}", d1);
+
+        assert_eq!("1987-02-21", d1.to_string());
+        // assert!(false);
+    }
+
+    #[test]
+    fn test_date_fromtrait_ok2() {
+        let d1 = Date::from("1987-02-21".to_string());
+        println!("-> test_date_fromtrait_ok1: {:?}", d1);
+
+        assert_eq!("1987-02-21", d1.to_string());
+        // assert!(false);
+    }
+
+    #[test]
+    fn test_date_display() {
         let d1 = Date::new();
         assert_eq!("", d1.to_string());
     }
 
     #[test]
-    fn test_has() {
+    fn test_date_has() {
         let d1 = Date::new();
         assert!(!d1.has(super::Parts::Year));
     }
 
     #[test]
-    fn test_set() {
+    fn test_date_set() {
         let mut d1 = Date::new();
 
         d1.set_year(2019);
