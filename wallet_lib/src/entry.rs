@@ -1,8 +1,10 @@
 
 use std::fmt::{Display, Formatter, Result as FmtRes};
+use std::convert::From;
 use uuid::Uuid;
 use crate::date::Date;
 use crate::types::Number;
+use crate::command::CommandOptions;
 use crate::yaml::ToYaml;
 use yaml_rust::Yaml;
 use yaml_rust::yaml::Hash;
@@ -124,6 +126,40 @@ impl Display for Entry {
     /// Needed?
     fn fmt(&self, f: &mut Formatter) -> FmtRes {
         write!(f, "{}", self.id)
+    }
+}
+
+impl From<CommandOptions> for Entry {
+    fn from(options: CommandOptions) -> Entry {
+        println!("-> Entry::from({:?})", options);
+
+        let mut entry = Entry::new();
+
+        if let Some(ref id) = options.id {
+            entry.set_id(id.clone());
+        }
+        entry.set_date(options.date);
+
+        if let Some(title) = options.title {
+            entry.set_title(title.to_string());
+        }
+        if let Some(revenue) = options.revenue {
+            entry.set_revenue(revenue);
+        }
+        if let Some(expense) = options.expense {
+            entry.set_expense(expense);
+        }
+        if let Some(category) = options.category {
+            entry.set_category(category.to_string());
+        }
+        if let Some(comment) = options.comment {
+            entry.set_comment(comment.to_string());
+        }
+        if let Some(epic) = options.epic {
+            entry.set_epic(epic.to_string());
+        }
+
+        entry
     }
 }
 

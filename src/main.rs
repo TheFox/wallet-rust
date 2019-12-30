@@ -287,7 +287,7 @@ fn set_title(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
 }
 
 fn set_date(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    // println!("-> set_date()");
+    println!("-> set_date()");
 
     if !matches.is_present("date") {
         return;
@@ -295,7 +295,7 @@ fn set_date(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
 
     // &str
     let vs = matches.value_of("date").unwrap();
-    // println!("-> vs '{:?}'", vs);
+    println!("-> vs '{:?}'", vs);
 
     cmd_options.date = Date::from_str(vs).expect("Unable to parse given Date");
     // println!("-> date '{:?}'", cmd_options.date);
@@ -305,17 +305,17 @@ fn set_date(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
 
     // Correct date.
     if !cmd_options.date.has_year() {
-        // println!("-> year missing");
+        println!("-> year missing");
         cmd_options.date.set_year(now.year());
     }
 
     if !cmd_options.date.has_month() {
-        // println!("-> month missing");
+        println!("-> month missing");
         cmd_options.date.set_month(now.month());
     }
 
     if !cmd_options.date.has_day() {
-        // println!("-> day missing");
+        println!("-> day missing");
         cmd_options.date.set_day(now.day());
     }
 }

@@ -1,4 +1,5 @@
 
+use std::convert::From;
 use crate::wallet::Wallet;
 use crate::entry::Entry;
 use crate::epic::Epic;
@@ -8,7 +9,7 @@ use crate::ext::BoolExt;
 
 /// Command options hold all available options for ALL commands.
 /// Not all commands will us all options.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CommandOptions {
     pub wallet_path: String,
     pub id: Option<String>,
@@ -101,39 +102,9 @@ impl Command {
     fn exec_add(&self) {
         println!("-> Command::exec_add()");
 
-        // println!("-> ID: '{:?}'", self.options.id);
-        // println!("-> revenue: '{:?}'", self.options.revenue);
-        // println!("-> expense: '{:?}'", self.options.expense);
-
-        let mut entry = Entry::new(); // TODO: use from trait here
-        if let Some(ref id) = self.options.id {
-            // println!("-> take ID: {:?}", id);
-            entry.set_id(id.clone());
-        }
-        entry.set_date(self.options.date);
-
-        if let Some(title) = &self.options.title {
-            entry.set_title(title.to_string());
-        }
-        if let Some(revenue) = self.options.revenue {
-            entry.set_revenue(revenue);
-        }
-        if let Some(expense) = self.options.expense {
-            entry.set_expense(expense);
-        }
-        if let Some(category) = &self.options.category {
-            entry.set_category(category.to_string());
-        }
-        if let Some(comment) = &self.options.comment {
-            entry.set_comment(comment.to_string());
-        }
-        if let Some(epic) = &self.options.epic {
-            entry.set_epic(epic.to_string());
-        }
-
+        let entry = Entry::from(self.options.clone());
         let wallet = Wallet::new(self.options.get_wallet_path());
         let added = wallet.add(entry, self.options.force);
-        // println!("Added: {}", added);
         println!("Added: {}", added.to_string());
     }
 
