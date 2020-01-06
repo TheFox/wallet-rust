@@ -103,7 +103,32 @@ fn main() {
 
     // List Sub Command
     let list_subcmd = App::new("list")
-        .about("List entries.");
+        .about("List entries.")
+        .arg(Arg::with_name("revenue")
+            .short("r")
+            .long("revenue")
+            .help("Filter only revenues.")
+            .takes_value(false))
+        .arg(Arg::with_name("expense")
+            .short("e")
+            .long("expense")
+            .help("Filter only expenses.")
+            .takes_value(false))
+        .arg(Arg::with_name("category")
+            .short("c")
+            .long("category")
+            .help("Category")
+            .takes_value(true))
+        .arg(Arg::with_name("date")
+            .short("d")
+            .long("date")
+            .help("Date")
+            .takes_value(true))
+        .arg(Arg::with_name("epic")
+            .short("x")
+            .long("epic")
+            .help("Epic")
+            .takes_value(true));
 
     // HTML Sub Command
     let html_subcmd = App::new("html")
@@ -247,6 +272,21 @@ fn main() {
 
             // Cmd
             cmd_kind = CommandKind::ListCommand;
+
+            // Date
+            set_date(_list_matches, &mut cmd_options);
+
+            // Category
+            set_category(_list_matches, &mut cmd_options);
+
+            // Epic
+            set_epic(_list_matches, &mut cmd_options);
+
+            // Revenue
+            if _list_matches.is_present("revenue") {}
+
+            // Expense
+            if _list_matches.is_present("expense") {}
         },
         ("html", Some(html_matches)) => {
             println!("-> cmd: html");
