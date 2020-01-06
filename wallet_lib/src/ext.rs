@@ -49,6 +49,12 @@ impl BoolExt for bool {
     }
 }
 
+impl ToYaml for i64 {
+    fn to_yaml(self) -> Yaml {
+        Yaml::Integer(self)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{StringExt, BoolExt};

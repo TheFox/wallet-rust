@@ -6,6 +6,9 @@ use std::string::ToString;
 use std::fmt::{Display, Formatter, Result as FmtRes};
 use yaml_rust::{Yaml, YamlLoader, YamlEmitter};
 use yaml_rust::yaml::Hash;
+// use chrono::{NaiveDate, Datelike};
+// use chrono::{DateTime, TimeZone, NaiveDateTime, Utc};
+use chrono::{DateTime, Utc};
 use crate::epic::Epic;
 
 #[derive(Debug)]
@@ -66,13 +69,13 @@ impl YamlFile {
                 match &self.kind {
                     YamlFileKind::IndexFile => {
                         println!("-> IndexFile");
-                        let index_key = Yaml::String("index".to_string());
+                        let index_key = "index".to_string().to_yaml();
                         let index_val = Yaml::Array(Vec::new());
                         content_ref.insert(index_key, index_val);
                     },
                     YamlFileKind::EpicsFile => {
                         println!("-> EpicsFile");
-                        let index_key = Yaml::String("epics".to_string());
+                        let index_key = "epics".to_string().to_yaml();
                         let index_val = Yaml::Array(Vec::new());
                         content_ref.insert(index_key, index_val);
                     },
@@ -80,12 +83,19 @@ impl YamlFile {
                         println!("-> MonthFile");
 
                         // Meta
-                        let index_key = Yaml::String("meta".to_string());
-                        let index_val = Yaml::Hash(Hash::new());
+                        let mut meta = Hash::new();
+                        meta.insert("version".to_string().to_yaml(), 3i64.to_yaml());
+
+                        let utc: DateTime<Utc> = Utc::now();
+                        meta.insert("created_at".to_string().to_yaml(), utc.format("%FT%T%:z").to_string().to_yaml());
+                        meta.insert("updated_at".to_string().to_yaml(), utc.format("%FT%T%:z").to_string().to_yaml());
+
+                        let index_key = "meta".to_string().to_yaml();
+                        let index_val = Yaml::Hash(meta);
                         content_ref.insert(index_key, index_val);
 
                         // Days
-                        let index_key = Yaml::String("days".to_string());
+                        let index_key = "days".to_string().to_yaml();
                         let index_val = Yaml::Hash(Hash::new());
                         content_ref.insert(index_key, index_val);
                     }
@@ -108,10 +118,6 @@ impl YamlFile {
 
     pub fn add<T: ToYaml>(&mut self, obj: T) {
         println!("-> YamlFile::add() -> {:?}", self.kind);
-        // println!("-> YamlFile::add() -> {:?} '{:?}'", self.kind, i.to_string());
-
-        // let v = i.clone().to_yaml();
-        // println!("-> v: {:?}", v);
 
         if let Yaml::Hash(ref mut content_ref) = self.content {
             // println!("-> content_ref: {:?}", content_ref);
@@ -194,7 +200,7 @@ impl YamlFile {
                 YamlFileKind::IndexFile => {
                     println!("-> IndexFile");
 
-                    let index_key = Yaml::String("index".to_string());
+                    let index_key = "index".to_string().to_yaml();
 
                     // println!("-> index_key: '{:?}'", index_key);
                     // println!("-> val: {:?}", content_ref[&index_key]);
@@ -280,14 +286,51 @@ impl YamlFile {
 
     /// Write file if content has changed.
     fn close(&mut self) {
-        // println!("-> YamlFile::close()");
+        println!("-> YamlFile::close()");
 
         if !self.changed {
-            // println!("-> nothing changed");
             return;
         }
 
-        // println!("-> content changed");
+        if let Yaml::Hash(ref mut content_ref) = self.content {
+            // println!("content_ref: {:?}", content_ref);
+
+            match &self.kind {
+                YamlFileKind::MonthFile => {
+                    println!("-> MonthFile");
+
+                    let index_key = "meta".to_string().to_yaml();
+
+                    if let Yaml::Hash(ref mut index_ref) = content_ref[&index_key] {
+                        println!("-> index_ref: {:?}", index_ref);
+
+                        // Version
+                        let version_key = "version".to_string().to_yaml();
+                        println!("-> version_key: {:?}", index_ref[&version_key]);
+
+                        if let Yaml::Integer(version) = index_ref[&version_key] {
+                            println!("-> version: {:?}", version);
+
+                            if version < 3 {
+                                println!("-> new version");
+
+                                index_ref[&version_key] = 3i64.to_yaml();
+                            }
+                        }
+
+                        // Updated At
+                        let updatedat_key = "updated_at".to_string().to_yaml();
+                        println!("-> updatedat_key: {:?}", index_ref[&updatedat_key]);
+
+                        let utc: DateTime<Utc> = Utc::now();
+                        // index_ref.insert("updated_at".to_string().to_yaml(), "x".to_string().to_yaml());
+                        index_ref.insert("updated_at".to_string().to_yaml(), utc.format("%FT%T%:z").to_string().to_yaml());
+                    }
+                },
+                _ => (),
+            }
+        }
+
         self.write();
     }
 }
@@ -363,6 +406,7 @@ mod tests {
 
         let p1 = PathBuf::from(ps1);
         assert!(p1.is_file());
+
         // assert!(false);
     }
 }
