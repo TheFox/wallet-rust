@@ -1,6 +1,6 @@
 
 use std::convert::From;
-use crate::wallet::Wallet;
+use crate::wallet::{Wallet, FilterOptions};
 use crate::entry::Entry;
 use crate::epic::Epic;
 use crate::types::Number;
@@ -136,11 +136,18 @@ impl Command {
     }
 
     /// List
+    ///
+    /// https://doc.rust-lang.org/std/fmt/#named-parameters
+    /// https://stackoverflow.com/questions/32572486/how-can-i-use-a-dynamic-format-string-with-the-format-macro
     fn exec_list(&self) {
         println!("-> Command::exec_list()");
 
+        let mut options = FilterOptions::new();
+
         let wallet = Wallet::new(self.options.get_wallet_path());
-        wallet.list(); // TODO
+        for entry in wallet.filter(options) {
+            println!("-> entry list: {}", entry);
+        }
     }
 
     /// HTML

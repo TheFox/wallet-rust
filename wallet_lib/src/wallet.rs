@@ -8,6 +8,7 @@ use std::vec::Vec;
 use crate::entry::Entry;
 use crate::epic::Epic;
 use crate::yaml::YamlFile;
+use crate::date::Date;
 
 #[derive(Debug)]
 pub struct Wallet {
@@ -34,6 +35,18 @@ impl Display for AddResult {
             AddResult::Added(_) => "Yes",
             _ => "No",
         })
+    }
+}
+
+pub struct FilterOptions {
+    date: Option<Date>
+}
+
+impl FilterOptions {
+    pub fn new() -> Self {
+        FilterOptions {
+            date: None,
+        }
     }
 }
 
@@ -149,8 +162,15 @@ impl Wallet {
     }
 
     // TODO
-    pub fn list(&self) {
-        println!("-> Wallet::list()");
+    pub fn filter(&self, options: FilterOptions) -> Vec<Entry> {
+        println!("-> Wallet::filter()");
+
+        let mut list: Vec<Entry> = vec![];
+
+        let mut e1 = Entry::new();
+        list.push(e1);
+
+        list
     }
 
     // TODO
