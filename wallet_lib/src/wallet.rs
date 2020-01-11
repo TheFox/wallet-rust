@@ -47,6 +47,7 @@ pub struct FilterOptions {
     pub date: Option<Date>,
     pub filter_revenue: Option<bool>,
     pub filter_expense: Option<bool>,
+    pub category: Option<String>,
     pub epic: Option<String>,
 }
 
@@ -56,6 +57,7 @@ impl FilterOptions {
             date: None,
             filter_revenue: None,
             filter_expense: None,
+            category: None,
             epic: None,
         }
     }
@@ -69,6 +71,7 @@ impl From<CommandOptions> for FilterOptions {
         foptions.date = options.date;
         foptions.filter_revenue = options.filter_revenue;
         foptions.filter_expense = options.filter_expense;
+        foptions.category = options.category;
         foptions.epic = options.epic;
 
         foptions
@@ -184,6 +187,7 @@ impl Wallet {
 
         let data_dir = self.data_dir.join("month_");
 
+        // Find files.
         if let Some(path) = data_dir.to_str() {
             let mut g = String::from(path);
 
@@ -264,6 +268,15 @@ impl Wallet {
                 println!("-> filter_expense: {:?}", filter_expense);
 
                 if filter_expense && !entry.has_expense() {
+                    return false;
+                }
+            }
+
+            // Category
+            if let Some(category) = &options.category {
+                println!("-> category: {:?}", category);
+
+                if &entry.category() != category {
                     return false;
                 }
             }
