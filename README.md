@@ -9,6 +9,7 @@ A spreadsheet likewise [Rust](https://www.rust-lang.org/) program to track your 
 ./bin/dev.sh -w tmp/wallet add -r 20 -e 10 -d 1
 ./bin/dev.sh -w tmp/wallet add -r 20 -e 10 -d 1 -f --id 1
 ./bin/dev.sh -w tmp/wallet add -r 20 -e 10 -d 1 -c x -f --id 1
+./bin/dev.sh -w tmp/wallet add -r 20 -e 10 -d 1 -c x -t title1
 ./bin/dev.sh -w tmp/wallet list
 ```
 

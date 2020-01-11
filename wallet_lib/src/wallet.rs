@@ -1,14 +1,19 @@
 
+use std::convert::From;
 use std::path::PathBuf;
 use std::fs::create_dir_all;
+// use std::fs::{create_dir_all, read_dir};
+use glob::glob;
 use std::io::Write;
 use std::fmt;
 use std::fmt::{Display, Formatter, Result as FmtRes};
 use std::vec::Vec;
+use std::cmp::Ordering;
 use crate::entry::Entry;
 use crate::epic::Epic;
 use crate::yaml::YamlFile;
 use crate::date::Date;
+use crate::command::CommandOptions;
 
 #[derive(Debug)]
 pub struct Wallet {
@@ -38,15 +43,36 @@ impl Display for AddResult {
     }
 }
 
+#[derive(Debug)]
 pub struct FilterOptions {
-    date: Option<Date>
+    pub date: Option<Date>,
+    pub filter_revenue: Option<bool>,
+    pub filter_expense: Option<bool>,
+    pub epic: Option<String>,
 }
 
 impl FilterOptions {
     pub fn new() -> Self {
         FilterOptions {
             date: None,
+            filter_revenue: None,
+            filter_expense: None,
+            epic: None,
         }
+    }
+}
+
+impl From<CommandOptions> for FilterOptions {
+    fn from(options: CommandOptions) -> FilterOptions {
+        println!("-> FilterOptions::from()");
+
+        let mut foptions = FilterOptions::new();
+        foptions.date = options.date;
+        foptions.filter_revenue = options.filter_revenue;
+        foptions.filter_expense = options.filter_expense;
+        foptions.epic = options.epic;
+
+        foptions
     }
 }
 
@@ -164,13 +190,153 @@ impl Wallet {
     // TODO
     pub fn filter(&self, options: FilterOptions) -> Vec<Entry> {
         println!("-> Wallet::filter()");
+        println!("-> options: {:?}", options);
 
-        let mut list: Vec<Entry> = vec![];
+        // Result
+        let mut all_items: Vec<Entry> = vec![];
 
-        let mut e1 = Entry::new();
-        list.push(e1);
+        let data_dir = self.data_dir.join("month_");
 
-        list
+        if let Some(path) = data_dir.to_str() {
+            println!("-> data dir: {}", path);
+
+            let mut g = String::from(path);
+            // println!("-> g A: {}", g);
+
+            // Filter Date
+            if let Some(date) = options.date {
+                // println!("-> date: {}", date);
+                // println!("-> date: {:?}", date);
+                // println!("-> date.year: {}", date.year());
+                // println!("-> date.fmonth: {}", date.fmonth());
+
+                // g.push_str(&date.rym());
+
+                if date.has_year() && date.has_month() {
+                    // println!("-> has ym");
+                    g.push_str(&date.rym());
+                } else if date.has_year() {
+                    // println!("-> has year");
+                    g.push_str(&date.year().to_string());
+                    g.push_str("_*");
+                } else if date.has_month() {
+                    // println!("-> has month");
+                    g.push_str(&date.rym());
+                } else if date.has_day() {
+                    // println!("-> has day");
+                    g.push_str(&date.rym());
+                } else {
+                    // println!("-> no date");
+                    g.push_str("*");
+                }
+
+                // println!("-> g B: {}", g);
+            } else {
+                // println!("-> no date");
+                g.push_str("*");
+            }
+
+            g.push_str(".yml");
+
+            // Get files.
+            let entries = glob(&g).expect("Failed to read glob pattern");
+            for entry in entries {
+                match entry {
+                    Ok(path) => {
+                        println!("-> path: {:?}", path.display());
+                        println!("-> path: {:?}", path);
+
+                        let month_file = YamlFile::open_month(path);
+                        let mut month_items: Vec<Entry> = month_file.get();
+                        println!("-> month_items: {:?}", month_items);
+
+                        all_items.append(&mut month_items);
+                    },
+                    // Err(e) => println!("ERROR: {:?}", e),
+                    _ => (),
+                }
+            }
+        }
+
+        // Filter
+        let filter = all_items.iter().filter(|entry| -> bool {
+            println!("-> filter: {:?}", entry);
+            let mut res: Vec<Option<bool>> = vec![];
+
+            // Date
+            if let Some(odate) = options.date {
+                let ires = None;
+
+                println!("-> odate: {:?} -> {:?}", odate, odate.to_string());
+
+                let edate = entry.date();
+                println!("-> edate: {:?} -> {:?}", edate, edate.to_string());
+
+                if odate.has_day() && odate == edate {
+                    ires = Some(true);
+                    println!("-> filter year-month-day");
+                } else if odate.has_month() && odate.year() == edate.year() && odate.month() == edate.month() {
+                    ires = Some(true);
+                    println!("-> filter year-month");
+                } else if odate.has_year() && odate.year() == edate.year() {
+                    println!("-> filter year");
+                    ires = Some(true);
+                }
+
+                res.push(ires);
+            }
+
+            // Revenue
+            if let Some(filter_revenue) = options.filter_revenue {
+                let ires = None;
+                println!("-> filter_revenue: {:?}", filter_revenue);
+
+                if filter_revenue && entry.has_revenue() {
+                    // res = true;
+                }
+            }
+
+            // Expense
+            if let Some(filter_expense) = options.filter_expense {
+                println!("-> filter_expense: {:?}", filter_expense);
+
+                if filter_expense && entry.has_expense() {
+                    // res = true;
+                }
+            }
+
+            // Epic
+            if let Some(epic) = &options.epic {
+                println!("-> epic: {:?}", epic);
+
+                if &entry.epic() == epic {
+                    // res = true;
+                }
+            }
+
+            // res
+            false
+        });
+
+
+        let mut filtered_items: Vec<&Entry> = filter.collect();
+        println!("-> filtered_items: {:?}", filtered_items.len());
+        // let filtered_items: Vec<&Entry> = filter.collect();
+
+        filtered_items.sort_by(|a, b| {
+            // println!("-> sort: {:?} {:?}", a, b);
+            // println!("-> sort: {:?} {:?}", a.date(), b.date());
+
+            // Ordering::Equal
+            a.date().to_string().cmp(&b.date().to_string())
+        });
+
+        let items = filtered_items.into_iter().map(|x| {
+            // println!("-> map: {:?}", x);
+            x.clone()
+        }).collect();
+
+        items
     }
 
     // TODO

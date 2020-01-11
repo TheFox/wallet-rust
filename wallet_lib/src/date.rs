@@ -67,7 +67,7 @@ impl Date {
         self.has(Parts::Day)
     }
 
-    fn year(&self) -> i32 {
+    pub fn year(&self) -> i32 {
         // println!("-> Date::year()");
         self.date.year()
     }
@@ -83,9 +83,18 @@ impl Date {
         self.used |= 1 << (Parts::Year as u8 - 1);
     }
 
-    fn month(&self) -> u32 {
+    pub fn raw_set_year(&mut self, y: i32) {
+        self.date = self.date.with_year(y).expect("Invalid year");
+    }
+
+    pub fn month(&self) -> u32 {
         // println!("-> Date::month()");
         self.date.month()
+    }
+
+    /// Formatted Month
+    pub fn fmonth(&self) -> String {
+        self.date.format("%m").to_string()
     }
 
     /// Set new Month.
@@ -98,7 +107,11 @@ impl Date {
         self.used |= 1 << (Parts::Month as u8 - 1);
     }
 
-    fn day(&self) -> u32 {
+    pub fn raw_set_month(&mut self, m: u32) {
+        self.date = self.date.with_month(m).expect("Invalid month");
+    }
+
+    pub fn day(&self) -> u32 {
         // println!("-> Date::day()");
         self.date.day()
     }
@@ -111,6 +124,10 @@ impl Date {
         // println!("-> new date: {:?}", self.date);
 
         self.used |= 1;
+    }
+
+    pub fn raw_set_day(&mut self, d: u32) {
+        self.date = self.date.with_day(d).expect("Invalid day");
     }
 
     /// Year-Month
@@ -143,6 +160,18 @@ impl Date {
         }
 
         items.join(f)
+    }
+
+    // Raw Year_Month
+    pub fn rym(&self) -> String {
+        // println!("-> Date::ym()");
+
+        let mut items: Vec<String> = vec![];
+
+        items.push(self.date.format("%Y").to_string());
+        items.push(self.date.format("%m").to_string());
+
+        items.join("_")
     }
 
     /// Year-Month-Day
@@ -184,7 +213,7 @@ impl FromStr for Date {
     /// - YYYY
     /// - DD
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        println!("-> Date::from_str({})", s);
+        // println!("-> Date::from_str({})", s);
 
         let mut y: i32 = 0;
         let mut m: u32 = 0;
@@ -265,7 +294,7 @@ impl FromStr for Date {
         }
 
         // println!("-> usage: {}", usage);
-        println!("-> ymd: {}-{}-{}", y, m, d);
+        // println!("-> ymd: {}-{}-{}", y, m, d);
 
         if usage == 0 {
             Err(DateError::InvalidDate)
@@ -322,6 +351,12 @@ impl Debug for Date {
             if self.has_month() { "Y" } else { "N" },
             if self.has_day()   { "Y" } else { "N" }
         )
+    }
+}
+
+impl PartialEq for Date {
+    fn eq(&self, other: &Self) -> bool {
+        self.used == other.used && self.date == other.date
     }
 }
 
@@ -523,5 +558,71 @@ mod tests {
         // println!("-> test_year: {:?}", d1);
 
         // assert!(false);
+    }
+
+    #[test]
+    fn test_date_eq_ymd() {
+        let d1 = Date::from("1987-02-21".to_string());
+        println!("-> test_date_eq1 d1: {:?}", d1);
+
+        let d2 = Date::from("1987-02-21".to_string());
+        println!("-> test_date_eq1 d2: {:?}", d2);
+
+        assert!(d1 == d2);
+    }
+
+    #[test]
+    fn test_date_eq_ym() {
+        let d1 = Date::from("1987-02".to_string());
+        println!("-> eq d1: {:?}", d1);
+
+        let d2 = Date::from("1987-02".to_string());
+        println!("-> eq d2: {:?}", d2);
+
+        assert!(d1 == d2);
+    }
+
+    #[test]
+    fn test_date_eq_y() {
+        let d1 = Date::from("1987".to_string());
+        println!("-> eq d1: {:?}", d1);
+
+        let d2 = Date::from("1987".to_string());
+        println!("-> eq d2: {:?}", d2);
+
+        assert!(d1 == d2);
+    }
+
+    #[test]
+    fn test_date_neq_ymd() {
+        let d1 = Date::from("1987-02-21".to_string());
+        println!("-> eq d1: {:?}", d1);
+
+        let d2 = Date::from("1987-02-22".to_string());
+        println!("-> eq d2: {:?}", d2);
+
+        assert!(d1 != d2);
+    }
+
+    #[test]
+    fn test_date_neq_ym() {
+        let d1 = Date::from("1987-02".to_string());
+        println!("-> eq d1: {:?}", d1);
+
+        let d2 = Date::from("1987-03".to_string());
+        println!("-> eq d2: {:?}", d2);
+
+        assert!(d1 != d2);
+    }
+
+    #[test]
+    fn test_date_neq_y() {
+        let d1 = Date::from("1987".to_string());
+        println!("-> eq d1: {:?}", d1);
+
+        let d2 = Date::from("1988".to_string());
+        println!("-> eq d2: {:?}", d2);
+
+        assert!(d1 != d2);
     }
 }

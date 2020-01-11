@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::string::ToString;
+use std::convert::From;
 use std::fmt::{Display, Formatter, Result as FmtRes};
 use yaml_rust::{Yaml, YamlLoader, YamlEmitter};
 use yaml_rust::yaml::Hash;
@@ -187,7 +188,6 @@ impl YamlFile {
         self.changed = true;
     }
 
-    // pub fn exists(&self, id: String) -> bool {
     pub fn exists<T: ToYaml>(&self, id: T) -> bool {
         println!("-> YamlFile::exists()");
 
@@ -261,6 +261,45 @@ impl YamlFile {
         }
 
         false
+    }
+
+    pub fn get<T: FromYaml>(&self) -> Vec<T> {
+        println!("-> YamlFile::get() -> {:?}", self.kind);
+
+        let mut items: Vec<T> = vec![];
+
+        if let Yaml::Hash(ref content_ref) = self.content {
+            // println!("-> content_ref: {:?}", content_ref);
+
+            match &self.kind {
+                YamlFileKind::MonthFile => {
+                    // println!("-> MonthFile");
+
+                    let index_key = "days".to_string().to_yaml();
+                    // println!("-> index_key: {:?}", index_key);
+
+                    if let Yaml::Hash(ref index_ref) = content_ref[&index_key] {
+                        // println!("-> index_ref: {:?}", index_ref);
+
+                        for (_, day) in index_ref.iter() {
+                            // println!("-> day: {:?}", day);
+
+                            if let Yaml::Array(ref day_ref) = day {
+                                // println!("-> day_ref: {:?}", day_ref);
+
+                                for item in day_ref.iter() {
+                                    // println!("-> item: {:?}", item);
+                                    items.push(T::from_yaml(item));
+                                }
+                            }
+                        }
+                    }
+                },
+                _ => unreachable!("Yaml::get() not implemented for {:?}", self.kind),
+            }
+        }
+
+        items
     }
 
     fn write(&mut self) {
@@ -344,6 +383,16 @@ impl Drop for YamlFile {
 
 pub trait ToYaml {
     fn to_yaml(self) -> Yaml;
+}
+
+pub trait FromYaml {
+    // type TakeType;
+    // type ReturnType;
+
+    // fn from_yaml() -> Self::ReturnType;
+    // fn from_yaml(_: Self::TakeType) -> Self::ReturnType;
+    // fn from_yaml(_: Self::TakeType) -> Self;
+    fn from_yaml(_: &Yaml) -> Self;
 }
 
 #[cfg(test)]

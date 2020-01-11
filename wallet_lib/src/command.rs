@@ -14,10 +14,10 @@ pub struct CommandOptions {
     pub wallet_path: String,
     pub id: Option<String>,
     pub title: Option<String>,
-    pub date: Date,
+    pub date: Option<Date>,
     pub revenue: Option<Number>,
-    pub filter_revenue: Option<bool>,
     pub expense: Option<Number>,
+    pub filter_revenue: Option<bool>,
     pub filter_expense: Option<bool>,
     pub category: Option<String>,
     pub comment: Option<String>,
@@ -35,10 +35,10 @@ impl CommandOptions {
             wallet_path: String::new(),
             id: None,
             title: None,
-            date: Date::new(),
+            date: None,
             revenue: None,
-            filter_revenue: None,
             expense: None,
+            filter_revenue: None,
             filter_expense: None,
             category: None,
             comment: None,
@@ -142,11 +142,23 @@ impl Command {
     fn exec_list(&self) {
         println!("-> Command::exec_list()");
 
-        let mut options = FilterOptions::new();
+        let mut n = 0;
 
+        // TODO
+        let options = FilterOptions::from(self.options.clone());
         let wallet = Wallet::new(self.options.get_wallet_path());
         for entry in wallet.filter(options) {
-            println!("-> entry list: {}", entry);
+            n += 1;
+
+            println!("item: '#{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}'",
+                n,
+                entry.date().ymd(),
+                entry.revenue(),
+                entry.expense(),
+                entry.balance(),
+                entry.category(),
+                entry.epic(),
+                entry.title());
         }
     }
 

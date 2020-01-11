@@ -201,7 +201,7 @@ fn main() {
             set_title(add_matches, &mut cmd_options);
 
             // Date
-            set_date(add_matches, &mut cmd_options);
+            set_date_fill(add_matches, &mut cmd_options);
 
             // Revenue
             if add_matches.is_present("revenue") {
@@ -267,26 +267,31 @@ fn main() {
             set_title(epic_matches, &mut cmd_options);
             set_bgcolor(epic_matches, &mut cmd_options);
         },
-        ("list", Some(_list_matches)) => {
+        ("list", Some(list_matches)) => {
             println!("-> cmd: list");
 
             // Cmd
             cmd_kind = CommandKind::ListCommand;
 
             // Date
-            set_date(_list_matches, &mut cmd_options);
+            // set_date_fill(list_matches, &mut cmd_options);
+            set_date_silent(list_matches, &mut cmd_options);
 
             // Category
-            set_category(_list_matches, &mut cmd_options);
+            set_category(list_matches, &mut cmd_options);
 
             // Epic
-            set_epic(_list_matches, &mut cmd_options);
+            set_epic(list_matches, &mut cmd_options);
 
             // Revenue
-            if _list_matches.is_present("revenue") {}
+            if list_matches.is_present("revenue") {
+                cmd_options.filter_revenue = Some(true);
+            }
 
             // Expense
-            if _list_matches.is_present("expense") {}
+            if list_matches.is_present("expense") {
+                cmd_options.filter_expense = Some(true);
+            }
         },
         ("html", Some(html_matches)) => {
             println!("-> cmd: html");
@@ -326,8 +331,8 @@ fn set_title(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     cmd_options.title = Some(vs.to_string());
 }
 
-fn set_date(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    println!("-> set_date()");
+fn set_date_fill(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    println!("-> set_date_fill()");
 
     if !matches.is_present("date") {
         return;
@@ -337,27 +342,64 @@ fn set_date(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     let vs = matches.value_of("date").unwrap();
     println!("-> vs '{:?}'", vs);
 
-    cmd_options.date = Date::from_str(vs).expect("Unable to parse given Date");
+    let mut date = Date::from_str(vs).expect("Unable to parse given Date");
     // println!("-> date '{:?}'", cmd_options.date);
 
     // Now
     let now: DateTime<Local> = Local::now();
 
     // Correct date.
-    if !cmd_options.date.has_year() {
+    if !date.has_year() {
         println!("-> year missing");
-        cmd_options.date.set_year(now.year());
+        date.set_year(now.year());
     }
 
-    if !cmd_options.date.has_month() {
+    if !date.has_month() {
         println!("-> month missing");
-        cmd_options.date.set_month(now.month());
+        date.set_month(now.month());
     }
 
-    if !cmd_options.date.has_day() {
+    if !date.has_day() {
         println!("-> day missing");
-        cmd_options.date.set_day(now.day());
+        date.set_day(now.day());
     }
+
+    cmd_options.date = Some(date);
+}
+
+fn set_date_silent(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    println!("-> set_date_silent()");
+
+    if !matches.is_present("date") {
+        return;
+    }
+
+    // &str
+    let vs = matches.value_of("date").unwrap();
+    println!("-> vs '{:?}'", vs);
+
+    let mut date = Date::from_str(vs).expect("Unable to parse given Date");
+
+    // Now
+    let now: DateTime<Local> = Local::now();
+
+    // Correct date.
+    if !date.has_year() {
+        println!("-> year missing");
+        date.raw_set_year(now.year());
+    }
+
+    if !date.has_month() {
+        println!("-> month missing");
+        date.raw_set_month(now.month());
+    }
+
+    if !date.has_day() {
+        println!("-> day missing");
+        date.raw_set_day(now.day());
+    }
+
+    cmd_options.date = Some(date);
 }
 
 fn set_category(matches: &ArgMatches, cmd_options: &mut CommandOptions) {

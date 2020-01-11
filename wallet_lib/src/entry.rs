@@ -1,15 +1,16 @@
 
 use std::fmt::{Display, Formatter, Result as FmtRes};
 use std::convert::From;
+use std::str::FromStr;
 use uuid::Uuid;
 use crate::date::Date;
 use crate::types::Number;
 use crate::command::CommandOptions;
-use crate::yaml::ToYaml;
+use crate::yaml::{ToYaml, FromYaml};
 use yaml_rust::Yaml;
 use yaml_rust::yaml::Hash;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Entry {
     id: String,
     title: String,
@@ -48,7 +49,7 @@ impl Entry {
     }
 
     pub fn set_id(&mut self, id: String) {
-        println!("-> Entry::set_id({})", id);
+        // println!("-> Entry::set_id({})", id);
         self.id = id;
     }
 
@@ -57,18 +58,22 @@ impl Entry {
     }
 
     pub fn set_title(&mut self, title: String) {
-        println!("-> Entry::set_title({})", title);
+        // println!("-> Entry::set_title({})", title);
         self.title = title;
     }
 
     pub fn date(&self) -> Date {
-        println!("-> Entry::date()");
+        // println!("-> Entry::date()");
         self.date
     }
 
     pub fn set_date(&mut self, d: Date) {
-        println!("-> Entry::set_date({})", d);
+        // println!("-> Entry::set_date({})", d);
         self.date = d;
+    }
+
+    pub fn revenue(&self) -> Number {
+        self.revenue
     }
 
     pub fn set_revenue(&mut self, v: Number) {
@@ -77,10 +82,22 @@ impl Entry {
         self.calc();
     }
 
+    pub fn has_revenue(&self) -> bool {
+        self.revenue > 0.0
+    }
+
+    pub fn expense(&self) -> Number {
+        self.expense
+    }
+
     pub fn set_expense(&mut self, v: Number) {
         // println!("-> Entry::set_expense({}) -> {}", v, -v.abs());
         self.expense = -v.abs();
         self.calc();
+    }
+
+    pub fn has_expense(&self) -> bool {
+        self.expense < 0.0
     }
 
     pub fn category(&self) -> String {
@@ -110,8 +127,7 @@ impl Entry {
         self.epic = v;
     }
 
-    pub fn get_balance(&self) -> Number {
-        // println!("-> Entry::get_balance() -> {}", self.balance);
+    pub fn balance(&self) -> Number {
         self.balance
     }
 
@@ -138,7 +154,10 @@ impl From<CommandOptions> for Entry {
         if let Some(ref id) = options.id {
             entry.set_id(id.clone());
         }
-        entry.set_date(options.date);
+
+        if let Some(date) = options.date {
+            entry.set_date(date);
+        }
 
         if let Some(title) = options.title {
             entry.set_title(title.to_string());
@@ -163,6 +182,15 @@ impl From<CommandOptions> for Entry {
     }
 }
 
+impl From<i8> for Entry {
+    fn from(y: i8) -> Entry {
+        println!("-> Entry::from i8");
+
+        let mut entry = Entry::new();
+        entry
+    }
+}
+
 impl ToYaml for Entry {
     fn to_yaml(self) -> Yaml {
         println!("-> Entry::to_yaml()");
@@ -173,11 +201,96 @@ impl ToYaml for Entry {
         entry.insert("date".to_string().to_yaml(), self.date().to_string().to_yaml());
         entry.insert("revenue".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.revenue)));
         entry.insert("expense".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.expense)));
+        entry.insert("balance".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.balance)));
         entry.insert("category".to_string().to_yaml(), self.category().to_yaml());
         entry.insert("comment".to_string().to_yaml(), self.comment().to_yaml());
         entry.insert("epic".to_string().to_yaml(), self.epic().to_yaml());
 
         Yaml::Hash(entry)
+    }
+}
+
+impl FromYaml for Entry {
+    fn from_yaml(x: &Yaml) -> Self {
+        println!("-> Entry::from_yaml()");
+        // println!("-> x: {:?}", x);
+
+        let mut entry = Entry::new();
+
+        if let Yaml::Hash(ref item_ref) = x {
+            // println!("-> item_ref: {:?}", item_ref);
+
+            // ID
+            let key = "id".to_string().to_yaml();
+            if let Yaml::String(id) = &item_ref[&key] {
+                // println!("-> id: {:?}", id);
+                entry.id = id.to_string();
+            }
+
+            // Title
+            let key = "title".to_string().to_yaml();
+            if let Yaml::String(title) = &item_ref[&key] {
+                // println!("-> title: {:?}", title);
+                entry.title = title.to_string();
+            }
+
+            // Date
+            let key = "date".to_string().to_yaml();
+            if let Yaml::String(date) = &item_ref[&key] {
+                // println!("-> date: {:?}", date);
+                entry.date = Date::from_str(date).unwrap();
+            }
+
+            // Revenue
+            let key = "revenue".to_string().to_yaml();
+            // println!("-> revenue: {:?}", item_ref[&key]);
+            if let Yaml::Real(revenue) = &item_ref[&key] {
+                // println!("-> revenue: {:?}", revenue);
+                entry.revenue = revenue.parse().unwrap();
+                // println!("-> revenue: {:?}", entry.revenue);
+            }
+
+            // Expense
+            let key = "expense".to_string().to_yaml();
+            // println!("-> expense: {:?}", item_ref[&key]);
+            if let Yaml::Real(expense) = &item_ref[&key] {
+                // println!("-> expense: {:?}", expense);
+                entry.expense = expense.parse().unwrap();
+                // println!("-> expense: {:?}", entry.expense);
+            }
+
+            // Balance
+            let key = "balance".to_string().to_yaml();
+            // println!("-> balance: {:?}", item_ref[&key]);
+            if let Yaml::Real(balance) = &item_ref[&key] {
+                // println!("-> balance: {:?}", balance);
+            //     entry.balance = balance.parse().unwrap();
+            //     println!("-> balance: {:?}", entry.balance);
+            }
+
+            // Category
+            let key = "category".to_string().to_yaml();
+            if let Yaml::String(category) = &item_ref[&key] {
+                // println!("-> category: {:?}", category);
+                entry.category = category.to_string();
+            }
+
+            // Comment
+            let key = "comment".to_string().to_yaml();
+            if let Yaml::String(comment) = &item_ref[&key] {
+                // println!("-> comment: {:?}", comment);
+                entry.comment = comment.to_string();
+            }
+
+            // Epic
+            let key = "epic".to_string().to_yaml();
+            if let Yaml::String(epic) = &item_ref[&key] {
+                // println!("-> epic: {:?}", epic);
+                entry.epic = epic.to_string();
+            }
+        }
+
+        entry
     }
 }
 
@@ -190,10 +303,10 @@ mod tests {
         let mut entry = Entry::new();
 
         entry.set_revenue(1.0);
-        assert_eq!(entry.get_balance(), 1.0);
+        assert_eq!(entry.balance(), 1.0);
 
         entry.set_revenue(-2.0);
-        assert_eq!(entry.get_balance(), 2.0);
+        assert_eq!(entry.balance(), 2.0);
     }
 
     #[test]
@@ -201,10 +314,10 @@ mod tests {
         let mut entry = Entry::new();
 
         entry.set_expense(1.0);
-        assert_eq!(entry.get_balance(), -1.0);
+        assert_eq!(entry.balance(), -1.0);
 
         entry.set_expense(-2.0);
-        assert_eq!(entry.get_balance(), -2.0);
+        assert_eq!(entry.balance(), -2.0);
     }
 
     #[test]
@@ -213,14 +326,14 @@ mod tests {
 
         entry.set_revenue(1.0);
         entry.set_expense(1.0);
-        assert_eq!(entry.get_balance(), 0.0);
+        assert_eq!(entry.balance(), 0.0);
 
         entry.set_revenue(1.0);
         entry.set_expense(20.0);
-        assert_eq!(entry.get_balance(), -19.0);
+        assert_eq!(entry.balance(), -19.0);
 
         entry.set_revenue(10.0);
         entry.set_expense(1.0);
-        assert_eq!(entry.get_balance(), 9.0);
+        assert_eq!(entry.balance(), 9.0);
     }
 }
