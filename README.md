@@ -5,11 +5,7 @@ A spreadsheet likewise [Rust](https://www.rust-lang.org/) program to track your 
 ## Dev
 
 ```bash
-./bin/dev.sh -w tmp/wallet add
-./bin/dev.sh -w tmp/wallet add -r 20 -e 10 -d 1
-./bin/dev.sh -w tmp/wallet add -r 20 -e 10 -d 1 -f --id 1
-./bin/dev.sh -w tmp/wallet add -r 20 -e 10 -d 1 -c x -f --id 1
-./bin/dev.sh -w tmp/wallet add -r 20 -e 10 -d 1 -c x -t title1
+./bin/dev.sh -w tmp/wallet add -t title1 -r 20 -e 10 -d 1 -c c1
 ./bin/dev.sh -w tmp/wallet list
 ```
 

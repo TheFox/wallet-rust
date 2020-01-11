@@ -305,62 +305,45 @@ fn main() {
         _ => unreachable!(),
     }
 
-    println!("-> date: {:?}", cmd_options.date);
-
-    println!("-> cmd: {:?}", cmd_kind);
     let cmd = Command::new(cmd_kind, cmd_options);
-    println!("-> cmd: {:?}", cmd);
-
-    println!("-> exec");
     cmd.exec();
 
     println!("-> end");
 }
 
 fn set_title(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    // println!("-> set_title()");
-
     if !matches.is_present("title") {
         return;
     }
 
     // &str
     let vs = matches.value_of("title").unwrap();
-    // println!("-> vs '{:?}'", vs);
-
     cmd_options.title = Some(vs.to_string());
 }
 
 fn set_date_fill(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    println!("-> set_date_fill()");
-
     if !matches.is_present("date") {
         return;
     }
 
     // &str
     let vs = matches.value_of("date").unwrap();
-    println!("-> vs '{:?}'", vs);
 
     let mut date = Date::from_str(vs).expect("Unable to parse given Date");
-    // println!("-> date '{:?}'", cmd_options.date);
 
     // Now
     let now: DateTime<Local> = Local::now();
 
     // Correct date.
     if !date.has_year() {
-        println!("-> year missing");
         date.set_year(now.year());
     }
 
     if !date.has_month() {
-        println!("-> month missing");
         date.set_month(now.month());
     }
 
     if !date.has_day() {
-        println!("-> day missing");
         date.set_day(now.day());
     }
 
@@ -368,15 +351,12 @@ fn set_date_fill(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
 }
 
 fn set_date_silent(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    println!("-> set_date_silent()");
-
     if !matches.is_present("date") {
         return;
     }
 
     // &str
     let vs = matches.value_of("date").unwrap();
-    println!("-> vs '{:?}'", vs);
 
     let mut date = Date::from_str(vs).expect("Unable to parse given Date");
 
@@ -385,17 +365,14 @@ fn set_date_silent(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
 
     // Correct date.
     if !date.has_year() {
-        println!("-> year missing");
         date.raw_set_year(now.year());
     }
 
     if !date.has_month() {
-        println!("-> month missing");
         date.raw_set_month(now.month());
     }
 
     if !date.has_day() {
-        println!("-> day missing");
         date.raw_set_day(now.day());
     }
 
@@ -403,71 +380,51 @@ fn set_date_silent(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
 }
 
 fn set_category(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    // println!("-> set_category()");
-
     if !matches.is_present("category") {
         return;
     }
 
     // &str
     let vs = matches.value_of("category").unwrap();
-    // println!("-> vs '{:?}'", vs);
-
     cmd_options.category = Some(vs.to_string());
 }
 
 fn set_comment(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    // println!("-> set_comment()");
-
     if !matches.is_present("comment") {
         return;
     }
 
     // &str
     let vs = matches.value_of("comment").unwrap();
-    // println!("-> vs '{:?}'", vs);
-
     cmd_options.comment = Some(vs.to_string());
 }
 
 fn set_epic(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    // println!("-> set_epic()");
-
     if !matches.is_present("epic") {
         return;
     }
 
     // &str
     let vs = matches.value_of("epic").unwrap();
-    // println!("-> vs '{:?}'", vs);
-
     cmd_options.epic = Some(vs.to_string());
 }
 
 fn set_handle(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    // println!("-> set_handle()");
-
     if !matches.is_present("handle") {
         return;
     }
 
     // &str
     let vs = matches.value_of("handle").unwrap();
-    // println!("-> vs '{:?}'", vs);
-
     cmd_options.handle = Some(vs.to_string());
 }
 
 fn set_bgcolor(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    // println!("-> set_bgcolor()");
-
     if !matches.is_present("bgcolor") {
         return;
     }
 
     // &str
     let vs = matches.value_of("bgcolor").unwrap();
-    // println!("-> vs '{:?}'", vs);
-
     cmd_options.bgcolor = Some(vs.to_string());
 }

@@ -2,7 +2,6 @@
 use std::convert::From;
 use std::path::PathBuf;
 use std::fs::create_dir_all;
-// use std::fs::{create_dir_all, read_dir};
 use glob::glob;
 use std::io::Write;
 use std::fmt;
@@ -122,14 +121,12 @@ impl Wallet {
         create_dir_all(&self.tmp_dir).expect("Cannot create tmp directory.");
     }
 
-    // TODO
     pub fn add(&self, entry: Entry, force: bool) -> AddResult {
         println!("-> Wallet::add(f={:?})", force);
         println!("-> entry {:?}", entry);
 
         // Index
         let mut index_file = YamlFile::open_index(self.index_file.clone());
-        // println!("-> exists: {:?}", index_file.exists(entry.id()));
 
         if index_file.exists(entry.id()) {
             if ! force {
@@ -149,16 +146,6 @@ impl Wallet {
             epic.set_handle(entry.epic());
             epics_file.add(epic);
         }
-        // TODO: create epic
-        // let existing_epic = epics_file.find();
-        // epics_file.add(entry.epic());
-        // let epic_opt: Option<Epic> = epics_file.find(entry.epic());
-        // match epic_opt {
-        //     Some(epic) => {
-        //         println!("-> epic {:?}", epic);
-        //     },
-        //     _ => (),
-        // }
 
         // Month file
         let month_file_name = format!("month_{}.yml", entry.date().fym("_"));
@@ -198,41 +185,23 @@ impl Wallet {
         let data_dir = self.data_dir.join("month_");
 
         if let Some(path) = data_dir.to_str() {
-            println!("-> data dir: {}", path);
-
             let mut g = String::from(path);
-            // println!("-> g A: {}", g);
 
             // Filter Date
             if let Some(date) = options.date {
-                // println!("-> date: {}", date);
-                // println!("-> date: {:?}", date);
-                // println!("-> date.year: {}", date.year());
-                // println!("-> date.fmonth: {}", date.fmonth());
-
-                // g.push_str(&date.rym());
-
                 if date.has_year() && date.has_month() {
-                    // println!("-> has ym");
                     g.push_str(&date.rym());
                 } else if date.has_year() {
-                    // println!("-> has year");
                     g.push_str(&date.year().to_string());
                     g.push_str("_*");
                 } else if date.has_month() {
-                    // println!("-> has month");
                     g.push_str(&date.rym());
                 } else if date.has_day() {
-                    // println!("-> has day");
                     g.push_str(&date.rym());
                 } else {
-                    // println!("-> no date");
                     g.push_str("*");
                 }
-
-                // println!("-> g B: {}", g);
             } else {
-                // println!("-> no date");
                 g.push_str("*");
             }
 
@@ -252,7 +221,6 @@ impl Wallet {
 
                         all_items.append(&mut month_items);
                     },
-                    // Err(e) => println!("ERROR: {:?}", e),
                     _ => (),
                 }
             }
@@ -321,20 +289,10 @@ impl Wallet {
 
         let mut filtered_items: Vec<&Entry> = filter.collect();
         println!("-> filtered_items: {:?}", filtered_items.len());
-        // let filtered_items: Vec<&Entry> = filter.collect();
 
-        filtered_items.sort_by(|a, b| {
-            // println!("-> sort: {:?} {:?}", a, b);
-            // println!("-> sort: {:?} {:?}", a.date(), b.date());
+        filtered_items.sort_by(|a, b| a.date().to_string().cmp(&b.date().to_string()));
 
-            // Ordering::Equal
-            a.date().to_string().cmp(&b.date().to_string())
-        });
-
-        let items = filtered_items.into_iter().map(|x| {
-            // println!("-> map: {:?}", x);
-            x.clone()
-        }).collect();
+        let items = filtered_items.into_iter().map(|item| item.clone()).collect();
 
         items
     }
