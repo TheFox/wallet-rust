@@ -40,9 +40,6 @@ impl Entry {
         }
     }
 
-    // TODO: use this instead of Entry::new()
-    // pub fn from()
-
     pub fn id(&self) -> String {
         // println!("-> Entry::id()");
         self.id.clone()
@@ -210,6 +207,7 @@ impl ToYaml for Entry {
     }
 }
 
+// TODO tests
 impl FromYaml for Entry {
     fn from_yaml(x: &Yaml) -> Self {
         println!("-> Entry::from_yaml()");
@@ -264,7 +262,7 @@ impl FromYaml for Entry {
             // println!("-> balance: {:?}", item_ref[&key]);
             if let Yaml::Real(balance) = &item_ref[&key] {
                 // println!("-> balance: {:?}", balance);
-            //     entry.balance = balance.parse().unwrap();
+                entry.balance = balance.parse().unwrap();
             //     println!("-> balance: {:?}", entry.balance);
             }
 
@@ -291,6 +289,42 @@ impl FromYaml for Entry {
         }
 
         entry
+    }
+}
+
+#[derive(Debug)]
+pub struct EntrySum {
+    pub n: u64,
+    pub revenue: Number,
+    pub expense: Number,
+    pub balance: Number,
+}
+
+// TODO tests
+impl EntrySum {
+    pub fn new() -> Self {
+        EntrySum {
+            n: 0,
+            revenue: 0.0,
+            expense: 0.0,
+            balance: 0.0,
+        }
+    }
+
+    pub fn inc(&mut self) {
+        self.n += 1;
+    }
+
+    pub fn inc_revenue(&mut self, v: Number) {
+        self.revenue += v;
+    }
+
+    pub fn inc_expense(&mut self, v: Number) {
+        self.expense += v;
+    }
+
+    pub fn inc_balance(&mut self, v: Number) {
+        self.balance += v;
     }
 }
 

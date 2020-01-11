@@ -1,7 +1,7 @@
 
 use std::convert::From;
 use crate::wallet::{Wallet, FilterOptions};
-use crate::entry::Entry;
+use crate::entry::{Entry, EntrySum};
 use crate::epic::Epic;
 use crate::types::Number;
 use crate::date::Date;
@@ -142,16 +142,19 @@ impl Command {
     fn exec_list(&self) {
         println!("-> Command::exec_list()");
 
-        let mut n = 0;
+        let mut sum = EntrySum::new();
 
         // TODO
         let options = FilterOptions::from(self.options.clone());
         let wallet = Wallet::new(self.options.get_wallet_path());
         for entry in wallet.filter(options) {
-            n += 1;
+            sum.inc();
+            sum.inc_revenue(entry.revenue());
+            sum.inc_expense(entry.expense());
+            sum.inc_balance(entry.balance());
 
-            println!("item: '#{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}'",
-                n,
+            println!("item: #'{}' d'{}' r'{}' e'{}' b'{}' c'{}' x'{}' t'{}'",
+                sum.n,
                 entry.date().ymd(),
                 entry.revenue(),
                 entry.expense(),
@@ -160,6 +163,13 @@ impl Command {
                 entry.epic(),
                 entry.title());
         }
+
+        println!("-> sum: {:?}", sum);
+
+        println!("item: #'x'               r'{}' e'{}' b'{}'",
+            sum.revenue,
+            sum.expense,
+            sum.balance);
     }
 
     /// HTML
