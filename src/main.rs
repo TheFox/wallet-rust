@@ -128,7 +128,17 @@ fn main() {
             .short("x")
             .long("epic")
             .help("Epic")
-            .takes_value(true));
+            .takes_value(true))
+        .arg(Arg::with_name("long")
+            .short("l")
+            .long("long")
+            .help("Long lines.")
+            .takes_value(false))
+        .arg(Arg::with_name("short")
+            .short("s")
+            .long("short")
+            .help("Short lines.")
+            .takes_value(false));
 
     // HTML Sub Command
     let html_subcmd = App::new("html")
@@ -292,6 +302,10 @@ fn main() {
             if list_matches.is_present("expense") {
                 cmd_options.filter_expense = Some(true);
             }
+
+            // Format
+            set_long(list_matches, &mut cmd_options);
+            set_short(list_matches, &mut cmd_options);
         },
         ("html", Some(html_matches)) => {
             println!("-> cmd: html");
@@ -427,4 +441,20 @@ fn set_bgcolor(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     // &str
     let vs = matches.value_of("bgcolor").unwrap();
     cmd_options.bgcolor = Some(vs.to_string());
+}
+
+fn set_long(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    if !matches.is_present("long") {
+        return;
+    }
+
+    cmd_options.long = Some(true);
+}
+
+fn set_short(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    if !matches.is_present("short") {
+        return;
+    }
+
+    cmd_options.long = Some(false);
 }

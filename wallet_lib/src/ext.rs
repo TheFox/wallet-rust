@@ -3,6 +3,7 @@
 use crate::types::Number;
 use crate::yaml::ToYaml;
 use yaml_rust::Yaml;
+use yaml_rust::yaml::Hash;
 
 pub trait StringExt {
     fn replace_comma(&self) -> String;
@@ -55,11 +56,24 @@ impl ToYaml for i64 {
     }
 }
 
+impl ToYaml for f64 {
+    fn to_yaml(self) -> Yaml {
+        Yaml::Real(self.to_string())
+    }
+}
+
+impl ToYaml for Hash {
+    fn to_yaml(self) -> Yaml {
+        Yaml::Hash(self)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{StringExt, BoolExt};
     use crate::yaml::ToYaml;
     use yaml_rust::Yaml;
+    use yaml_rust::yaml::Hash;
 
     #[test]
     fn test_strext_replace_comma1() {
@@ -111,5 +125,16 @@ mod tests {
         assert_eq!("YES", b1.yn());
         assert_eq!("YES", true.yn());
         assert!(b1);
+    }
+
+    #[test]
+    fn test_hash_toyaml() {
+        let h = Hash::new();
+        let x = h.to_yaml();
+
+        assert!(match x {
+            Yaml::Hash(y) => true,
+            _ => false,
+        });
     }
 }

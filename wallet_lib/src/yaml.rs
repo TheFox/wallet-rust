@@ -386,12 +386,6 @@ pub trait ToYaml {
 }
 
 pub trait FromYaml {
-    // type TakeType;
-    // type ReturnType;
-
-    // fn from_yaml() -> Self::ReturnType;
-    // fn from_yaml(_: Self::TakeType) -> Self::ReturnType;
-    // fn from_yaml(_: Self::TakeType) -> Self;
     fn from_yaml(_: &Yaml) -> Self;
 }
 

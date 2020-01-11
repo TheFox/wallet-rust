@@ -180,7 +180,7 @@ impl Wallet {
     // TODO
     pub fn filter(&self, options: FilterOptions) -> Vec<Entry> {
         println!("-> Wallet::filter()");
-        println!("-> options: {:?}", options);
+        // println!("-> options: {:?}", options);
 
         // Result
         let mut all_items: Vec<Entry> = vec![];
@@ -216,12 +216,12 @@ impl Wallet {
             for entry in entries {
                 match entry {
                     Ok(path) => {
-                        println!("-> path: {:?}", path.display());
-                        println!("-> path: {:?}", path);
+                        // println!("-> path: {:?}", path.display());
+                        // println!("-> path: {:?}", path);
 
                         let month_file = YamlFile::open_month(path);
                         let mut month_items: Vec<Entry> = month_file.get();
-                        println!("-> month_items: {:?}", month_items);
+                        // println!("-> month_items: {:?}", month_items);
 
                         all_items.append(&mut month_items);
                     },
@@ -232,31 +232,34 @@ impl Wallet {
 
         // Filter
         let filter = all_items.iter().filter(|entry| -> bool {
-            println!("-> filter: {:?}", entry);
+            // println!("-> filter: {:?}", entry);
 
             // Date
             if let Some(odate) = options.date {
-                println!("-> odate: {:?} -> {:?}", odate, odate.to_string());
+                // println!("-> odate: {:?} -> {:?}", odate, odate.to_string());
 
                 let edate = entry.date();
-                println!("-> edate: {:?} -> {:?}", edate, edate.to_string());
-                println!("-> odate == edate: {:?}", odate == edate);
+                // println!("-> edate: {:?} -> {:?}", edate, edate.to_string());
+                // println!("-> odate == edate: {:?}", odate == edate);
 
-                if odate.has_day() && odate == edate {
-                    println!("-> filter year-month-day");
+                if odate.has_day() {
+                    // println!("-> filter year-month-day");
+                    if odate != edate {
+                        return false;
+                    }
                 } else if odate.has_month() && odate.year() == edate.year() && odate.month() == edate.month() {
-                    println!("-> filter year-month");
+                    // println!("-> filter year-month");
                 } else if odate.has_year() && odate.year() == edate.year() {
-                    println!("-> filter year");
+                    // println!("-> filter year");
                 } else {
-                    println!("-> date filter failed");
+                    // println!("-> date filter failed");
                     return false;
                 }
             }
 
             // Revenue
             if let Some(filter_revenue) = options.filter_revenue {
-                println!("-> filter_revenue: {:?}", filter_revenue);
+                // println!("-> filter_revenue: {:?}", filter_revenue);
 
                 if filter_revenue && !entry.has_revenue() {
                     return false;
@@ -265,7 +268,7 @@ impl Wallet {
 
             // Expense
             if let Some(filter_expense) = options.filter_expense {
-                println!("-> filter_expense: {:?}", filter_expense);
+                // println!("-> filter_expense: {:?}", filter_expense);
 
                 if filter_expense && !entry.has_expense() {
                     return false;
@@ -274,7 +277,7 @@ impl Wallet {
 
             // Category
             if let Some(category) = &options.category {
-                println!("-> category: {:?}", category);
+                // println!("-> category: {:?}", category);
 
                 if &entry.category() != category {
                     return false;
@@ -283,7 +286,7 @@ impl Wallet {
 
             // Epic
             if let Some(epic) = &options.epic {
-                println!("-> epic: {:?}", epic);
+                // println!("-> epic: {:?}", epic);
 
                 if &entry.epic() != epic {
                     return false;
@@ -295,7 +298,7 @@ impl Wallet {
 
 
         let mut filtered_items: Vec<&Entry> = filter.collect();
-        println!("-> filtered_items: {:?}", filtered_items.len());
+        // println!("-> filtered_items: {:?}", filtered_items.len());
 
         filtered_items.sort_by(|a, b| a.date().to_string().cmp(&b.date().to_string()));
 
