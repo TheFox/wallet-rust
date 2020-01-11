@@ -356,7 +356,9 @@ impl Debug for Date {
 
 impl PartialEq for Date {
     fn eq(&self, other: &Self) -> bool {
-        self.used == other.used && self.date == other.date
+        println!("-> Date::eq() -> {:?} {:?}", self.used == other.used, self.date == other.date);
+        // self.used == other.used && self.date == other.date
+        self.date == other.date
     }
 }
 

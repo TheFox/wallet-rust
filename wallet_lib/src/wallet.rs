@@ -139,9 +139,9 @@ impl Wallet {
         // Epics
         let mut epics_file = YamlFile::open_epics(self.epics_file.clone());
         if epics_file.exists(entry.epic()) {
-            println!("-> epic exist");
+            // println!("-> epic exist");
         } else {
-            println!("-> NO epic");
+            // println!("-> NO epic");
             let mut epic = Epic::new();
             epic.set_handle(entry.epic());
             epics_file.add(epic);
@@ -149,10 +149,10 @@ impl Wallet {
 
         // Month file
         let month_file_name = format!("month_{}.yml", entry.date().fym("_"));
-        println!("-> month_file_name: {:?}", month_file_name);
+        // println!("-> month_file_name: {:?}", month_file_name);
 
         let month_file_path = self.data_dir.join(month_file_name.clone());
-        println!("-> month_file_path: {:?}", month_file_path);
+        // println!("-> month_file_path: {:?}", month_file_path);
 
         let mut month_file = YamlFile::open_month(month_file_path);
         month_file.add(entry);
@@ -229,38 +229,33 @@ impl Wallet {
         // Filter
         let filter = all_items.iter().filter(|entry| -> bool {
             println!("-> filter: {:?}", entry);
-            let mut res: Vec<Option<bool>> = vec![];
 
             // Date
             if let Some(odate) = options.date {
-                let ires = None;
-
                 println!("-> odate: {:?} -> {:?}", odate, odate.to_string());
 
                 let edate = entry.date();
                 println!("-> edate: {:?} -> {:?}", edate, edate.to_string());
+                println!("-> odate == edate: {:?}", odate == edate);
 
                 if odate.has_day() && odate == edate {
-                    ires = Some(true);
                     println!("-> filter year-month-day");
                 } else if odate.has_month() && odate.year() == edate.year() && odate.month() == edate.month() {
-                    ires = Some(true);
                     println!("-> filter year-month");
                 } else if odate.has_year() && odate.year() == edate.year() {
                     println!("-> filter year");
-                    ires = Some(true);
+                } else {
+                    println!("-> date filter failed");
+                    return false;
                 }
-
-                res.push(ires);
             }
 
             // Revenue
             if let Some(filter_revenue) = options.filter_revenue {
-                let ires = None;
                 println!("-> filter_revenue: {:?}", filter_revenue);
 
-                if filter_revenue && entry.has_revenue() {
-                    // res = true;
+                if filter_revenue && !entry.has_revenue() {
+                    return false;
                 }
             }
 
@@ -268,8 +263,8 @@ impl Wallet {
             if let Some(filter_expense) = options.filter_expense {
                 println!("-> filter_expense: {:?}", filter_expense);
 
-                if filter_expense && entry.has_expense() {
-                    // res = true;
+                if filter_expense && !entry.has_expense() {
+                    return false;
                 }
             }
 
@@ -277,13 +272,12 @@ impl Wallet {
             if let Some(epic) = &options.epic {
                 println!("-> epic: {:?}", epic);
 
-                if &entry.epic() == epic {
-                    // res = true;
+                if &entry.epic() != epic {
+                    return false;
                 }
             }
 
-            // res
-            false
+            true
         });
 
 
