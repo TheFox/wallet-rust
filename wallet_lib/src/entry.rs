@@ -557,7 +557,7 @@ mod tests {
         assert_eq!("ID", entry.id());
         assert_eq!("Title", entry.title());
         assert_eq!("2019-02-21", entry.date().to_string());
-        assert_eq!(42.2, entry.revenue());
+        assert_eq!(42.2, entry.revenue().unwrap());
         assert_eq!(42.3, entry.expense());
         assert_eq!(42.4, entry.balance());
         assert_eq!("Category", entry.category());
