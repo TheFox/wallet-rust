@@ -4,7 +4,8 @@ use std::convert::From;
 use std::str::FromStr;
 use uuid::Uuid;
 use crate::date::Date;
-use crate::types::Number;
+use crate::types::Number as NumberOldType;
+use crate::number::{Number, NumberType};
 use crate::command::CommandOptions;
 use crate::yaml::{ToYaml, FromYaml};
 use crate::string::{ShortString, ZeroString};
@@ -17,8 +18,8 @@ pub struct Entry {
     title: String,
     date: Date,
     revenue: Number,
-    expense: Number,
-    balance: Number,
+    expense: NumberOldType,
+    balance: NumberOldType,
     category: String,
     comment: String,
     epic: String,
@@ -32,7 +33,7 @@ impl Entry {
             id: Uuid::new_v4().to_string(),
             title: String::new(),
             date: Date::new(),
-            revenue: 0.0,
+            revenue: Number::new(),
             expense: 0.0,
             balance: 0.0,
             category: String::from("default"),
@@ -70,25 +71,25 @@ impl Entry {
         self.date = d;
     }
 
-    pub fn revenue(&self) -> Number {
-        self.revenue
+    pub fn revenue(&self) -> NumberType {
+        self.revenue.n
     }
 
-    pub fn set_revenue(&mut self, v: Number) {
+    pub fn set_revenue(&mut self, v: NumberType) {
         // println!("-> Entry::set_revenue({})", v);
-        self.revenue = v.abs();
+        self.revenue = Number::from(v.abs());
         self.calc();
     }
 
     pub fn has_revenue(&self) -> bool {
-        self.revenue > 0.0
+        self.revenue.n > 0.0
     }
 
-    pub fn expense(&self) -> Number {
+    pub fn expense(&self) -> NumberOldType {
         self.expense
     }
 
-    pub fn set_expense(&mut self, v: Number) {
+    pub fn set_expense(&mut self, v: NumberOldType) {
         // println!("-> Entry::set_expense({}) -> {}", v, -v.abs());
         self.expense = -v.abs();
         self.calc();
@@ -125,13 +126,13 @@ impl Entry {
         self.epic = v;
     }
 
-    pub fn balance(&self) -> Number {
+    pub fn balance(&self) -> NumberOldType {
         self.balance
     }
 
     fn calc(&mut self) {
         // println!("-> Entry::calc() -> r={} e={}", self.revenue, self.expense);
-        self.balance = self.revenue + self.expense;
+        self.balance = self.revenue.n + self.expense;
         // println!("-> b={}", self.balance);
     }
 }
@@ -197,7 +198,7 @@ impl ToYaml for Entry {
         entry.insert("id".to_string().to_yaml(), self.id().to_yaml());
         entry.insert("title".to_string().to_yaml(), self.title().to_yaml());
         entry.insert("date".to_string().to_yaml(), self.date().to_string().to_yaml());
-        entry.insert("revenue".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.revenue)));
+        entry.insert("revenue".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.revenue.n)));
         entry.insert("expense".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.expense)));
         entry.insert("balance".to_string().to_yaml(), Yaml::Real(format!("{:.2}", self.balance)));
         entry.insert("category".to_string().to_yaml(), self.category().to_yaml());
@@ -250,7 +251,8 @@ impl FromYaml for Entry {
             if let Some(o_val) = item_ref.get(&key) {
                 if let Yaml::Real(revenue) = o_val {
                     // println!("-> revenue: {:?}", revenue);
-                    entry.revenue = revenue.parse().unwrap();
+                    // entry.revenue = revenue.parse().unwrap();
+                    entry.revenue = Number::from(revenue.parse().unwrap());
                 }
             }
 
@@ -307,9 +309,9 @@ impl FromYaml for Entry {
 #[derive(Debug)]
 pub struct EntrySum {
     pub n: u64,
-    pub revenue: Number,
-    pub expense: Number,
-    pub balance: Number,
+    pub revenue: NumberOldType,
+    pub expense: NumberOldType,
+    pub balance: NumberOldType,
 }
 
 // TODO tests
@@ -327,15 +329,15 @@ impl EntrySum {
         self.n += 1;
     }
 
-    pub fn inc_revenue(&mut self, v: Number) {
+    pub fn inc_revenue(&mut self, v: NumberOldType) {
         self.revenue += v;
     }
 
-    pub fn inc_expense(&mut self, v: Number) {
+    pub fn inc_expense(&mut self, v: NumberOldType) {
         self.expense += v;
     }
 
-    pub fn inc_balance(&mut self, v: Number) {
+    pub fn inc_balance(&mut self, v: NumberOldType) {
         self.balance += v;
     }
 }

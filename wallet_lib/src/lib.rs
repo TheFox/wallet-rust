@@ -10,3 +10,4 @@ pub mod types;
 pub mod date;
 pub mod yaml;
 pub mod string;
+pub mod number;
