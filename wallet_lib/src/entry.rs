@@ -5,10 +5,10 @@ use std::str::FromStr;
 use uuid::Uuid;
 use crate::date::Date;
 use crate::types::Number as NumberOldType;
-use crate::number::{Number, NumberType};
+use crate::number::{Number, NumberType, NumberDisplay, ToDisplay};
 use crate::command::CommandOptions;
 use crate::yaml::{ToYaml, FromYaml};
-use crate::string::{ShortString, ZeroString};
+use crate::string::{ShortString};
 use yaml_rust::Yaml;
 use yaml_rust::yaml::Hash;
 
@@ -71,8 +71,8 @@ impl Entry {
         self.date = d;
     }
 
-    pub fn revenue(&self) -> NumberType {
-        self.revenue.n
+    pub fn revenue(&self) -> Number {
+        self.revenue.clone()
     }
 
     pub fn set_revenue(&mut self, v: NumberType) {
@@ -82,7 +82,7 @@ impl Entry {
     }
 
     pub fn has_revenue(&self) -> bool {
-        self.revenue.n > 0.0
+        self.revenue.unwrap() > 0.0
     }
 
     pub fn expense(&self) -> NumberOldType {
@@ -382,17 +382,20 @@ impl EntryDisplay {
         println!("#### Date          Revenue    Expense    Balance  Title");
 
         for entry in &self.entries {
+            let revenue_number = entry.revenue();
+
             sum.inc();
-            sum.inc_revenue(entry.revenue());
+            // sum.inc_revenue(revenue_number.unwrap());
             sum.inc_expense(entry.expense());
             sum.inc_balance(entry.balance());
 
+            let revenue_display = revenue_number.to_display();
             let title = ShortString::from(entry.title(), 23);
 
             println!("{:<4} {} {:>10.2} {:>10.2} {:>10.2}  {}",
                 sum.n,
                 entry.date().ymd(),
-                entry.revenue(),
+                revenue_display,
                 entry.expense(),
                 entry.balance(),
                 title,
@@ -413,11 +416,14 @@ impl EntryDisplay {
         println!("#### Date          Revenue    Expense    Balance   Category       Epic  Title");
 
         for entry in &self.entries {
+            let revenue_number = entry.revenue();
+
             sum.inc();
-            sum.inc_revenue(entry.revenue());
+            // sum.inc_revenue(revenue_number.unwrap());
             sum.inc_expense(entry.expense());
             sum.inc_balance(entry.balance());
 
+            let revenue_display = revenue_number.to_display();
             let category = ShortString::from(entry.category(), 10);
             let mut epic = ShortString::from(entry.epic(), 10);
             let title = ShortString::from(entry.title(), 23);
@@ -429,7 +435,7 @@ impl EntryDisplay {
             println!("{:<4} {} {:>10.2} {:>10.2} {:>10.2} {:>10} {:>10}  {}",
                 sum.n,
                 entry.date().ymd(),
-                entry.revenue(),
+                revenue_display,
                 entry.expense(),
                 entry.balance(),
                 category.to_string(),
@@ -452,18 +458,19 @@ impl EntryDisplay {
         println!("#### Date          Revenue    Expense    Balance             Category                 Epic   Title");
 
         for entry in &self.entries {
+            let revenue_number = entry.revenue();
+
             sum.inc();
-            sum.inc_revenue(entry.revenue());
+            // sum.inc_revenue(revenue_number.unwrap());
             sum.inc_expense(entry.expense());
             sum.inc_balance(entry.balance());
 
-            // let revenue = ZeroString::from(entry.revenue());
+            let revenue_display = revenue_number.to_display();
 
-            println!("{:<4} {} {:>10.2} {:>10.2} {:>10.2} {:>20} {:>20}   {}",
+            println!("{:<4} {} {} {:>10.2} {:>10.2} {:>20} {:>20}   {}",
                 sum.n,
                 entry.date().ymd(),
-                // revenue.to_string(),
-                entry.revenue(),
+                revenue_display,
                 entry.expense(),
                 entry.balance(),
                 entry.category(),
