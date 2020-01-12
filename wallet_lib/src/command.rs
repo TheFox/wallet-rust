@@ -1,12 +1,11 @@
 
 use std::convert::From;
 use crate::wallet::{Wallet, FilterOptions};
-use crate::entry::{Entry, EntrySum};
+use crate::entry::{Entry, EntryDisplay, EntryDisplayKind};
 use crate::epic::Epic;
 use crate::types::Number;
 use crate::date::Date;
 use crate::ext::BoolExt;
-use crate::string::{ShortString, ZeroString};
 
 /// Command options hold all available options for ALL commands.
 /// Not all commands will us all options.
@@ -145,100 +144,23 @@ impl Command {
     fn exec_list(&self) {
         println!("-> Command::exec_list()");
 
-        let mut sum = EntrySum::new();
-
-        // TODO
         let options = FilterOptions::from(self.options.clone());
         let wallet = Wallet::new(self.options.get_wallet_path());
         let entries = wallet.filter(options);
 
-        // Format
-        let mut long = false;
-        let mut short = false;
+        // Kind
+        let mut kind = EntryDisplayKind::Normal;
 
         if let Some(long_opt) = self.options.long {
             if long_opt {
-                long = true;
+                kind = EntryDisplayKind::Long;
             } else {
-                short = true;
+                kind = EntryDisplayKind::Short;
             }
         }
 
-        if entries.len() > 0 {
-            if long {
-                // Long
-                println!("#### Date          Revenue    Expense    Balance             Category                 Epic   Title");
-            }
-            else if short {
-                // Short
-                println!("#### Date          Revenue    Expense    Balance  Title");
-            }
-            else {
-                // Default
-                println!("#### Date          Revenue    Expense    Balance   Category       Epic  Title");
-            }
-
-            for entry in entries {
-                sum.inc();
-                sum.inc_revenue(entry.revenue());
-                sum.inc_expense(entry.expense());
-                sum.inc_balance(entry.balance());
-
-                if long {
-                    let revenue = ZeroString::from(entry.revenue());
-
-                    println!("{:<4} {} {} {:>10.2} {:>10.2} {:>20} {:>20}   {}",
-                        sum.n,
-                        entry.date().ymd(),
-                        revenue.to_string(),
-                        entry.expense(),
-                        entry.balance(),
-                        entry.category(),
-                        entry.epic(),
-                        entry.title(),
-                    );
-                }
-                else if short {
-                    let title = ShortString::from(entry.title(), 23);
-
-                    println!("{:<4} {} {:>10.2} {:>10.2} {:>10.2}  {}",
-                        sum.n,
-                        entry.date().ymd(),
-                        entry.revenue(),
-                        entry.expense(),
-                        entry.balance(),
-                        title,
-                    );
-                }
-                else {
-                    let category = ShortString::from(entry.category(), 10);
-                    let mut epic = ShortString::from(entry.epic(), 10);
-                    let title = ShortString::from(entry.title(), 23);
-
-                    if epic.to_string() == "default".to_string() {
-                        epic = ShortString::new();
-                    }
-
-                    println!("{:<4} {} {:>10.2} {:>10.2} {:>10.2} {:>10} {:>10}  {}",
-                        sum.n,
-                        entry.date().ymd(),
-                        entry.revenue(),
-                        entry.expense(),
-                        entry.balance(),
-                        category.to_string(),
-                        epic.to_string(),
-                        title.to_string(),
-                    );
-                }
-            }
-
-            println!("TOTAL           {:>10.2} {:>10.2} {:>10.2}",
-                sum.revenue,
-                sum.expense,
-                sum.balance);
-        } else {
-            println!("No entries found.");
-        }
+        let entry_display = EntryDisplay::new(entries, kind);
+        entry_display.show();
     }
 
     /// HTML

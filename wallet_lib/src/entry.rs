@@ -7,6 +7,7 @@ use crate::date::Date;
 use crate::types::Number;
 use crate::command::CommandOptions;
 use crate::yaml::{ToYaml, FromYaml};
+use crate::string::{ShortString, ZeroString};
 use yaml_rust::Yaml;
 use yaml_rust::yaml::Hash;
 
@@ -336,6 +337,143 @@ impl EntrySum {
 
     pub fn inc_balance(&mut self, v: Number) {
         self.balance += v;
+    }
+}
+
+pub enum EntryDisplayKind {
+    Short,
+    Normal,
+    Long,
+}
+
+pub struct EntryDisplay {
+    entries: Vec<Entry>,
+    kind: EntryDisplayKind,
+}
+
+impl EntryDisplay {
+    pub fn new(entries: Vec<Entry>, kind: EntryDisplayKind) -> Self {
+        EntryDisplay {
+            entries,
+            kind,
+        }
+    }
+
+    pub fn show(&self) {
+        if self.entries.len() == 0 {
+            println!("No entries found.");
+            return;
+        }
+
+        match self.kind {
+            EntryDisplayKind::Short => self.show_short(),
+            EntryDisplayKind::Normal => self.show_normal(),
+            EntryDisplayKind::Long => self.show_long(),
+        }
+    }
+
+    fn show_short(&self) {
+        println!("-> EntryDisplay::show_short()");
+
+        let mut sum = EntrySum::new();
+
+        println!("#### Date          Revenue    Expense    Balance  Title");
+
+        for entry in &self.entries {
+            sum.inc();
+            sum.inc_revenue(entry.revenue());
+            sum.inc_expense(entry.expense());
+            sum.inc_balance(entry.balance());
+
+            let title = ShortString::from(entry.title(), 23);
+
+            println!("{:<4} {} {:>10.2} {:>10.2} {:>10.2}  {}",
+                sum.n,
+                entry.date().ymd(),
+                entry.revenue(),
+                entry.expense(),
+                entry.balance(),
+                title,
+            );
+        }
+
+        println!("TOTAL           {:>10.2} {:>10.2} {:>10.2}",
+            sum.revenue,
+            sum.expense,
+            sum.balance);
+    }
+
+    fn show_normal(&self) {
+        println!("-> EntryDisplay::show_normal()");
+
+        let mut sum = EntrySum::new();
+
+        println!("#### Date          Revenue    Expense    Balance   Category       Epic  Title");
+
+        for entry in &self.entries {
+            sum.inc();
+            sum.inc_revenue(entry.revenue());
+            sum.inc_expense(entry.expense());
+            sum.inc_balance(entry.balance());
+
+            let category = ShortString::from(entry.category(), 10);
+            let mut epic = ShortString::from(entry.epic(), 10);
+            let title = ShortString::from(entry.title(), 23);
+
+            if epic.to_string() == "default".to_string() {
+                epic = ShortString::new();
+            }
+
+            println!("{:<4} {} {:>10.2} {:>10.2} {:>10.2} {:>10} {:>10}  {}",
+                sum.n,
+                entry.date().ymd(),
+                entry.revenue(),
+                entry.expense(),
+                entry.balance(),
+                category.to_string(),
+                epic.to_string(),
+                title.to_string(),
+            );
+        }
+
+        println!("TOTAL           {:>10.2} {:>10.2} {:>10.2}",
+            sum.revenue,
+            sum.expense,
+            sum.balance);
+    }
+
+    fn show_long(&self) {
+        println!("-> EntryDisplay::show_long()");
+
+        let mut sum = EntrySum::new();
+
+        println!("#### Date          Revenue    Expense    Balance             Category                 Epic   Title");
+
+        for entry in &self.entries {
+            sum.inc();
+            sum.inc_revenue(entry.revenue());
+            sum.inc_expense(entry.expense());
+            sum.inc_balance(entry.balance());
+
+            // let revenue = ZeroString::from(entry.revenue());
+
+            println!("{:<4} {} {:>10.2} {:>10.2} {:>10.2} {:>20} {:>20}   {}",
+                sum.n,
+                entry.date().ymd(),
+                // revenue.to_string(),
+                entry.revenue(),
+                entry.expense(),
+                entry.balance(),
+                entry.category(),
+                entry.epic(),
+                entry.title(),
+            );
+        }
+
+        println!("TOTAL           {:>10.2} {:>10.2} {:>10.2}",
+            sum.revenue,
+            sum.expense,
+            sum.balance);
     }
 }
 
