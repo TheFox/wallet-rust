@@ -1,8 +1,6 @@
 
-// use std::fmt::{Display, Formatter, Result as FmtRes};
 use uuid::Uuid;
 use crate::yaml::ToYaml;
-use std::str::FromStr;
 use yaml_rust::Yaml;
 use yaml_rust::yaml::Hash;
 
@@ -70,14 +68,52 @@ impl ToYaml for Epic {
 }
 
 #[cfg(test)]
-mod tests {
+mod tests_basic {
     use super::Epic;
 
     #[test]
-    fn test_epic_default() {
+    fn test_epic1() {
         let e1 = Epic::new();
         assert_eq!("default", e1.handle());
         assert_eq!("Default", e1.title());
         assert_eq!("#ffffff", e1.bgcolor());
+    }
+}
+
+#[cfg(test)]
+mod tests_to_yaml {
+    use super::Epic;
+    use crate::yaml::ToYaml;
+    use yaml_rust::Yaml;
+
+    #[test]
+    fn test_epic_to_yaml1() {
+        let e1 = Epic::new();
+        let h1 = e1.to_yaml();
+
+        if let Yaml::Hash(ref epic) = h1 {
+            let key = "handle".to_string().to_yaml();
+            if let Yaml::String(ref val_ref) = epic[&key] {
+                assert_eq!("default", val_ref);
+            } else {
+                assert!(false);
+            }
+
+            let key = "title".to_string().to_yaml();
+            if let Yaml::String(ref val_ref) = epic[&key] {
+                assert_eq!("Default", val_ref);
+            } else {
+                assert!(false);
+            }
+
+            let key = "bg_color".to_string().to_yaml();
+            if let Yaml::String(ref val_ref) = epic[&key] {
+                assert_eq!("#ffffff", val_ref);
+            } else {
+                assert!(false);
+            }
+        } else {
+            assert!(false);
+        }
     }
 }

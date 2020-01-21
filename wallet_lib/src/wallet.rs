@@ -3,29 +3,24 @@ use std::convert::From;
 use std::path::PathBuf;
 use std::fs::create_dir_all;
 use glob::glob;
-use std::io::Write;
-use std::fmt;
 use std::fmt::{Display, Formatter, Result as FmtRes};
 use std::vec::Vec;
-use std::cmp::Ordering;
 use crate::entry::Entry;
 use crate::epic::Epic;
 use crate::yaml::YamlFile;
 use crate::date::Date;
 use crate::command::CommandOptions;
 
-#[derive(Debug)]
-pub struct Wallet {
-    path: PathBuf,
-    data_dir: PathBuf,
-    html_dir: PathBuf,
-    tmp_dir: PathBuf,
-    index_file: PathBuf,
-    epics_file: PathBuf,
-}
-
 pub struct AddedResult {
     month_file_name: String,
+}
+
+impl AddedResult {
+    pub fn new() -> Self {
+        AddedResult {
+            month_file_name: String::new(),
+        }
+    }
 }
 
 pub enum AddResult {
@@ -65,8 +60,6 @@ impl FilterOptions {
 
 impl From<CommandOptions> for FilterOptions {
     fn from(options: CommandOptions) -> FilterOptions {
-        println!("-> FilterOptions::from()");
-
         let mut foptions = FilterOptions::new();
         foptions.date = options.date;
         foptions.filter_revenue = options.filter_revenue;
@@ -76,6 +69,16 @@ impl From<CommandOptions> for FilterOptions {
 
         foptions
     }
+}
+
+#[derive(Debug)]
+pub struct Wallet {
+    path: PathBuf,
+    data_dir: PathBuf,
+    html_dir: PathBuf,
+    tmp_dir: PathBuf,
+    index_file: PathBuf,
+    epics_file: PathBuf,
 }
 
 impl Wallet {
@@ -314,7 +317,64 @@ impl Wallet {
 }
 
 #[cfg(test)]
-mod tests {
+mod tests_addedresult {
+    use super::AddedResult;
+
+    #[test]
+    fn test_addedresult_new() {
+        AddedResult::new();
+    }
+}
+
+#[cfg(test)]
+mod tests_addresult {
+    use super::{AddedResult, AddResult};
+
+    #[test]
+    fn test_addresult1() {
+        let r1 = AddResult::ExistsInIndex;
+        assert_eq!("No", format!("{}", r1));
+    }
+
+    #[test]
+    fn test_addresult2() {
+        let r1 = AddResult::Added(AddedResult::new());
+        assert_eq!("Yes", format!("{}", r1));
+    }
+}
+
+#[cfg(test)]
+mod tests_filteroptions_basic {
+    use super::FilterOptions;
+
+    #[test]
+    fn test_filteroptions1() {
+        FilterOptions::new();
+    }
+}
+
+#[cfg(test)]
+mod tests_filteroptions_from {
+    use super::FilterOptions;
+    use crate::command::CommandOptions;
+
+    #[test]
+    fn test_filteroptions_from_commandoptions1() {
+        let mut copt1 = CommandOptions::new();
+        copt1.category = Some("test1".to_string());
+
+        let fopt1 = FilterOptions::from(copt1);
+        if let Some(category) = fopt1.category {
+            assert_eq!("test1", category);
+        }
+        else {
+            assert!(false);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests_wallet {
     use std::path::Path;
     use std::str::FromStr;
     use std::string::ToString;
@@ -325,7 +385,8 @@ mod tests {
 
     #[test]
     fn test_new_wallet() {
-        let w1 = Wallet::new(String::from("../tmp/tests/wallet1"));
+        Wallet::new(String::from("../tmp/tests/wallet1"));
+
         assert!(Path::new("../tmp/tests/wallet1").exists());
         assert!(Path::new("../tmp/tests/wallet1/data").exists());
         assert!(Path::new("../tmp/tests/wallet1/html").exists());
@@ -347,7 +408,7 @@ mod tests {
                         assert_eq!("month_1987_02.yml", month_file_name);
                         true
                     },
-                    _ => false,
+                    // _ => false,
                 }
             },
             _ => false,

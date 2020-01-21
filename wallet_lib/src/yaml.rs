@@ -3,14 +3,12 @@ use std::path::PathBuf;
 use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::string::ToString;
-use std::convert::From;
-use std::fmt::{Display, Formatter, Result as FmtRes};
+// use std::convert::From;
+// use std::fmt::{Display, Formatter, Result as FmtRes};
 use yaml_rust::{Yaml, YamlLoader, YamlEmitter};
 use yaml_rust::yaml::Hash;
-// use chrono::{NaiveDate, Datelike};
-// use chrono::{DateTime, TimeZone, NaiveDateTime, Utc};
 use chrono::{DateTime, Utc};
-use crate::epic::Epic;
+// use crate::epic::Epic;
 
 #[derive(Debug)]
 enum YamlFileKind {
@@ -99,8 +97,8 @@ impl YamlFile {
                         let index_key = "days".to_string().to_yaml();
                         let index_val = Yaml::Hash(Hash::new());
                         content_ref.insert(index_key, index_val);
-                    }
-                    _ => unreachable!("init() not implemented for {:?}", self.kind),
+                    },
+                    // _ => unreachable!("init() not implemented for {:?}", self.kind),
                 }
             }
         }
@@ -155,7 +153,8 @@ impl YamlFile {
                         let date_key = "date".to_string().to_yaml();
                         // println!("-> date_key: {:?}", date_key);
 
-                        if let Yaml::String(ref date_ref) = entry_ref[&date_key] {
+                        // TODO: date_ref not used?
+                        if let Yaml::String(ref _date_ref) = entry_ref[&date_key] {
                             // println!("-> date_ref: {:?}", date_ref);
 
                             let index_key = "days".to_string().to_yaml();
@@ -181,7 +180,7 @@ impl YamlFile {
                         }
                     }
                 },
-                _ => unreachable!("Yaml::add() not implemented for {:?}", self.kind),
+                // _ => unreachable!("Yaml::add() not implemented for {:?}", self.kind),
             }
         }
 
@@ -376,7 +375,6 @@ impl YamlFile {
 
 impl Drop for YamlFile {
     fn drop(&mut self) {
-        // println!("-> YamlFile::drop()");
         self.close();
     }
 }
@@ -390,11 +388,10 @@ pub trait FromYaml {
 }
 
 #[cfg(test)]
-mod tests {
+mod tests_file {
     use std::path::PathBuf;
-    use std::fs::remove_file;
     use std::str::FromStr;
-    use super::{YamlFile, ToYaml};
+    use super::YamlFile;
     use crate::entry::Entry;
     use crate::epic::Epic;
     use crate::date::Date;

@@ -1,7 +1,5 @@
 
 use std::fmt::{Display, Formatter, Result as FmtRes};
-use std::string::ToString;
-use crate::types::Number;
 
 pub struct ShortString {
     s: String,
@@ -26,7 +24,7 @@ impl ShortString {
 
 impl Display for ShortString {
     fn fmt(&self, f: &mut Formatter) -> FmtRes {
-        if self.s.len() > self.max_len {
+        if self.s.len() > self.max_len && self.max_len >= 3 {
             let s = &self.s[..(self.max_len - 3)];
             write!(f, "{}...", s)
         } else {
@@ -35,34 +33,37 @@ impl Display for ShortString {
     }
 }
 
-/// If it's 0.0 it will be converted to "".
-pub struct ZeroString {
-    n: Number,
+pub trait ToShortString {
+    fn to_short_string(self, max_len: usize) -> ShortString;
 }
 
-impl ZeroString {
-    pub fn new() -> Self {
-        ZeroString {
-            n: 0.0,
-        }
+#[cfg(test)]
+mod tests_basic {
+    use super::ShortString;
+
+    #[test]
+    fn test_short_string1() {
+        ShortString::new();
     }
 
-    // TODO: use real from trait
-    pub fn from(n: Number) -> Self {
-        ZeroString {
-            n,
-        }
+    #[test]
+    fn test_short_string2() {
+        let s1 = ShortString::from("ABCDEFGH".to_string(), 8);
+        assert_eq!("ABCDEFGH", format!("{}", s1));
+    }
+
+    #[test]
+    fn test_short_string3() {
+        let s1 = ShortString::from("ABCDEFGH".to_string(), 5);
+        assert_eq!("AB...", format!("{}", s1));
+
+        let s1 = ShortString::from("ABCDEFGH".to_string(), 4);
+        assert_eq!("A...", format!("{}", s1));
+
+        let s1 = ShortString::from("ABCDEFGH".to_string(), 3);
+        assert_eq!("...", format!("{}", s1));
+
+        let s1 = ShortString::from("ABCDEFGH".to_string(), 2);
+        assert_eq!("ABCDEFGH", format!("{}", s1));
     }
 }
-
-impl Display for ZeroString {
-    fn fmt(&self, f: &mut Formatter) -> FmtRes {
-        if self.n != 0.0 {
-            write!(f, "{}", self.n)
-        } else {
-            write!(f, "")
-        }
-    }
-}
-
-// TODO tests

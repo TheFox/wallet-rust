@@ -1,13 +1,14 @@
 /// Extern Implementations
 
-use crate::types::Number;
+use crate::number::NumberType;
 use crate::yaml::ToYaml;
+use crate::string::{ShortString, ToShortString};
 use yaml_rust::Yaml;
 use yaml_rust::yaml::Hash;
 
 pub trait StringExt {
     fn replace_comma(&self) -> String;
-    fn to_num(&self) -> Number;
+    fn to_num(&self) -> NumberType;
 }
 
 impl StringExt for String {
@@ -15,22 +16,24 @@ impl StringExt for String {
     /// instead of 1.23 as a floating point number.
     /// This function replaces ',' with '.'.
     fn replace_comma(&self) -> String {
-        // println!("-> String.replace_comma() -> {:?}", self);
-
         self.replace(",", ".")
     }
 
     /// Convert String to Number.
-    fn to_num(&self) -> Number {
-        // println!("-> String.to_num() -> {:?}", self);
-
-        self.parse().expect("Failed to convert String to Number")
+    fn to_num(&self) -> NumberType {
+        self.parse().expect("Failed to convert String to NumberType")
     }
 }
 
 impl ToYaml for String {
     fn to_yaml(self) -> Yaml {
         Yaml::String(self)
+    }
+}
+
+impl ToShortString for String {
+    fn to_short_string(self, max_len: usize) -> ShortString {
+        ShortString::from(self, max_len)
     }
 }
 
@@ -69,33 +72,32 @@ impl ToYaml for Hash {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{StringExt, BoolExt};
+mod tests_str_ext {
+    use super::StringExt;
     use crate::yaml::ToYaml;
     use yaml_rust::Yaml;
-    use yaml_rust::yaml::Hash;
 
     #[test]
     fn test_strext_replace_comma1() {
-        let s1 = String::from("1,2");
+        let s1 = "1,2".to_string();
         assert_eq!("1.2", s1.replace_comma());
     }
 
     #[test]
     fn test_strext_to_num1() {
-        let s1 = String::from("1.3");
+        let s1 = "1.3".to_string();
         assert_eq!(1.3, s1.to_num());
     }
 
     #[test]
     fn test_strext_to_num2() {
-        let s1 = String::from("1,3");
+        let s1 = "1,3".to_string();
         assert_eq!(1.3, s1.replace_comma().to_num());
     }
 
     #[test]
-    fn test_strext_to_toyaml1() {
-        let s1 = String::from("hello1").to_yaml();
+    fn test_strext_to_yaml1() {
+        let s1 = "hello1".to_string().to_yaml();
 
         assert!(match s1 {
             Yaml::String(s2) => {
@@ -106,6 +108,11 @@ mod tests {
             _ => false,
         });
     }
+}
+
+#[cfg(test)]
+mod tests_bool_ext {
+    use super::BoolExt;
 
     #[test]
     fn test_boolext_yn1() {
@@ -126,6 +133,13 @@ mod tests {
         assert_eq!("YES", true.yn());
         assert!(b1);
     }
+}
+
+#[cfg(test)]
+mod tests_to_yaml {
+    use yaml_rust::Yaml;
+    use yaml_rust::yaml::Hash;
+    use crate::yaml::ToYaml;
 
     #[test]
     fn test_hash_toyaml() {
@@ -133,8 +147,19 @@ mod tests {
         let x = h.to_yaml();
 
         assert!(match x {
-            Yaml::Hash(y) => true,
+            Yaml::Hash(_y) => true,
             _ => false,
         });
+    }
+}
+
+#[cfg(test)]
+mod tests_to_short_string {
+    use crate::string::ToShortString;
+
+    #[test]
+    fn test_to_short_string1() {
+        let s1 = "ABCDEFGH".to_string().to_short_string(5);
+        assert_eq!("AB...", format!("{}", s1));
     }
 }

@@ -9,7 +9,7 @@ cd "${SCRIPT_BASEDIR}/.."
 
 mkdir -p tmp
 
-export RUST_BACKTRACE=1
+export RUST_BACKTRACE=full
 export RUSTFLAGS=-Awarnings
 
 set -x

@@ -9,8 +9,9 @@ which strip &> /dev/null || { echo 'ERROR: strip not found in PATH'; exit 1; }
 
 cd "${SCRIPT_BASEDIR}/.."
 
-export RUST_BACKTRACE=full
-export RUSTFLAGS=-Awarnings
+#export RUST_BACKTRACE=full
+export RUST_BACKTRACE=1
+#export RUSTFLAGS=-Awarnings
 
 echo "TEST_OPTS: '${TEST_OPTS}'"
 

@@ -3,7 +3,7 @@ use std::convert::From;
 use crate::wallet::{Wallet, FilterOptions};
 use crate::entry::{Entry, EntryDisplay, EntryDisplayKind};
 use crate::epic::Epic;
-use crate::types::Number;
+use crate::number::NumberType;
 use crate::date::Date;
 use crate::ext::BoolExt;
 
@@ -15,8 +15,8 @@ pub struct CommandOptions {
     pub id: Option<String>,
     pub title: Option<String>,
     pub date: Option<Date>,
-    pub revenue: Option<Number>,
-    pub expense: Option<Number>,
+    pub revenue: Option<NumberType>,
+    pub expense: Option<NumberType>,
     pub filter_revenue: Option<bool>,
     pub filter_expense: Option<bool>,
     pub category: Option<String>,
@@ -89,12 +89,12 @@ impl Command {
         println!("-> Command::exec()");
 
         match self.kind {
+            CommandKind::None => (),
             CommandKind::InitCommand => self.exec_init(),
             CommandKind::AddCommand => self.exec_add(),
             CommandKind::EpicCommand => self.exec_epic(),
             CommandKind::ListCommand => self.exec_list(),
             CommandKind::HtmlCommand => self.exec_html(),
-            _ => unreachable!("Command not implemented"),
         }
     }
 
@@ -169,5 +169,16 @@ impl Command {
 
         let wallet = Wallet::new(self.options.get_wallet_path());
         wallet.html(); // TODO
+    }
+}
+
+#[cfg(test)]
+mod tests_basic {
+    use super::{Command, CommandKind, CommandOptions};
+
+    #[test]
+    fn test_command1() {
+        let options = CommandOptions::new();
+        Command::new(CommandKind::None, options);
     }
 }

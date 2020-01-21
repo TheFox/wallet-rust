@@ -284,7 +284,6 @@ fn main() {
             cmd_kind = CommandKind::ListCommand;
 
             // Date
-            // set_date_fill(list_matches, &mut cmd_options);
             set_date_silent(list_matches, &mut cmd_options);
 
             // Category
@@ -316,7 +315,9 @@ fn main() {
             // Cmd
             cmd_kind = CommandKind::HtmlCommand;
         },
-        _ => unreachable!(),
+        _ => {
+            println!("No command.");
+        },
     }
 
     let cmd = Command::new(cmd_kind, cmd_options);
@@ -336,14 +337,12 @@ fn set_title(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
 }
 
 fn set_date_fill(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
-    if !matches.is_present("date") {
-        return;
-    }
-
-    // &str
-    let vs = matches.value_of("date").unwrap();
-
-    let mut date = Date::from_str(vs).expect("Unable to parse given Date");
+    let mut date = if matches.is_present("date") {
+        let vs = matches.value_of("date").unwrap();
+        Date::from_str(vs).expect("Unable to parse given Date")
+    } else {
+        Date::new()
+    };
 
     // Now
     let now: DateTime<Local> = Local::now();
@@ -369,9 +368,7 @@ fn set_date_silent(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
         return;
     }
 
-    // &str
     let vs = matches.value_of("date").unwrap();
-
     let mut date = Date::from_str(vs).expect("Unable to parse given Date");
 
     // Now
