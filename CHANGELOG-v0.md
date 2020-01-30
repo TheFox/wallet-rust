@@ -5,6 +5,7 @@
 - Add Command
 - List Command
 - HTML Command
+- MIT License
 
 ## v0.0.0
 
