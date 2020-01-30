@@ -134,7 +134,6 @@ mod tests_basic {
 #[cfg(test)]
 mod tests_add {
     use super::Number;
-    // use std::ops::{Add, AddAssign};
 
     #[test]
     fn test_number_add1() {

@@ -1,7 +1,7 @@
 
 extern crate clap;
 use clap::{App, Arg, ArgMatches};
-use std::env;
+use std::env::args;
 use std::str::FromStr;
 use chrono::{Local, DateTime, Datelike};
 use wallet_lib::command::CommandOptions;
@@ -11,7 +11,8 @@ use wallet_lib::ext::StringExt;
 use wallet_lib::types::Number;
 use wallet_lib::date::Date;
 
-const APP_NAME: &'static str = env!("CARGO_PKG_NAME");
+// const APP_NAME: &'static str = env!("CARGO_PKG_NAME");
+const APP_NAME: &'static str = "WalletRust";
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 const APP_AUTHORS: &'static str = env!("CARGO_PKG_AUTHORS");
 const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
@@ -20,7 +21,7 @@ const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 fn main() {
     println!("-> start");
 
-    let args: Vec<String> = env::args().collect();
+    let args: Vec<String> = args().collect();
     // println!("-> args: '{:?}'", args);
 
     // Vars Sub Command
@@ -314,6 +315,25 @@ fn main() {
 
             // Cmd
             cmd_kind = CommandKind::HtmlCommand;
+
+            // Date
+            set_date_silent(html_matches, &mut cmd_options);
+
+            // Category
+            set_category(html_matches, &mut cmd_options);
+
+            // Epic
+            set_epic(html_matches, &mut cmd_options);
+
+            // Revenue
+            if html_matches.is_present("revenue") {
+                cmd_options.filter_revenue = Some(true);
+            }
+
+            // Expense
+            if html_matches.is_present("expense") {
+                cmd_options.filter_expense = Some(true);
+            }
         },
         _ => {
             println!("No command.");
@@ -336,6 +356,7 @@ fn set_title(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     cmd_options.title = Some(vs.to_string());
 }
 
+/// Use the date from the command-line and update the used-flag in Date object.
 fn set_date_fill(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     let mut date = if matches.is_present("date") {
         let vs = matches.value_of("date").unwrap();
@@ -363,6 +384,7 @@ fn set_date_fill(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     cmd_options.date = Some(date);
 }
 
+/// Use the date from the command-line and skip setting the used-flag.
 fn set_date_silent(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     if !matches.is_present("date") {
         return;

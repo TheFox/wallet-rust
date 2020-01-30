@@ -35,9 +35,9 @@ impl Entry {
             revenue: Number::new(),
             expense: Number::new(),
             balance: Number::new(),
-            category: String::from("default"),
+            category: "default".to_string(),
             comment: String::new(),
-            epic: String::from("default"),
+            epic: "default".to_string(),
         }
     }
 

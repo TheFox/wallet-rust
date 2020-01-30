@@ -3,12 +3,9 @@ use std::path::PathBuf;
 use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::string::ToString;
-// use std::convert::From;
-// use std::fmt::{Display, Formatter, Result as FmtRes};
 use yaml_rust::{Yaml, YamlLoader, YamlEmitter};
 use yaml_rust::yaml::Hash;
 use chrono::{DateTime, Utc};
-// use crate::epic::Epic;
 
 #[derive(Debug)]
 enum YamlFileKind {
@@ -315,7 +312,7 @@ impl YamlFile {
         let mut file = File::create(&self.path)
             .expect("Cannot open file for writing");
 
-            // println!("-> file.write_all");
+        // println!("-> file.write_all");
         file.write_all(out_str.as_bytes())
             .expect("Cannot write file");
 

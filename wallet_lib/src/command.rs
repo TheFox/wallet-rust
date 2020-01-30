@@ -12,6 +12,7 @@ use crate::ext::BoolExt;
 #[derive(Debug, Clone)]
 pub struct CommandOptions {
     pub wallet_path: String,
+    pub html_path: String,
     pub id: Option<String>,
     pub title: Option<String>,
     pub date: Option<Date>,
@@ -34,6 +35,7 @@ impl CommandOptions {
     pub fn new() -> Self {
         CommandOptions {
             wallet_path: String::new(),
+            html_path: String::new(),
             id: None,
             title: None,
             date: None,
@@ -148,6 +150,8 @@ impl Command {
         let wallet = Wallet::new(self.options.get_wallet_path());
         let entries = wallet.filter(options);
 
+        // TODO: dynamic DisplayKind. use terminal width to determine which EntryDisplayKind value to use when no option is provided. maybe calculate width.
+
         // Kind
         let mut kind = EntryDisplayKind::Normal;
 
@@ -167,8 +171,10 @@ impl Command {
     fn exec_html(&self) {
         println!("-> Command::exec_html()");
 
+        let options = FilterOptions::from(self.options.clone());
+
         let wallet = Wallet::new(self.options.get_wallet_path());
-        wallet.html(); // TODO
+        wallet.html(options);
     }
 }
 

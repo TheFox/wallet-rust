@@ -1,5 +1,6 @@
 
 use std::convert::From;
+use std::env::current_dir;
 use std::path::PathBuf;
 use std::fs::create_dir_all;
 use glob::glob;
@@ -10,6 +11,7 @@ use crate::epic::Epic;
 use crate::yaml::YamlFile;
 use crate::date::Date;
 use crate::command::CommandOptions;
+use crate::mustache::{MustacheFileKind, MustacheFile};
 
 pub struct AddedResult {
     month_file_name: String,
@@ -82,6 +84,7 @@ pub struct Wallet {
 }
 
 impl Wallet {
+    /// New Wallet
     pub fn new(path: String) -> Self {
         println!("-> Wallet::new({})", path);
 
@@ -127,6 +130,7 @@ impl Wallet {
         create_dir_all(&self.tmp_dir).expect("Cannot create tmp directory.");
     }
 
+    /// Add Entry
     pub fn add(&self, entry: Entry, force: bool) -> AddResult {
         println!("-> Wallet::add(f={:?})", force);
         println!("-> entry {:?}", entry);
@@ -168,6 +172,7 @@ impl Wallet {
         })
     }
 
+    /// Add Epic
     pub fn add_epic(&self, epic: Epic) -> bool {
         let mut epics_file = YamlFile::open_epics(self.epics_file.clone());
 
@@ -180,7 +185,7 @@ impl Wallet {
         }
     }
 
-    // TODO
+    /// Retrieve Entries by a set of filters.
     pub fn filter(&self, options: FilterOptions) -> Vec<Entry> {
         println!("-> Wallet::filter()");
         // println!("-> options: {:?}", options);
@@ -299,20 +304,32 @@ impl Wallet {
             true
         });
 
-
         let mut filtered_items: Vec<&Entry> = filter.collect();
-        // println!("-> filtered_items: {:?}", filtered_items.len());
-
         filtered_items.sort_by(|a, b| a.date().to_string().cmp(&b.date().to_string()));
 
         let items = filtered_items.into_iter().map(|item| item.clone()).collect();
-
         items
     }
 
-    // TODO
-    pub fn html(&self) {
+    /// HTML
+    pub fn html(&self, _options: FilterOptions) {
         println!("-> Wallet::html()");
+
+        let cwd = current_dir().expect("Cannot get current dir");
+        println!("cwd: {}", cwd.display());
+
+        let up = cwd.join("..");
+        println!("up: {}", up.display());
+
+        // let entries = self.filter(_options);
+        // for _entry in entries {
+        //     println!("-> entry");
+        // }
+
+        let index_file_path = self.html_dir.join("index.html");
+        println!("index_file: {}", index_file_path.display());
+        let index_file = MustacheFile::new(MustacheFileKind::IndexFile, index_file_path.to_str().unwrap().to_string());
+        index_file.render();
     }
 }
 
@@ -374,33 +391,36 @@ mod tests_filteroptions_from {
 }
 
 #[cfg(test)]
-mod tests_wallet {
+mod tests_wallet_basic {
     use std::path::Path;
-    use std::str::FromStr;
-    use std::string::ToString;
-    use super::{Wallet, AddResult, AddedResult};
-    use crate::entry::Entry;
-    use crate::epic::Epic;
-    use crate::date::Date;
+    use super::Wallet;
 
     #[test]
-    fn test_new_wallet() {
-        Wallet::new(String::from("../tmp/tests/wallet1"));
+    fn test_wallet_new() {
+        Wallet::new("../tmp/tests/wallet1".to_string());
 
         assert!(Path::new("../tmp/tests/wallet1").exists());
         assert!(Path::new("../tmp/tests/wallet1/data").exists());
         assert!(Path::new("../tmp/tests/wallet1/html").exists());
         assert!(Path::new("../tmp/tests/wallet1/tmp").exists());
     }
+}
+
+#[cfg(test)]
+mod tests_wallet_entry {
+    use std::str::FromStr;
+    use super::{Wallet, AddResult, AddedResult};
+    use crate::entry::Entry;
+    use crate::date::Date;
 
     #[test]
-    fn test_wallet_add_entry() {
+    fn test_wallet_entry_add() {
         let d1 = Date::from_str("1987-02-21").unwrap();
 
         let mut e1 = Entry::new();
         e1.set_date(d1);
 
-        let w1 = Wallet::new(String::from("../tmp/tests/wallet2"));
+        let w1 = Wallet::new("../tmp/tests/wallet2".to_string());
         assert!(match w1.add(e1, false) {
             AddResult::Added(res) => {
                 match res {
@@ -414,15 +434,21 @@ mod tests_wallet {
             _ => false,
         });
     }
+}
+
+#[cfg(test)]
+mod tests_wallet_epic {
+    use super::Wallet;
+    use crate::epic::Epic;
 
     #[test]
-    fn test_wallet_add_epic() {
+    fn test_wallet_epic_add() {
         let mut e1 = Epic::new();
         e1.set_handle("h1".to_string());
         e1.set_title("t1".to_string());
         e1.set_bgcolor("#ff0000".to_string());
 
-        let w1 = Wallet::new(String::from("../tmp/tests/wallet3"));
+        let w1 = Wallet::new("../tmp/tests/wallet3".to_string());
         assert!(w1.add_epic(e1));
     }
 }

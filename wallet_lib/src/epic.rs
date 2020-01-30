@@ -18,9 +18,9 @@ impl Epic {
 
         Self {
             id: Uuid::new_v4().to_string(),
-            handle: String::from("default"),
-            title: String::from("Default"),
-            bgcolor: String::from("#ffffff"),
+            handle: "default".to_string(),
+            title: "Default".to_string(),
+            bgcolor: "#ffffff".to_string(),
         }
     }
 

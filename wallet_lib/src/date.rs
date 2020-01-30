@@ -68,6 +68,7 @@ impl Date {
         self.used |= 1 << (Parts::Year as u8 - 1);
     }
 
+    /// Set new Year but skip setting the used-flag.
     pub fn raw_set_year(&mut self, y: i32) {
         self.date = self.date.with_year(y).expect("Invalid year");
     }
@@ -87,6 +88,7 @@ impl Date {
         self.used |= 1 << (Parts::Month as u8 - 1);
     }
 
+    /// Set new Month but skip setting the used-flag.
     pub fn raw_set_month(&mut self, m: u32) {
         self.date = self.date.with_month(m).expect("Invalid month");
     }
@@ -101,6 +103,7 @@ impl Date {
         self.used |= 1;
     }
 
+    /// Set new Day but skip setting the used-flag.
     pub fn raw_set_day(&mut self, d: u32) {
         self.date = self.date.with_day(d).expect("Invalid day");
     }
