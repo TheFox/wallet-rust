@@ -1,7 +1,8 @@
 
 use std::convert::From;
 use crate::wallet::{Wallet, FilterOptions};
-use crate::entry::{Entry, EntryDisplay, EntryDisplayKind};
+use crate::entry::Entry;
+// use crate::entry::{EntryDisplay, EntryDisplayKind};
 use crate::epic::Epic;
 use crate::number::NumberType;
 use crate::date::Date;
@@ -154,19 +155,22 @@ impl Command {
         // TODO: dynamic DisplayKind. use terminal width to determine which EntryDisplayKind value to use when no option is provided. maybe calculate width.
 
         // Kind
-        let mut kind = EntryDisplayKind::Normal;
+        // let mut kind = EntryDisplayKind::Normal;
 
-        if let Some(long_opt) = self.options.long {
-            if long_opt {
-                kind = EntryDisplayKind::Long;
-            } else {
-                kind = EntryDisplayKind::Short;
-            }
-        }
+        // if let Some(long_opt) = self.options.long {
+        //     if long_opt {
+        //         kind = EntryDisplayKind::Long;
+        //     } else {
+        //         kind = EntryDisplayKind::Short;
+        //     }
+        // }
 
         // TODO: use filterresult here
         // let entry_display = EntryDisplay::new(entries, kind);
         // entry_display.show();
+
+        // Debug
+        println!("-> result: {:?}", result);
     }
 
     /// HTML

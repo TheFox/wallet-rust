@@ -15,7 +15,7 @@ use crate::command::CommandOptions;
 use crate::mustache::{MustacheFileKind, MustacheFile};
 use crate::number::Number;
 
-pub type Year = u32;
+pub type Year = i32;
 pub type Month = u8;
 pub type Day = u8;
 
@@ -80,6 +80,7 @@ impl From<CommandOptions> for FilterOptions {
     }
 }
 
+#[derive(Debug)]
 struct DaySummary {
     //pub entries,
 
@@ -90,6 +91,7 @@ struct DaySummary {
     // TODO: categories, epics
 }
 
+#[derive(Debug)]
 struct MonthSummary {
     // pub days: HashMap<Day, DaySummary>,
 
@@ -100,27 +102,48 @@ struct MonthSummary {
     // TODO: categories, epics
 }
 
-pub struct YearSummary {
+#[derive(Debug)]
+pub struct YearSummary<'a> {
+    pub entries: Vec<&'a Entry>,
     // pub months: HashMap<Month, MonthSummary>,
 
-    // pub revenue: Number,
+    pub revenue: Number,
     // pub expense: Number,
     // pub balance: Number,
 
     // TODO: categories, epics
 }
 
+impl<'a> YearSummary<'a> {
+    pub fn new() -> Self {
+        Self {
+            entries: Vec::new(),
+
+            revenue: Number::new(),
+            // expense: Number::new(),
+            // balance: Number::new(),
+        }
+    }
+
+    pub fn add(&mut self, entry: &'a Entry) {
+        println!("-> YearSummary::add()");
+        self.entries.push(entry);
+    }
+}
+
+#[derive(Debug)]
 pub struct FilterResult<'a> {
-    pub entries: Vec<&'a Entry>,
-    pub years: HashMap<Year, YearSummary>,
+    pub entries: Vec<Entry>,
+    pub years: HashMap<Year, YearSummary<'a>>,
 
     pub revenue: Number,
-    pub expense: Number,
-    pub balance: Number,
+    // pub expense: Number,
+    // pub balance: Number,
 
     // TODO: categories, epics
 }
 
+// https://stackoverflow.com/questions/32682876/is-there-any-way-to-return-a-reference-to-a-variable-created-in-a-function
 impl FilterResult<'_> {
     pub fn new() -> Self {
         FilterResult {
@@ -128,12 +151,12 @@ impl FilterResult<'_> {
             years: HashMap::new(),
 
             revenue: Number::new(),
-            expense: Number::new(),
-            balance: Number::new(),
+            // expense: Number::new(),
+            // balance: Number::new(),
         }
     }
 
-    pub fn add<'a>(&mut self, entry: &'a Entry) {
+    pub fn add(&mut self, entry: Entry) {
         println!("-> FilterResult::add()");
         // println!("-> FilterResult::add({:?})", entry);
 
@@ -144,19 +167,42 @@ impl FilterResult<'_> {
 
         println!("  -> date: {:?} {:?} {:?}", year, month, day);
 
-        // self.entries.push(entry);
-
-        println!("-> revenue A: {:?}", self.revenue);
-        println!("-> expense A: {:?}", self.expense);
-        println!("-> balance A: {:?}", self.balance);
+        // println!("  -> revenue A: {:?}", self.revenue);
+        // println!("  -> expense A: {:?}", self.expense);
+        // println!("  -> balance A: {:?}", self.balance);
 
         self.revenue += entry.revenue();
-        self.expense += entry.expense();
-        self.balance += entry.balance();
+        // self.expense += entry.expense();
+        // self.balance += entry.balance();
 
-        println!("-> revenue B: {:?}", self.revenue);
-        println!("-> expense B: {:?}", self.expense);
-        println!("-> balance B: {:?}", self.balance);
+        // println!("  -> revenue B: {:?}", self.revenue);
+        // println!("  -> expense B: {:?}", self.expense);
+        // println!("  -> balance B: {:?}", self.balance);
+
+        // let x: ref YearSummary = self.years.get(&year).unwrap();
+
+        // if let Some(&mut year_summary) = &mut self.years.get(&year) {
+        //     year_summary.year += 42;
+        // }
+
+        match self.years.get_mut(&year) {
+            Some(year_summary) => {
+                println!("  -> old year_summary: {:?}", year_summary);
+                year_summary.add(&entry);
+            },
+            // Some(ref year_summary) => {
+            //     println!("  -> old year_summary: {:?}", year_summary);
+            //     year_summary.year += 42;
+            // },
+            None => {
+                println!("  -> new year_summary");
+                let mut year_summary = YearSummary::new();
+                self.years.insert(year, year_summary);
+            }
+        }
+
+        // Consume entry here.
+        self.entries.push(entry);
     }
 }
 
@@ -401,7 +447,7 @@ impl Wallet {
         for entry in entries {
             // println!("-> entry: {:?}", entry);
 
-            result.add(entry);
+            result.add(entry.clone());
         }
 
         // let mut filtered_items: Vec<&Entry> = filter.collect();
@@ -511,15 +557,15 @@ mod tests_filterresult_basic {
         let e5 = Entry::from("Hi/2002-01-01/0/10");
 
         let mut r1 = FilterResult::new();
-        r1.add(&e1);
-        r1.add(&e2);
-        r1.add(&e3);
-        r1.add(&e4);
-        r1.add(&e5);
+        r1.add(e1);
+        r1.add(e2);
+        r1.add(e3);
+        r1.add(e4);
+        r1.add(e5);
 
-        assert_eq!(30.0, r1.revenue.unwrap());
-        assert_eq!(-40.0, r1.expense.unwrap());
-        assert_eq!(-10.0, r1.balance.unwrap());
+        // assert_eq!(30.0, r1.revenue.unwrap());
+        // assert_eq!(-40.0, r1.expense.unwrap());
+        // assert_eq!(-10.0, r1.balance.unwrap());
 
         // println!("revenue: {:?}", r1.revenue);
         // println!("expense: {:?}", r1.expense);
