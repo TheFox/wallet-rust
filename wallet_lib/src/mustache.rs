@@ -66,24 +66,6 @@ impl MustacheFile {
         let cwd = current_dir().expect("Cannot get current dir");
         println!("cwd: {}", cwd.display());
 
-        // let path = match self.kind {
-        //     MustacheFileKind::IndexFile => INDEX_FILE_TPL,
-        //     MustacheFileKind::YearFile  => YEAR_FILE_TPL,
-        //     MustacheFileKind::MonthFile => MONTH_FILE_TPL,
-        // };
-        // println!("path: {}", path);
-
-        // let path = cwd.join(match self.kind {
-        //     MustacheFileKind::IndexFile => INDEX_FILE_TPL,
-        //     MustacheFileKind::YearFile  => YEAR_FILE_TPL,
-        //     MustacheFileKind::MonthFile => MONTH_FILE_TPL,
-        // });
-        // println!("-> tpl file: {}", path.display());
-
-        // println!("-> YamlFile::read()");
-        // let raw = read_to_string(path)
-        //     .expect("Cannot read template file");
-        // let bytes = include_bytes!("../../resources/views/index.mustache");
         let raw = match self.kind {
             MustacheFileKind::IndexFile => {
                 let bytes = include_bytes!("../../resources/views/index.mustache");
@@ -98,13 +80,6 @@ impl MustacheFile {
                 String::from_utf8_lossy(bytes)
             },
         };
-        // let bytes = include_bytes!(match self.kind {
-        //     MustacheFileKind::IndexFile => ,
-        //     // MustacheFileKind::YearFile  => YEAR_FILE_TPL,
-        //     // MustacheFileKind::MonthFile => MONTH_FILE_TPL,
-        //     _ => "x",
-        // });
-        // let raw = String::from_utf8_lossy(bytes);
 
         let template = compile_str(&raw).unwrap();
         let builder = self.builder();

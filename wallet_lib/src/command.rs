@@ -148,7 +148,8 @@ impl Command {
 
         let options = FilterOptions::from(self.options.clone());
         let wallet = Wallet::new(self.options.get_wallet_path());
-        let entries = wallet.filter(options);
+
+        let result = wallet.filter(options);
 
         // TODO: dynamic DisplayKind. use terminal width to determine which EntryDisplayKind value to use when no option is provided. maybe calculate width.
 
@@ -163,8 +164,9 @@ impl Command {
             }
         }
 
-        let entry_display = EntryDisplay::new(entries, kind);
-        entry_display.show();
+        // TODO: use filterresult here
+        // let entry_display = EntryDisplay::new(entries, kind);
+        // entry_display.show();
     }
 
     /// HTML

@@ -6,12 +6,18 @@ use std::fs::create_dir_all;
 use glob::glob;
 use std::fmt::{Display, Formatter, Result as FmtRes};
 use std::vec::Vec;
+use std::collections::HashMap;
 use crate::entry::Entry;
 use crate::epic::Epic;
 use crate::yaml::YamlFile;
 use crate::date::Date;
 use crate::command::CommandOptions;
 use crate::mustache::{MustacheFileKind, MustacheFile};
+use crate::number::Number;
+
+pub type Year = u32;
+pub type Month = u8;
+pub type Day = u8;
 
 pub struct AddedResult {
     month_file_name: String,
@@ -70,6 +76,84 @@ impl From<CommandOptions> for FilterOptions {
         foptions.epic = options.epic;
 
         foptions
+    }
+}
+
+struct DaySummary {
+    //pub entries,
+
+    // pub revenue: Number,
+    // pub expense: Number,
+    // pub balance: Number,
+
+    // TODO: categories, epics
+}
+
+struct MonthSummary {
+    // pub days: HashMap<Day, DaySummary>,
+
+    // pub revenue: Number,
+    // pub expense: Number,
+    // pub balance: Number,
+
+    // TODO: categories, epics
+}
+
+pub struct YearSummary {
+    // pub months: HashMap<Month, MonthSummary>,
+
+    // pub revenue: Number,
+    // pub expense: Number,
+    // pub balance: Number,
+
+    // TODO: categories, epics
+}
+
+pub struct FilterResult {
+    // pub entries: Vec<&'a Entry>,
+    pub years: HashMap<Year, YearSummary>,
+
+    pub revenue: Number,
+    pub expense: Number,
+    pub balance: Number,
+
+    // TODO: categories, epics
+}
+
+impl FilterResult {
+    pub fn new() -> Self {
+        FilterResult {
+            // entries: Vec::new(),
+            years: HashMap::new(),
+
+            revenue: Number::new(),
+            expense: Number::new(),
+            balance: Number::new(),
+        }
+    }
+
+    pub fn add(&mut self, entry: &Entry) {
+        println!("-> FilterResult::add()");
+        // println!("-> FilterResult::add({:?})", entry);
+
+        let date = entry.date();
+        let year = date.year();
+        let month = date.month();
+        let day = date.day();
+
+        println!("  -> date: {:?} {:?} {:?}", year, month, day);
+
+        // self.entries.push(entry);
+
+        println!("-> revenue A: {:?}", self.revenue);
+        println!("-> expense A: {:?}", self.expense);
+        println!("-> balance A: {:?}", self.balance);
+        self.revenue += entry.revenue();
+        self.expense += entry.expense();
+        self.balance += entry.balance();
+        println!("-> revenue B: {:?}", self.revenue);
+        println!("-> expense B: {:?}", self.expense);
+        println!("-> balance B: {:?}", self.balance);
     }
 }
 
@@ -186,7 +270,7 @@ impl Wallet {
     }
 
     /// Retrieve Entries by a set of filters.
-    pub fn filter(&self, options: FilterOptions) -> Vec<Entry> {
+    pub fn filter(&self, options: FilterOptions) -> FilterResult {
         println!("-> Wallet::filter()");
         // println!("-> options: {:?}", options);
 
@@ -304,11 +388,26 @@ impl Wallet {
             true
         });
 
-        let mut filtered_items: Vec<&Entry> = filter.collect();
-        filtered_items.sort_by(|a, b| a.date().to_string().cmp(&b.date().to_string()));
+        // Result
+        let mut result = FilterResult::new();
 
-        let items = filtered_items.into_iter().map(|item| item.clone()).collect();
-        items
+        // Apply filter.
+        let entries: Vec<&Entry> = filter.collect();
+
+        // Iterate entries.
+        for entry in entries {
+            // println!("-> entry: {:?}", entry);
+
+            result.add(entry);
+        }
+
+        // let mut filtered_items: Vec<&Entry> = filter.collect();
+        // filtered_items.sort_by(|a, b| a.date().to_string().cmp(&b.date().to_string()));
+
+        // let items = filtered_items.into_iter().map(|item| item.clone()).collect();
+        // items
+
+        result
     }
 
     /// HTML
@@ -387,6 +486,41 @@ mod tests_filteroptions_from {
         else {
             assert!(false);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests_filterresult_basic {
+    use super::FilterResult;
+    use crate::entry::Entry;
+
+    #[test]
+    fn test_filterresult1() {
+        FilterResult::new();
+    }
+
+    #[test]
+    fn test_filterresult2() {
+        let e1 = Entry::from("Hi/2001-01-01/30/0");
+        let e2 = Entry::from("Hi/2001-01-02/0/10");
+        let e3 = Entry::from("Hi/2001-01-03/0/10");
+        let e4 = Entry::from("Hi/2001-02-01/0/10");
+        let e5 = Entry::from("Hi/2002-01-01/0/10");
+
+        let mut r1 = FilterResult::new();
+        r1.add(&e1);
+        r1.add(&e2);
+        r1.add(&e3);
+        r1.add(&e4);
+        r1.add(&e5);
+
+        assert_eq!(30.0, r1.revenue.unwrap());
+        assert_eq!(-40.0, r1.expense.unwrap());
+        assert_eq!(-10.0, r1.balance.unwrap());
+
+        // println!("revenue: {:?}", r1.revenue);
+        // println!("expense: {:?}", r1.expense);
+        // println!("balance: {:?}", r1.balance);
     }
 }
 

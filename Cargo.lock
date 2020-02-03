@@ -272,12 +272,12 @@ version = "0.1.0-dev.9"
 dependencies = [
  "chrono 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "wallet-lib 0.1.0-dev.12",
+ "wallet-lib 0.1.0-dev.13",
 ]
 
 [[package]]
 name = "wallet-lib"
-version = "0.1.0-dev.12"
+version = "0.1.0-dev.13"
 dependencies = [
  "chrono 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "glob 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",

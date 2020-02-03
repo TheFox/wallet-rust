@@ -169,6 +169,33 @@ impl From<CommandOptions> for Entry {
     }
 }
 
+impl From<&str> for Entry {
+    fn from(s: &str) -> Entry {
+        // println!("-> Entry::from<&str>({:?})", s);
+
+        Entry::from(s.to_string())
+    }
+}
+
+impl From<String> for Entry {
+    fn from(s: String) -> Entry {
+        // println!("-> Entry::from<String>({:?})", s);
+
+        let items: Vec<&str> = s.split('/').collect();
+        // println!("-> items: {:?}", items);
+
+        let date = Date::from_str(items[1]).expect("Failed to parse Date from String");
+        // println!("-> date: {:?}", date);
+
+        let mut entry = Entry::new();
+        entry.set_title(items[0].to_string());
+        entry.set_date(date);
+        entry.set_revenue(items[2].parse().unwrap());
+        entry.set_expense(items[3].parse().unwrap());
+        entry
+    }
+}
+
 // TODO: remove
 impl From<i8> for Entry {
     fn from(_y: i8) -> Entry {
@@ -528,6 +555,35 @@ mod tests_basic {
 mod tests_from_commandoptions {}
 
 #[cfg(test)]
+mod tests_from_string {
+    use std::convert::From;
+    use super::Entry;
+
+    #[test]
+    fn test_entry_from_string1() {
+        Entry::from("Hello World/2001-02-03/30/20");
+    }
+
+    #[test]
+    fn test_entry_from_string2() {
+        let e1 = Entry::from("Hello World/2001-02-03/30/20".to_string());
+
+        assert_eq!("Hello World", e1.title());
+
+        let d1 = e1.date();
+        assert_eq!(2001, d1.year());
+
+        assert!(e1.has_revenue());
+        assert!(e1.has_expense());
+        assert_eq!(30.0, e1.revenue().unwrap());
+        assert_eq!(-20.0, e1.expense().unwrap());
+        assert_eq!(10.0, e1.balance().unwrap());
+
+        // assert!(false);
+    }
+}
+
+#[cfg(test)]
 mod tests_to_yaml {}
 
 #[cfg(test)]
@@ -577,13 +633,13 @@ mod tests_sum {
     use crate::number::Number;
 
     #[test]
-    fn test_sum1() {
+    fn test_entry_sum1() {
         let s1 = EntrySum::new();
         assert_eq!(0, s1.n);
     }
 
     #[test]
-    fn test_sum2() {
+    fn test_entry_sum2() {
         let mut s1 = EntrySum::new();
         s1.inc();
         s1.inc();

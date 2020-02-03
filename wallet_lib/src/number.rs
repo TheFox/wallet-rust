@@ -45,6 +45,8 @@ impl Add for Number {
 
 impl AddAssign for Number {
     fn add_assign(&mut self, other: Self) {
+        println!("-> Number::add_assign({:?})", other);
+
         *self = Self {
             n: self.n + other.n,
         };
@@ -151,6 +153,24 @@ mod tests_add {
         n1 += n2;
 
         assert_eq!(3.0, n1.unwrap());
+    }
+
+    #[test]
+    fn test_number_add3() {
+        let mut n1 = Number::from(3.0);
+        let n2 = Number::from(-2.0);
+        n1 += n2;
+
+        assert_eq!(1.0, n1.unwrap());
+    }
+
+    #[test]
+    fn test_number_add4() {
+        let mut n1 = Number::from(3.0);
+        let n2 = Number::from(-5.0);
+        n1 += n2;
+
+        assert_eq!(-2.0, n1.unwrap());
     }
 }
 
