@@ -69,6 +69,7 @@ impl FilterOptions {
 impl From<CommandOptions> for FilterOptions {
     fn from(options: CommandOptions) -> FilterOptions {
         let mut foptions = FilterOptions::new();
+
         foptions.date = options.date;
         foptions.filter_revenue = options.filter_revenue;
         foptions.filter_expense = options.filter_expense;
@@ -109,8 +110,8 @@ pub struct YearSummary {
     // TODO: categories, epics
 }
 
-pub struct FilterResult {
-    // pub entries: Vec<&'a Entry>,
+pub struct FilterResult<'a> {
+    pub entries: Vec<&'a Entry>,
     pub years: HashMap<Year, YearSummary>,
 
     pub revenue: Number,
@@ -120,10 +121,10 @@ pub struct FilterResult {
     // TODO: categories, epics
 }
 
-impl FilterResult {
+impl FilterResult<'_> {
     pub fn new() -> Self {
         FilterResult {
-            // entries: Vec::new(),
+            entries: Vec::new(),
             years: HashMap::new(),
 
             revenue: Number::new(),
@@ -132,7 +133,7 @@ impl FilterResult {
         }
     }
 
-    pub fn add(&mut self, entry: &Entry) {
+    pub fn add<'a>(&mut self, entry: &'a Entry) {
         println!("-> FilterResult::add()");
         // println!("-> FilterResult::add({:?})", entry);
 
@@ -148,9 +149,11 @@ impl FilterResult {
         println!("-> revenue A: {:?}", self.revenue);
         println!("-> expense A: {:?}", self.expense);
         println!("-> balance A: {:?}", self.balance);
+
         self.revenue += entry.revenue();
         self.expense += entry.expense();
         self.balance += entry.balance();
+
         println!("-> revenue B: {:?}", self.revenue);
         println!("-> expense B: {:?}", self.expense);
         println!("-> balance B: {:?}", self.balance);
