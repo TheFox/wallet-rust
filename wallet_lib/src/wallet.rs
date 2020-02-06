@@ -7,6 +7,7 @@ use glob::glob;
 use std::fmt::{Display, Formatter, Result as FmtRes};
 use std::vec::Vec;
 use std::collections::HashMap;
+use std::rc::Rc;
 use crate::entry::Entry;
 use crate::epic::Epic;
 use crate::yaml::YamlFile;
@@ -16,8 +17,8 @@ use crate::mustache::{MustacheFileKind, MustacheFile};
 use crate::number::Number;
 
 pub type Year = i32;
-pub type Month = u8;
-pub type Day = u8;
+pub type Month = u32;
+pub type Day = u32;
 
 pub struct AddedResult {
     month_file_name: String,
@@ -81,128 +82,373 @@ impl From<CommandOptions> for FilterOptions {
 }
 
 #[derive(Debug)]
-struct DaySummary {
-    //pub entries,
-
-    // pub revenue: Number,
-    // pub expense: Number,
-    // pub balance: Number,
-
-    // TODO: categories, epics
-}
-
-#[derive(Debug)]
-struct MonthSummary {
-    // pub days: HashMap<Day, DaySummary>,
-
-    // pub revenue: Number,
-    // pub expense: Number,
-    // pub balance: Number,
-
-    // TODO: categories, epics
-}
-
-#[derive(Debug)]
-pub struct YearSummary<'a> {
-    pub entries: Vec<&'a Entry>,
-    // pub months: HashMap<Month, MonthSummary>,
-
+pub struct CategorySummary {
     pub revenue: Number,
-    // pub expense: Number,
-    // pub balance: Number,
-
-    // TODO: categories, epics
+    pub expense: Number,
+    pub balance: Number,
 }
 
-impl<'a> YearSummary<'a> {
+impl CategorySummary {
     pub fn new() -> Self {
         Self {
-            entries: Vec::new(),
-
             revenue: Number::new(),
-            // expense: Number::new(),
-            // balance: Number::new(),
+            expense: Number::new(),
+            balance: Number::new(),
         }
     }
 
-    pub fn add(&mut self, entry: &'a Entry) {
-        println!("-> YearSummary::add()");
-        self.entries.push(entry);
+    pub fn add(&mut self, entry_ref: Rc<Entry>) {
+        println!("-> CategorySummary::add()");
+
+        // Calc
+        self.revenue += entry_ref.revenue();
+        self.expense += entry_ref.expense();
+        self.balance += entry_ref.balance();
     }
 }
 
 #[derive(Debug)]
-pub struct FilterResult<'a> {
-    pub entries: Vec<Entry>,
-    pub years: HashMap<Year, YearSummary<'a>>,
+pub struct EpicSummary {
+    pub revenue: Number,
+    pub expense: Number,
+    pub balance: Number,
+}
+
+impl EpicSummary {
+    pub fn new() -> Self {
+        Self {
+            revenue: Number::new(),
+            expense: Number::new(),
+            balance: Number::new(),
+        }
+    }
+
+    pub fn add(&mut self, entry_ref: Rc<Entry>) {
+        println!("-> EpicSummary::add()");
+
+        // Calc
+        self.revenue += entry_ref.revenue();
+        self.expense += entry_ref.expense();
+        self.balance += entry_ref.balance();
+    }
+}
+
+#[derive(Debug)]
+pub struct DaySummary {
+    pub revenue: Number,
+    pub expense: Number,
+    pub balance: Number,
+}
+
+impl DaySummary {
+    pub fn new() -> Self {
+        Self {
+            revenue: Number::new(),
+            expense: Number::new(),
+            balance: Number::new(),
+        }
+    }
+
+    pub fn add(&mut self, entry_ref: Rc<Entry>) {
+        println!("-> DaySummary::add()");
+
+        // Calc
+        self.revenue += entry_ref.revenue();
+        self.expense += entry_ref.expense();
+        self.balance += entry_ref.balance();
+    }
+}
+
+#[derive(Debug)]
+pub struct MonthSummary {
+    pub entries: Vec<Rc<Entry>>,
+    pub days: HashMap<Day, DaySummary>,
+    pub categories: HashMap<String, CategorySummary>,
+    pub epics: HashMap<String, EpicSummary>,
 
     pub revenue: Number,
-    // pub expense: Number,
-    // pub balance: Number,
+    pub expense: Number,
+    pub balance: Number,
+}
 
-    // TODO: categories, epics
+impl MonthSummary {
+    pub fn new() -> Self {
+        Self {
+            entries: Vec::new(),
+            days: HashMap::new(),
+            categories: HashMap::new(),
+            epics: HashMap::new(),
+
+            revenue: Number::new(),
+            expense: Number::new(),
+            balance: Number::new(),
+        }
+    }
+
+    pub fn add(&mut self, entry_ref: Rc<Entry>) {
+        println!("-> MonthSummary::add()");
+
+        // Calc
+        self.revenue += entry_ref.revenue();
+        self.expense += entry_ref.expense();
+        self.balance += entry_ref.balance();
+
+        let date = entry_ref.date();
+        let day = date.day();
+        let category = entry_ref.category();
+        let epic = entry_ref.epic();
+
+        println!("  -> day: {:?}", day);
+
+        // Days
+        match self.days.get_mut(&day) {
+            Some(day_summary) => {
+                // println!("  -> old day_summary: {:?}", day_summary);
+
+                day_summary.add(entry_ref.clone());
+            },
+            None => {
+                // println!("  -> new day_summary");
+
+                let mut day_summary = DaySummary::new();
+                day_summary.add(entry_ref.clone());
+
+                self.days.insert(day, day_summary);
+            }
+        }
+
+        // Categories
+        match self.categories.get_mut(&category) {
+            Some(category_summary) => {
+                // println!("  -> old category_summary");
+
+                category_summary.add(entry_ref.clone());
+            },
+            None => {
+                // println!("  -> new category_summary");
+
+                let mut category_summary = CategorySummary::new();
+                category_summary.add(entry_ref.clone());
+
+                self.categories.insert(category, category_summary);
+            }
+        }
+
+        // Epics
+        match self.epics.get_mut(&epic) {
+            Some(epic_summary) => {
+                // println!("  -> old epic_summary");
+
+                epic_summary.add(entry_ref.clone());
+            },
+            None => {
+                // println!("  -> new epic_summary");
+
+                let mut epic_summary = EpicSummary::new();
+                epic_summary.add(entry_ref.clone());
+
+                self.epics.insert(epic, epic_summary);
+            }
+        }
+
+        self.entries.push(entry_ref);
+    }
+}
+
+#[derive(Debug)]
+pub struct YearSummary {
+    pub entries: Vec<Rc<Entry>>,
+    pub months: HashMap<Month, MonthSummary>,
+    pub categories: HashMap<String, CategorySummary>,
+    pub epics: HashMap<String, EpicSummary>,
+
+    pub revenue: Number,
+    pub expense: Number,
+    pub balance: Number,
+}
+
+impl YearSummary {
+    pub fn new() -> Self {
+        Self {
+            entries: Vec::new(),
+            months: HashMap::new(),
+            categories: HashMap::new(),
+            epics: HashMap::new(),
+
+            revenue: Number::new(),
+            expense: Number::new(),
+            balance: Number::new(),
+        }
+    }
+
+    pub fn add(&mut self, entry_ref: Rc<Entry>) {
+        println!("-> YearSummary::add()");
+
+        // Calc
+        self.revenue += entry_ref.revenue();
+        self.expense += entry_ref.expense();
+        self.balance += entry_ref.balance();
+
+        let date = entry_ref.date();
+        let month = date.month();
+        let category = entry_ref.category();
+        let epic = entry_ref.epic();
+
+        println!("  -> month: {:?}", month);
+
+        // Month
+        match self.months.get_mut(&month) {
+            Some(month_summary) => {
+                // println!("  -> old month_summary");
+
+                month_summary.add(entry_ref.clone());
+            },
+            None => {
+                // println!("  -> new month_summary");
+
+                let mut month_summary = MonthSummary::new();
+                month_summary.add(entry_ref.clone());
+
+                self.months.insert(month, month_summary);
+            }
+        }
+
+        // Categories
+        match self.categories.get_mut(&category) {
+            Some(category_summary) => {
+                // println!("  -> old category_summary");
+
+                category_summary.add(entry_ref.clone());
+            },
+            None => {
+                // println!("  -> new category_summary");
+
+                let mut category_summary = CategorySummary::new();
+                category_summary.add(entry_ref.clone());
+
+                self.categories.insert(category, category_summary);
+            }
+        }
+
+        // Epics
+        match self.epics.get_mut(&epic) {
+            Some(epic_summary) => {
+                // println!("  -> old epic_summary");
+
+                epic_summary.add(entry_ref.clone());
+            },
+            None => {
+                // println!("  -> new epic_summary");
+
+                let mut epic_summary = EpicSummary::new();
+                epic_summary.add(entry_ref.clone());
+
+                self.epics.insert(epic, epic_summary);
+            }
+        }
+
+        self.entries.push(entry_ref);
+    }
+}
+
+#[derive(Debug)]
+pub struct FilterResult {
+    pub entries: Vec<Rc<Entry>>,
+    pub years: HashMap<Year, YearSummary>,
+    pub categories: HashMap<String, CategorySummary>,
+    pub epics: HashMap<String, EpicSummary>,
+
+    pub revenue: Number,
+    pub expense: Number,
+    pub balance: Number,
 }
 
 // https://stackoverflow.com/questions/32682876/is-there-any-way-to-return-a-reference-to-a-variable-created-in-a-function
-impl FilterResult<'_> {
+impl FilterResult {
     pub fn new() -> Self {
         FilterResult {
             entries: Vec::new(),
             years: HashMap::new(),
+            categories: HashMap::new(),
+            epics: HashMap::new(),
 
             revenue: Number::new(),
-            // expense: Number::new(),
-            // balance: Number::new(),
+            expense: Number::new(),
+            balance: Number::new(),
         }
     }
 
     pub fn add(&mut self, entry: Entry) {
         println!("-> FilterResult::add()");
-        // println!("-> FilterResult::add({:?})", entry);
 
         let date = entry.date();
         let year = date.year();
-        let month = date.month();
-        let day = date.day();
+        let category = entry.category();
+        let epic = entry.epic();
 
-        println!("  -> date: {:?} {:?} {:?}", year, month, day);
+        println!("  -> year: {:?}", year);
 
-        // println!("  -> revenue A: {:?}", self.revenue);
-        // println!("  -> expense A: {:?}", self.expense);
-        // println!("  -> balance A: {:?}", self.balance);
+        // Consume entry here.
+        let entry_ref = Rc::new(entry);
 
-        self.revenue += entry.revenue();
-        // self.expense += entry.expense();
-        // self.balance += entry.balance();
+        // Calc
+        self.revenue += entry_ref.revenue();
+        self.expense += entry_ref.expense();
+        self.balance += entry_ref.balance();
 
-        // println!("  -> revenue B: {:?}", self.revenue);
-        // println!("  -> expense B: {:?}", self.expense);
-        // println!("  -> balance B: {:?}", self.balance);
-
-        // let x: ref YearSummary = self.years.get(&year).unwrap();
-
-        // if let Some(&mut year_summary) = &mut self.years.get(&year) {
-        //     year_summary.year += 42;
-        // }
-
+        // Years
         match self.years.get_mut(&year) {
             Some(year_summary) => {
-                println!("  -> old year_summary: {:?}", year_summary);
-                year_summary.add(&entry);
+                // println!("  -> old year_summary");
+
+                year_summary.add(entry_ref.clone());
             },
-            // Some(ref year_summary) => {
-            //     println!("  -> old year_summary: {:?}", year_summary);
-            //     year_summary.year += 42;
-            // },
             None => {
-                println!("  -> new year_summary");
+                // println!("  -> new year_summary");
+
                 let mut year_summary = YearSummary::new();
+                year_summary.add(entry_ref.clone());
+
                 self.years.insert(year, year_summary);
             }
         }
 
-        // Consume entry here.
-        self.entries.push(entry);
+        // Categories
+        match self.categories.get_mut(&category) {
+            Some(category_summary) => {
+                // println!("  -> old category_summary");
+
+                category_summary.add(entry_ref.clone());
+            },
+            None => {
+                // println!("  -> new category_summary");
+
+                let mut category_summary = CategorySummary::new();
+                category_summary.add(entry_ref.clone());
+
+                self.categories.insert(category, category_summary);
+            }
+        }
+
+        // Epics
+        match self.epics.get_mut(&epic) {
+            Some(epic_summary) => {
+                // println!("  -> old epic_summary");
+
+                epic_summary.add(entry_ref.clone());
+            },
+            None => {
+                // println!("  -> new epic_summary");
+
+                let mut epic_summary = EpicSummary::new();
+                epic_summary.add(entry_ref.clone());
+
+                self.epics.insert(epic, epic_summary);
+            }
+        }
+
+        // Consume entry ref here.
+        self.entries.push(entry_ref);
     }
 }
 

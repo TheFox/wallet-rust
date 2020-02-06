@@ -166,11 +166,11 @@ impl Command {
         // }
 
         // TODO: use filterresult here
-        // let entry_display = EntryDisplay::new(entries, kind);
+        // let entry_display = EntryDisplay::new(result, kind);
         // entry_display.show();
 
         // Debug
-        println!("-> result: {:?}", result);
+        // println!("-> result: {:?}", result);
     }
 
     /// HTML
