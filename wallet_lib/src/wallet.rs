@@ -16,7 +16,7 @@ use crate::epic::Epic;
 use crate::yaml::YamlFile;
 use crate::date::Date;
 use crate::command::CommandOptions;
-use crate::mustache::{MustacheFileKind, MustacheFile};
+use crate::mustache::{MustacheFileKind, MustacheFile, MustacheContent};
 use crate::number::Number;
 
 pub type Year = i32;
@@ -108,7 +108,7 @@ impl CategorySummary {
 }
 impl AddEntry for CategorySummary {
     fn add(&mut self, entry_ref: EntryRc) {
-        println!("-> CategorySummary::add()");
+        // println!("-> CategorySummary::add()");
 
         // Calc
         self.revenue += entry_ref.revenue();
@@ -136,7 +136,7 @@ impl EpicSummary {
 
 impl AddEntry for EpicSummary {
     fn add(&mut self, entry_ref: EntryRc) {
-        println!("-> EpicSummary::add()");
+        // println!("-> EpicSummary::add()");
 
         // Calc
         self.revenue += entry_ref.revenue();
@@ -164,7 +164,7 @@ impl DaySummary {
 
 impl AddEntry for DaySummary {
     fn add(&mut self, entry_ref: EntryRc) {
-        println!("-> DaySummary::add()");
+        // println!("-> DaySummary::add()");
 
         // Calc
         self.revenue += entry_ref.revenue();
@@ -202,7 +202,7 @@ impl MonthSummary {
 
 impl AddEntry for MonthSummary {
     fn add(&mut self, entry_ref: EntryRc) {
-        println!("-> MonthSummary::add()");
+        // println!("-> MonthSummary::add()");
 
         // Calc
         self.revenue += entry_ref.revenue();
@@ -214,7 +214,7 @@ impl AddEntry for MonthSummary {
         let category = entry_ref.category();
         let epic = entry_ref.epic();
 
-        println!("  -> day: {:?}", day);
+        // println!("  -> day: {:?}", day);
 
         // Days
         match self.days.get_mut(&day) {
@@ -300,7 +300,7 @@ impl YearSummary {
 
 impl AddEntry for YearSummary {
     fn add(&mut self, entry_ref: EntryRc) {
-        println!("-> YearSummary::add()");
+        // println!("-> YearSummary::add()");
 
         // Calc
         self.revenue += entry_ref.revenue();
@@ -312,7 +312,7 @@ impl AddEntry for YearSummary {
         let category = entry_ref.category();
         let epic = entry_ref.epic();
 
-        println!("  -> month: {:?}", month);
+        // println!("  -> month: {:?}", month);
 
         // Month
         match self.months.get_mut(&month) {
@@ -751,10 +751,12 @@ impl Wallet {
 
         // Index File
         {
+            let index_content = MustacheContent::new();
+
             let index_file_path = self.html_dir.join("index.html");
             println!("-> index_file: {}", index_file_path.display());
             let index_file = MustacheFile::new(MustacheFileKind::IndexFile, index_file_path.to_str().unwrap().to_string());
-            // index_file.render();
+            index_file.render(index_content);
         }
     }
 }

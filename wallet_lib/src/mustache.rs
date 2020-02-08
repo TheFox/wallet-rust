@@ -3,10 +3,11 @@
 
 use std::fs::File;
 use mustache::{MapBuilder, compile_str};
+use mustache::VecBuilder;
 use std::include_bytes;
 use std::env::current_dir;
 use chrono::{Local, DateTime};
-// use crate::wallet::GetEntries;
+// use std::collections::HashMap;
 
 const APP_NAME: &'static str = "WalletRust";
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -15,7 +16,7 @@ const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 pub struct MustacheContent {
 }
 impl MustacheContent {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {}
     }
 }
@@ -58,6 +59,7 @@ impl MustacheFile {
 
             .insert_str("generated_at", now.format("%F %T %z").to_string())
             .insert_str("css_relative_path", ".")
+            .insert_str("relative_path", ".")
     }
 
     /// Render file.
@@ -65,7 +67,7 @@ impl MustacheFile {
         println!("-> MustacheFile::render()");
 
         let cwd = current_dir().expect("Cannot get current dir");
-        println!("-> cwd: {}", cwd.display());
+        // println!("-> cwd: {}", cwd.display());
 
         let raw = match self.kind {
             MustacheFileKind::IndexFile => {
@@ -84,40 +86,30 @@ impl MustacheFile {
 
         let template = compile_str(&raw).unwrap();
 
-        match self.kind {
-            MustacheFileKind::IndexFile => {
-            },
-            MustacheFileKind::YearFile => {
-            },
-            MustacheFileKind::MonthFile => {
-            },
-        }
-
         println!("-> File::create");
         let mut _file = match File::create(&self.path) {
             Ok(file) => file,
             Err(why) => panic!("Cannot create {}: {}", self.path, why),
         };
 
-        let users = vec!["hello", "world"];
+        let mut users = vec!["hello", "world"];
 
-        let mut builder = self.builder();
-        builder = builder.insert_vec("users", |builder| {
-            builder
-                .push_str("Jane Austen")
-                .push_str("Lewis Carroll")
-        });
+        let data = self.builder()
+            // .insert_fn("users", move |_| {
+            //     println!("-> users: {:?}", users);
+            //     users.pop().unwrap().into()
+            // })
+            .insert_vec("users", move |mut builder| {
+                for user in &users {
+                    builder = builder.push_str(&user);
+                }
+                builder
+            })
+            .build();
 
-        let data = builder.build();
-        template.render_data(&mut _file, &data).expect("Failed to render");
-
-        //
-
-        // let mut data = HashMap::new();
-        // data.insert("users", users);
-
-        // let mut bytes = vec![];
-        // template.render(&mut bytes, &data).expect("Failed to render");
+        println!("-> render_data");
+        template.render_data(&mut _file, &data)
+            .expect("Failed to render");
     }
 }
 
