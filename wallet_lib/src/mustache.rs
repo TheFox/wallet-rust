@@ -2,23 +2,19 @@
 /// https://github.com/nickel-org/rust-mustache
 
 use std::fs::File;
-// use std::fs::read_to_string;
-// use std::io::{stdout, Write, Error};
-// use std::io::Error;
 use mustache::{MapBuilder, compile_str};
 use std::include_bytes;
 use std::env::current_dir;
-// use std::path::PathBuf;
 use chrono::{Local, DateTime};
+// use crate::wallet::GetEntries;
 
 const APP_NAME: &'static str = "WalletRust";
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
-// const APP_AUTHORS: &'static str = env!("CARGO_PKG_AUTHORS");
 const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 
-// const INDEX_FILE_TPL: &'static str = "../../resources/views/index.mustache";
-// const YEAR_FILE_TPL: &'static str = "../../resources/views/year.mustache";
-// const MONTH_FILE_TPL: &'static str = "../../resources/views/month.mustache";
+pub struct MustacheContent {
+}
+impl MustacheContent {}
 
 pub enum MustacheFileKind {
     IndexFile,
@@ -32,6 +28,7 @@ pub struct MustacheFile {
 }
 
 impl MustacheFile {
+    /// New Mustache file.
     pub fn new(kind: MustacheFileKind, path: String) -> Self {
         Self {
             kind,
@@ -60,11 +57,11 @@ impl MustacheFile {
     }
 
     /// Render file.
-    pub fn render(&self) {
+    pub fn render(&self, content: MustacheContent) {
         println!("-> MustacheFile::render()");
 
         let cwd = current_dir().expect("Cannot get current dir");
-        println!("cwd: {}", cwd.display());
+        println!("-> cwd: {}", cwd.display());
 
         let raw = match self.kind {
             MustacheFileKind::IndexFile => {
@@ -85,8 +82,9 @@ impl MustacheFile {
         let builder = self.builder();
         match self.kind {
             MustacheFileKind::IndexFile => {
+                let v1 = vec!["hello", "world"];
             },
-            MustacheFileKind::YearFile  => {
+            MustacheFileKind::YearFile => {
             },
             MustacheFileKind::MonthFile => {
             },
@@ -103,43 +101,58 @@ impl MustacheFile {
     }
 }
 
-#[cfg(test)]
-mod tests_base {
-    use super::{MustacheFile, MustacheFileKind};
+// #[cfg(test)]
+// mod tests_base {
+//     use super::{MustacheFile, MustacheFileKind};
 
-    #[test]
-    fn test_mustachefile1() {
-        MustacheFile::new(MustacheFileKind::IndexFile, "../tmp/test1.html".to_string());
-    }
-}
+//     #[test]
+//     fn test_mustachefile1() {
+//         MustacheFile::new(MustacheFileKind::IndexFile, "../tmp/test1.html".to_string());
+//     }
+// }
 
-#[cfg(test)]
-mod tests_render {
-    use super::{MustacheFile, MustacheFileKind};
-    use std::fs::create_dir_all;
+// #[cfg(test)]
+// mod tests_render {
+//     use super::{MustacheFile, MustacheFileKind};
+//     use std::fs::create_dir_all;
+//     use crate::wallet::GetEntries;
 
-    fn setup() {
-        create_dir_all("../tmp/tests/mustache")
-            .expect("Cannot create mustache test directory.");
-    }
+//     struct TestResult {}
+//     impl TestResult {
+//         fn new() -> Self {
+//             TestResult {}
+//         }
+//     }
+//     impl GetEntries for TestResult {}
 
-    #[test]
-    fn test_mustachefile_render_index_file() {
-        setup();
+//     fn setup() -> TestResult {
+//         create_dir_all("../tmp/tests/mustache")
+//             .expect("Cannot create mustache test directory.");
 
-        MustacheFile::new(MustacheFileKind::IndexFile, "../tmp/tests/mustache/index.html".to_string())
-            .render();
-    }
+//         TestResult::new()
+//     }
 
-    #[test]
-    fn test_mustachefile_render_year_file() {
-        MustacheFile::new(MustacheFileKind::YearFile, "../tmp/tests/mustache/year.html".to_string())
-            .render();
-    }
+//     #[test]
+//     fn test_mustachefile_render_index_file() {
+//         let res1 = setup();
 
-    #[test]
-    fn test_mustachefile_render_month_file() {
-        MustacheFile::new(MustacheFileKind::MonthFile, "../tmp/tests/mustache/month.html".to_string())
-            .render();
-    }
-}
+//         let f1 = MustacheFile::new(MustacheFileKind::IndexFile, "../tmp/tests/mustache/index.html".to_string());
+//         f1.render(res1);
+//     }
+
+//     #[test]
+//     fn test_mustachefile_render_year_file() {
+//         let res1 = setup();
+
+//         let f1 = MustacheFile::new(MustacheFileKind::YearFile, "../tmp/tests/mustache/year.html".to_string());
+//         f1.render(res1);
+//     }
+
+//     #[test]
+//     fn test_mustachefile_render_month_file() {
+//         let res1 = setup();
+
+//         let f1 = MustacheFile::new(MustacheFileKind::MonthFile, "../tmp/tests/mustache/month.html".to_string());
+//         f1.render(res1);
+//     }
+// }

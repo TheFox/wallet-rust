@@ -3,6 +3,9 @@ use std::convert::From;
 use std::env::current_dir;
 use std::path::PathBuf;
 use std::fs::create_dir_all;
+use std::fs::File;
+use std::io::Write;
+use std::include_bytes;
 use glob::glob;
 use std::fmt::{Display, Formatter, Result as FmtRes};
 use std::vec::Vec;
@@ -19,6 +22,8 @@ use crate::number::Number;
 pub type Year = i32;
 pub type Month = u32;
 pub type Day = u32;
+pub type EntryRc = Rc<Entry>;
+pub type Entries = Vec<EntryRc>;
 
 pub struct AddedResult {
     month_file_name: String,
@@ -81,6 +86,11 @@ impl From<CommandOptions> for FilterOptions {
     }
 }
 
+// pub trait GetEntries {}
+trait AddEntry {
+    fn add(&mut self, entry_ref: EntryRc);
+}
+
 #[derive(Debug)]
 pub struct CategorySummary {
     pub revenue: Number,
@@ -96,8 +106,9 @@ impl CategorySummary {
             balance: Number::new(),
         }
     }
-
-    pub fn add(&mut self, entry_ref: Rc<Entry>) {
+}
+impl AddEntry for CategorySummary {
+    fn add(&mut self, entry_ref: EntryRc) {
         println!("-> CategorySummary::add()");
 
         // Calc
@@ -122,8 +133,10 @@ impl EpicSummary {
             balance: Number::new(),
         }
     }
+}
 
-    pub fn add(&mut self, entry_ref: Rc<Entry>) {
+impl AddEntry for EpicSummary {
+    fn add(&mut self, entry_ref: EntryRc) {
         println!("-> EpicSummary::add()");
 
         // Calc
@@ -148,8 +161,10 @@ impl DaySummary {
             balance: Number::new(),
         }
     }
+}
 
-    pub fn add(&mut self, entry_ref: Rc<Entry>) {
+impl AddEntry for DaySummary {
+    fn add(&mut self, entry_ref: EntryRc) {
         println!("-> DaySummary::add()");
 
         // Calc
@@ -161,7 +176,7 @@ impl DaySummary {
 
 #[derive(Debug)]
 pub struct MonthSummary {
-    pub entries: Vec<Rc<Entry>>,
+    pub entries: Entries,
     pub days: HashMap<Day, DaySummary>,
     pub categories: HashMap<String, CategorySummary>,
     pub epics: HashMap<String, EpicSummary>,
@@ -174,7 +189,7 @@ pub struct MonthSummary {
 impl MonthSummary {
     pub fn new() -> Self {
         Self {
-            entries: Vec::new(),
+            entries: Entries::new(),
             days: HashMap::new(),
             categories: HashMap::new(),
             epics: HashMap::new(),
@@ -184,8 +199,10 @@ impl MonthSummary {
             balance: Number::new(),
         }
     }
+}
 
-    pub fn add(&mut self, entry_ref: Rc<Entry>) {
+impl AddEntry for MonthSummary {
+    fn add(&mut self, entry_ref: EntryRc) {
         println!("-> MonthSummary::add()");
 
         // Calc
@@ -257,7 +274,7 @@ impl MonthSummary {
 
 #[derive(Debug)]
 pub struct YearSummary {
-    pub entries: Vec<Rc<Entry>>,
+    pub entries: Entries,
     pub months: HashMap<Month, MonthSummary>,
     pub categories: HashMap<String, CategorySummary>,
     pub epics: HashMap<String, EpicSummary>,
@@ -270,7 +287,7 @@ pub struct YearSummary {
 impl YearSummary {
     pub fn new() -> Self {
         Self {
-            entries: Vec::new(),
+            entries: Entries::new(),
             months: HashMap::new(),
             categories: HashMap::new(),
             epics: HashMap::new(),
@@ -280,8 +297,10 @@ impl YearSummary {
             balance: Number::new(),
         }
     }
+}
 
-    pub fn add(&mut self, entry_ref: Rc<Entry>) {
+impl AddEntry for YearSummary {
+    fn add(&mut self, entry_ref: EntryRc) {
         println!("-> YearSummary::add()");
 
         // Calc
@@ -353,7 +372,7 @@ impl YearSummary {
 
 #[derive(Debug)]
 pub struct FilterResult {
-    pub entries: Vec<Rc<Entry>>,
+    pub entries: Entries,
     pub years: HashMap<Year, YearSummary>,
     pub categories: HashMap<String, CategorySummary>,
     pub epics: HashMap<String, EpicSummary>,
@@ -367,7 +386,7 @@ pub struct FilterResult {
 impl FilterResult {
     pub fn new() -> Self {
         FilterResult {
-            entries: Vec::new(),
+            entries: Entries::new(),
             years: HashMap::new(),
             categories: HashMap::new(),
             epics: HashMap::new(),
@@ -710,20 +729,33 @@ impl Wallet {
         println!("-> Wallet::html()");
 
         let cwd = current_dir().expect("Cannot get current dir");
-        println!("cwd: {}", cwd.display());
+        println!("-> cwd: {}", cwd.display());
 
         let up = cwd.join("..");
-        println!("up: {}", up.display());
+        println!("-> up: {}", up.display());
 
-        // let entries = self.filter(_options);
-        // for _entry in entries {
-        //     println!("-> entry");
-        // }
+        let _result = self.filter(_options);
 
-        let index_file_path = self.html_dir.join("index.html");
-        println!("index_file: {}", index_file_path.display());
-        let index_file = MustacheFile::new(MustacheFileKind::IndexFile, index_file_path.to_str().unwrap().to_string());
-        index_file.render();
+        // CSS File
+        {
+            let css_file_path = self.html_dir.join("style.css");
+            println!("-> css_file: {}", css_file_path.display());
+            let mut css_file = match File::create(&css_file_path) {
+                Ok(file) => file,
+                Err(why) => panic!("Cannot create {}: {}", css_file_path.display(), why),
+            };
+
+            let bytes = include_bytes!("../../resources/css/style.css");
+            css_file.write_all(bytes);
+        }
+
+        // Index File
+        {
+            let index_file_path = self.html_dir.join("index.html");
+            println!("-> index_file: {}", index_file_path.display());
+            let index_file = MustacheFile::new(MustacheFileKind::IndexFile, index_file_path.to_str().unwrap().to_string());
+            // index_file.render();
+        }
     }
 }
 
