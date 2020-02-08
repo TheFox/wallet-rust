@@ -86,7 +86,6 @@ impl From<CommandOptions> for FilterOptions {
     }
 }
 
-// pub trait GetEntries {}
 trait AddEntry {
     fn add(&mut self, entry_ref: EntryRc);
 }
@@ -746,7 +745,8 @@ impl Wallet {
             };
 
             let bytes = include_bytes!("../../resources/css/style.css");
-            css_file.write_all(bytes);
+            css_file.write_all(bytes)
+                .expect("Cannot write style file.");
         }
 
         // Index File

@@ -14,7 +14,11 @@ const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 
 pub struct MustacheContent {
 }
-impl MustacheContent {}
+impl MustacheContent {
+    fn new() -> Self {
+        Self {}
+    }
+}
 
 pub enum MustacheFileKind {
     IndexFile,
@@ -79,17 +83,15 @@ impl MustacheFile {
         };
 
         let template = compile_str(&raw).unwrap();
-        let builder = self.builder();
+
         match self.kind {
             MustacheFileKind::IndexFile => {
-                let v1 = vec!["hello", "world"];
             },
             MustacheFileKind::YearFile => {
             },
             MustacheFileKind::MonthFile => {
             },
         }
-        let data = builder.build();
 
         println!("-> File::create");
         let mut _file = match File::create(&self.path) {
@@ -97,48 +99,66 @@ impl MustacheFile {
             Err(why) => panic!("Cannot create {}: {}", self.path, why),
         };
 
-        template.render_data(&mut _file, &data).unwrap();
+        let users = vec!["hello", "world"];
+
+        let mut builder = self.builder();
+        builder = builder.insert_vec("users", |builder| {
+            builder
+                .push_str("Jane Austen")
+                .push_str("Lewis Carroll")
+        });
+
+        let data = builder.build();
+        template.render_data(&mut _file, &data).expect("Failed to render");
+
+        //
+
+        // let mut data = HashMap::new();
+        // data.insert("users", users);
+
+        // let mut bytes = vec![];
+        // template.render(&mut bytes, &data).expect("Failed to render");
     }
 }
 
-// #[cfg(test)]
-// mod tests_base {
-//     use super::{MustacheFile, MustacheFileKind};
+#[cfg(test)]
+mod tests_base {
+    use super::{MustacheFile, MustacheFileKind};
 
-//     #[test]
-//     fn test_mustachefile1() {
-//         MustacheFile::new(MustacheFileKind::IndexFile, "../tmp/test1.html".to_string());
-//     }
-// }
+    #[test]
+    fn test_mustachefile1() {
+        MustacheFile::new(MustacheFileKind::IndexFile, "../tmp/tests/test1.html".to_string());
+    }
+}
 
-// #[cfg(test)]
-// mod tests_render {
-//     use super::{MustacheFile, MustacheFileKind};
-//     use std::fs::create_dir_all;
-//     use crate::wallet::GetEntries;
+#[cfg(test)]
+mod tests_render {
+    use super::{MustacheFile, MustacheFileKind, MustacheContent};
+    use std::fs::create_dir_all;
+    // use crate::wallet::GetEntries;
 
-//     struct TestResult {}
-//     impl TestResult {
-//         fn new() -> Self {
-//             TestResult {}
-//         }
-//     }
-//     impl GetEntries for TestResult {}
+    // struct TestResult {}
+    // impl TestResult {
+    //     fn new() -> Self {
+    //         TestResult {}
+    //     }
+    // }
+    // impl GetEntries for TestResult {}
 
-//     fn setup() -> TestResult {
-//         create_dir_all("../tmp/tests/mustache")
-//             .expect("Cannot create mustache test directory.");
+    fn setup() {
+        create_dir_all("../tmp/tests/mustache")
+            .expect("Cannot create mustache test directory.");
+    }
 
-//         TestResult::new()
-//     }
+    #[test]
+    fn test_mustachefile_render_index_file() {
+        setup();
 
-//     #[test]
-//     fn test_mustachefile_render_index_file() {
-//         let res1 = setup();
+        let c1 = MustacheContent::new();
 
-//         let f1 = MustacheFile::new(MustacheFileKind::IndexFile, "../tmp/tests/mustache/index.html".to_string());
-//         f1.render(res1);
-//     }
+        let f1 = MustacheFile::new(MustacheFileKind::IndexFile, "../tmp/tests/mustache/index.html".to_string());
+        f1.render(c1);
+    }
 
 //     #[test]
 //     fn test_mustachefile_render_year_file() {
@@ -155,4 +175,4 @@ impl MustacheFile {
 //         let f1 = MustacheFile::new(MustacheFileKind::MonthFile, "../tmp/tests/mustache/month.html".to_string());
 //         f1.render(res1);
 //     }
-// }
+}
