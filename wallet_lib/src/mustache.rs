@@ -2,12 +2,13 @@
 /// https://github.com/nickel-org/rust-mustache
 
 use std::fs::File;
-use mustache::{MapBuilder, compile_str};
-use mustache::VecBuilder;
+use mustache::{MapBuilder, VecBuilder, compile_str};
+// use mustache::serde;
 use std::include_bytes;
 use std::env::current_dir;
 use chrono::{Local, DateTime};
 // use std::collections::HashMap;
+use serde::Serialize;
 
 const APP_NAME: &'static str = "WalletRust";
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -32,6 +33,11 @@ pub struct MustacheFile {
     path: String,
 }
 
+#[derive(Serialize, Debug)]
+struct Planet {
+    name: String,
+}
+
 impl MustacheFile {
     /// New Mustache file.
     pub fn new(kind: MustacheFileKind, path: String) -> Self {
@@ -43,8 +49,7 @@ impl MustacheFile {
 
     /// Create Mustache Builder.
     fn builder(&self) -> MapBuilder {
-        // Now
-        let now: DateTime<Local> = Local::now();
+
 
         let cwd = current_dir().expect("Cannot get current dir");
         println!("cwd: {}", cwd.display());
@@ -53,18 +58,14 @@ impl MustacheFile {
         println!("up: {}", up.display());
 
         MapBuilder::new()
-            .insert_str("PROJECT_NAME", APP_NAME)
-            .insert_str("PROJECT_VERSION_FULL", APP_VERSION)
-            .insert_str("PROJECT_HOMEPAGE_URL", APP_HOMEPAGE)
-
-            .insert_str("generated_at", now.format("%F %T %z").to_string())
-            .insert_str("css_relative_path", ".")
-            .insert_str("relative_path", ".")
     }
 
     /// Render file.
     pub fn render(&self, content: MustacheContent) {
         println!("-> MustacheFile::render()");
+
+        // Now
+        let now: DateTime<Local> = Local::now();
 
         let cwd = current_dir().expect("Cannot get current dir");
         // println!("-> cwd: {}", cwd.display());
@@ -92,19 +93,47 @@ impl MustacheFile {
             Err(why) => panic!("Cannot create {}: {}", self.path, why),
         };
 
-        let mut users = vec!["hello", "world"];
+        let mut users = vec!["Ahello", "Aworld"];
+        let mut f_users = move |mut builder: VecBuilder| {
+            for item in &users {
+                builder = builder.push(&item).unwrap();
+            }
+            builder
+        };
 
-        let data = self.builder()
+        let mut planets = vec![
+            Planet{ name: "Bhello".into() },
+            Planet{ name: "Bworld".into() },
+        ];
+        let mut f_planets = move |mut builder: VecBuilder| {
+            println!("-> f_planets");
+
+            for item in &planets {
+                builder = builder.push(&item).unwrap();
+            }
+            builder
+        };
+
+        let data = MapBuilder::new()
+            .insert_str("PROJECT_NAME", APP_NAME)
+            .insert_str("PROJECT_VERSION_FULL", APP_VERSION)
+            .insert_str("PROJECT_HOMEPAGE_URL", APP_HOMEPAGE)
+
+            .insert_str("generated_at", now.format("%F %T %z").to_string())
+            .insert_str("css_relative_path", ".")
+            .insert_str("relative_path", ".")
             // .insert_fn("users", move |_| {
             //     println!("-> users: {:?}", users);
             //     users.pop().unwrap().into()
             // })
-            .insert_vec("users", move |mut builder| {
-                for user in &users {
-                    builder = builder.push_str(&user);
-                }
-                builder
-            })
+            // .insert_vec("users", move |mut builder| {
+            //     for user in &users {
+            //         builder = builder.push_str(&user);
+            //     }
+            //     builder
+            // })
+            .insert_vec("users", f_users)
+            .insert_vec("planets", f_planets)
             .build();
 
         println!("-> render_data");

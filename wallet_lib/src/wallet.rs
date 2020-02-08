@@ -397,14 +397,14 @@ impl FilterResult {
     }
 
     pub fn add(&mut self, entry: Entry) {
-        println!("-> FilterResult::add()");
+        // println!("-> FilterResult::add()");
 
         let date = entry.date();
         let year = date.year();
         let category = entry.category();
         let epic = entry.epic();
 
-        println!("  -> year: {:?}", year);
+        // println!("  -> year: {:?}", year);
 
         // Consume entry here.
         let entry_ref = Rc::new(entry);

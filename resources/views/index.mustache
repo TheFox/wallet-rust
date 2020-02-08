@@ -23,12 +23,19 @@
         </tr>
         </thead>
 
-        <!-- userz B //-->
+        <!-- userz //-->
         {{#users}}
             <tr>
                 <td>{{.}}</td>
             </tr>
         {{/users}}
+
+        <!-- planetz //-->
+        {{#planets}}
+            <tr>
+                <td>{{name}}</td>
+            </tr>
+        {{/planets}}
     </table>
 
 </body>
