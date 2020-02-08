@@ -143,7 +143,12 @@ fn main() {
 
     // HTML Sub Command
     let html_subcmd = App::new("html")
-        .about("Generate HTML output.");
+        .about("Generate HTML output.")
+        .arg(Arg::with_name("path")
+            .short("p")
+            .long("path")
+            .help("Output directory")
+            .takes_value(true));
 
     // Common Arguments
     let wallet_arg = Arg::with_name("wallet")

@@ -19,4 +19,5 @@ The project outlines as described in my blog post about [Open Source Software Co
 ```bash
 ./bin/dev.sh -w tmp/wallet add -t title1 -r 20 -e 10 -d 1 -c c1
 ./bin/dev.sh -w tmp/wallet list
+./bin/dev.sh -w tmp/wallet html -p tmp/html
 ```
