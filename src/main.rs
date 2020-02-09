@@ -321,24 +321,27 @@ fn main() {
             // Cmd
             cmd_kind = CommandKind::HtmlCommand;
 
+            // Epic
+            set_path(html_matches, &mut cmd_options);
+
             // Date
-            set_date_silent(html_matches, &mut cmd_options);
+            // set_date_silent(html_matches, &mut cmd_options);
 
             // Category
-            set_category(html_matches, &mut cmd_options);
+            // set_category(html_matches, &mut cmd_options);
 
             // Epic
-            set_epic(html_matches, &mut cmd_options);
+            // set_epic(html_matches, &mut cmd_options);
 
             // Revenue
-            if html_matches.is_present("revenue") {
-                cmd_options.filter_revenue = Some(true);
-            }
+            // if html_matches.is_present("revenue") {
+            //     cmd_options.filter_revenue = Some(true);
+            // }
 
             // Expense
-            if html_matches.is_present("expense") {
-                cmd_options.filter_expense = Some(true);
-            }
+            // if html_matches.is_present("expense") {
+            //     cmd_options.filter_expense = Some(true);
+            // }
         },
         _ => {
             println!("No command.");
@@ -481,4 +484,19 @@ fn set_short(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     }
 
     cmd_options.long = Some(false);
+}
+
+fn set_path(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+    if !matches.is_present("path") {
+        return;
+    }
+
+    println!("-> set_path");
+
+    // &str
+    let vs = matches.value_of("path").unwrap();
+    // cmd_options.html_path = Some(vs.to_string());
+    cmd_options.html_path = Some(vs.into());
+
+    println!("-> set_path: {:?}", cmd_options.html_path);
 }

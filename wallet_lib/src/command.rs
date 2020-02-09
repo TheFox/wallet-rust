@@ -13,7 +13,7 @@ use crate::ext::BoolExt;
 #[derive(Debug, Clone)]
 pub struct CommandOptions {
     pub wallet_path: String,
-    pub html_path: String,
+    pub html_path: Option<String>,
     pub id: Option<String>,
     pub title: Option<String>,
     pub date: Option<Date>,
@@ -36,7 +36,7 @@ impl CommandOptions {
     pub fn new() -> Self {
         CommandOptions {
             wallet_path: String::new(),
-            html_path: String::new(),
+            html_path: None,
             id: None,
             title: None,
             date: None,
@@ -126,13 +126,13 @@ impl Command {
         let mut epic = Epic::new();
 
         if let Some(handle) = &self.options.handle {
-            epic.set_handle(handle.to_string());
+            epic.set_handle(handle.into());
         }
         if let Some(title) = &self.options.title {
-            epic.set_title(title.to_string());
+            epic.set_title(title.into());
         }
         if let Some(bgcolor) = &self.options.bgcolor {
-            epic.set_bgcolor(bgcolor.to_string());
+            epic.set_bgcolor(bgcolor.into());
         }
 
         let wallet = Wallet::new(self.options.get_wallet_path());
@@ -176,10 +176,17 @@ impl Command {
     /// HTML
     fn exec_html(&self) {
         println!("-> Command::exec_html()");
+        println!("-> options: {:?}", self.options);
 
         let options = FilterOptions::from(self.options.clone());
 
-        let wallet = Wallet::new(self.options.get_wallet_path());
+        let mut wallet = Wallet::new(self.options.get_wallet_path());
+
+        println!("-> options: {:?}", self.options);
+        if let Some(html_path) = &self.options.html_path {
+            println!("-> found html path: {}", html_path);
+            wallet.set_html_path(html_path.into());
+        }
         wallet.html(options);
     }
 }

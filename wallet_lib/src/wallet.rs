@@ -513,6 +513,11 @@ impl Wallet {
         _w
     }
 
+    pub fn set_html_path(&mut self, path: String) {
+        println!("-> Wallet::set_html_path({})", path);
+        self.html_dir = path.into();
+    }
+
     pub fn init(&self) {
         println!("-> Wallet::init()");
         self.create_dirs();
@@ -726,6 +731,8 @@ impl Wallet {
     /// HTML
     pub fn html(&self, _options: FilterOptions) {
         println!("-> Wallet::html()");
+
+        create_dir_all(&self.html_dir).expect("Cannot create html directory.");
 
         let cwd = current_dir().expect("Cannot get current dir");
         println!("-> cwd: {}", cwd.display());
