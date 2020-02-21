@@ -1,6 +1,6 @@
 
-use std::convert::From;
-use std::env::current_dir;
+// use std::convert::From;
+// use std::env::current_dir;
 use std::path::PathBuf;
 use std::fs::create_dir_all;
 use std::fs::File;
@@ -11,12 +11,13 @@ use std::fmt::{Display, Formatter, Result as FmtRes};
 use std::vec::Vec;
 use std::collections::HashMap;
 use std::rc::Rc;
+// use serde::Serialize;
 use crate::entry::Entry;
 use crate::epic::Epic;
 use crate::yaml::YamlFile;
 use crate::date::Date;
 use crate::command::CommandOptions;
-use crate::mustache::{MustacheFileKind, MustacheFile, MustacheContent};
+use crate::mustache::{IndexMustacheFile};
 use crate::number::Number;
 
 pub type Year = i32;
@@ -24,6 +25,11 @@ pub type Month = u32;
 pub type Day = u32;
 pub type EntryRc = Rc<Entry>;
 pub type Entries = Vec<EntryRc>;
+pub type Categories = HashMap<String, CategorySummary>;
+pub type Epics = HashMap<String, EpicSummary>;
+pub type Days = HashMap<Day, DaySummary>;
+pub type Months = HashMap<Month, MonthSummary>;
+pub type Years = HashMap<Year, YearSummary>;
 
 pub struct AddedResult {
     month_file_name: String,
@@ -176,9 +182,9 @@ impl AddEntry for DaySummary {
 #[derive(Debug)]
 pub struct MonthSummary {
     pub entries: Entries,
-    pub days: HashMap<Day, DaySummary>,
-    pub categories: HashMap<String, CategorySummary>,
-    pub epics: HashMap<String, EpicSummary>,
+    pub days: Days,
+    pub categories: Categories,
+    pub epics: Epics,
 
     pub revenue: Number,
     pub expense: Number,
@@ -273,19 +279,24 @@ impl AddEntry for MonthSummary {
 
 #[derive(Debug)]
 pub struct YearSummary {
+    pub year: Year,
+
     pub entries: Entries,
-    pub months: HashMap<Month, MonthSummary>,
-    pub categories: HashMap<String, CategorySummary>,
-    pub epics: HashMap<String, EpicSummary>,
+    pub months: Months,
+    pub categories: Categories,
+    pub epics: Epics,
 
     pub revenue: Number,
     pub expense: Number,
     pub balance: Number,
+    // pub balance_sum: Number,
 }
 
 impl YearSummary {
-    pub fn new() -> Self {
+    pub fn new(year: Year) -> Self {
         Self {
+            year,
+
             entries: Entries::new(),
             months: HashMap::new(),
             categories: HashMap::new(),
@@ -372,9 +383,9 @@ impl AddEntry for YearSummary {
 #[derive(Debug)]
 pub struct FilterResult {
     pub entries: Entries,
-    pub years: HashMap<Year, YearSummary>,
-    pub categories: HashMap<String, CategorySummary>,
-    pub epics: HashMap<String, EpicSummary>,
+    pub years: Years,
+    pub categories: Categories,
+    pub epics: Epics,
 
     pub revenue: Number,
     pub expense: Number,
@@ -424,7 +435,7 @@ impl FilterResult {
             None => {
                 // println!("  -> new year_summary");
 
-                let mut year_summary = YearSummary::new();
+                let mut year_summary = YearSummary::new(year);
                 year_summary.add(entry_ref.clone());
 
                 self.years.insert(year, year_summary);
@@ -732,13 +743,14 @@ impl Wallet {
     pub fn html(&self, _options: FilterOptions) {
         println!("-> Wallet::html()");
 
+        // Create html directory.
         create_dir_all(&self.html_dir).expect("Cannot create html directory.");
 
-        let cwd = current_dir().expect("Cannot get current dir");
-        println!("-> cwd: {}", cwd.display());
+        // let cwd = current_dir().expect("Cannot get current dir");
+        // println!("-> cwd: {}", cwd.display());
 
-        let up = cwd.join("..");
-        println!("-> up: {}", up.display());
+        // let up = cwd.join("..");
+        // println!("-> up: {}", up.display());
 
         let _result = self.filter(_options);
 
@@ -758,12 +770,13 @@ impl Wallet {
 
         // Index File
         {
-            let index_content = MustacheContent::new();
-
+            // Path
             let index_file_path = self.html_dir.join("index.html");
             println!("-> index_file: {}", index_file_path.display());
-            let index_file = MustacheFile::new(MustacheFileKind::IndexFile, index_file_path.to_str().unwrap().to_string());
-            index_file.render(index_content);
+
+            // File
+            let index_file = IndexMustacheFile::new(index_file_path.to_str().unwrap().to_string());
+            index_file.render(&_result);
         }
     }
 }

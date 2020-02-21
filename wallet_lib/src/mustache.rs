@@ -1,90 +1,89 @@
 
 /// https://github.com/nickel-org/rust-mustache
 
+// use std::convert::From;
 use std::fs::File;
 use mustache::{MapBuilder, VecBuilder, compile_str};
 // use mustache::serde;
 use std::include_bytes;
-use std::env::current_dir;
+// use std::env::current_dir;
 use chrono::{Local, DateTime};
 // use std::collections::HashMap;
 use serde::Serialize;
+// use std::fmt::Display;
+use crate::wallet::FilterResult;
+use crate::wallet::YearSummary;
+use crate::wallet::Year;
+use crate::number::Number;
+use crate::number::ToDisplay;
 
 const APP_NAME: &'static str = "WalletRust";
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 
-pub struct MustacheContent {
+#[derive(Debug, Serialize)]
+struct MustacheYear {
+    index: u32,
+    year: Year,
+    revenue: String,
+    expense: String,
+    balance: String,
+    balance_sum: String,
 }
-impl MustacheContent {
-    pub fn new() -> Self {
-        Self {}
+
+impl MustacheYear {
+    fn from_summary(year_sum: &YearSummary, index: u32, balance_sum: &Number) -> Self {
+        Self {
+            index,
+            year: year_sum.year,
+            revenue: format!("{}", year_sum.revenue.to_display()),
+            expense: format!("{}", year_sum.expense.to_display()),
+            balance: format!("{}", year_sum.balance.to_display()),
+            balance_sum: format!("{}", balance_sum.to_display()),
+        }
     }
 }
 
-pub enum MustacheFileKind {
-    IndexFile,
-    YearFile,
-    MonthFile,
-}
+// impl From<&YearSummary> for MustacheYear {
+//     fn from(year_sum: &YearSummary) -> Self {
+//         println!("-> MustacheFile::from()");
+//         Self {
+//             year: year_sum.year,
+//             revenue: format!("{}", year_sum.revenue.to_display()),
+//             expense: format!("{}", year_sum.expense.to_display()),
+//             balance: format!("{}", year_sum.balance.to_display()),
+//             balance_sum: String::new(),
+//         }
+//     }
+// }
 
-pub struct MustacheFile {
-    kind: MustacheFileKind,
+pub struct IndexMustacheFile {
     path: String,
 }
 
-#[derive(Serialize, Debug)]
-struct Planet {
-    name: String,
-}
-
-impl MustacheFile {
-    /// New Mustache file.
-    pub fn new(kind: MustacheFileKind, path: String) -> Self {
+impl IndexMustacheFile {
+    /// New Index Mustache file.
+    pub fn new(path: String) -> Self {
         Self {
-            kind,
             path,
         }
     }
 
-    /// Create Mustache Builder.
-    fn builder(&self) -> MapBuilder {
-
-
-        let cwd = current_dir().expect("Cannot get current dir");
-        println!("cwd: {}", cwd.display());
-
-        let up = cwd.join("..");
-        println!("up: {}", up.display());
-
-        MapBuilder::new()
-    }
-
     /// Render file.
-    pub fn render(&self, content: MustacheContent) {
+    pub fn render(&self, _result: &FilterResult) {
         println!("-> MustacheFile::render()");
 
         // Now
         let now: DateTime<Local> = Local::now();
 
-        let cwd = current_dir().expect("Cannot get current dir");
-        // println!("-> cwd: {}", cwd.display());
+        // Current working directory.
+        // let cwd = current_dir().expect("Cannot get current dir");
 
-        let raw = match self.kind {
-            MustacheFileKind::IndexFile => {
-                let bytes = include_bytes!("../../resources/views/index.mustache");
-                String::from_utf8_lossy(bytes)
-            },
-            MustacheFileKind::YearFile  => {
-                let bytes = include_bytes!("../../resources/views/year.mustache");
-                String::from_utf8_lossy(bytes)
-            },
-            MustacheFileKind::MonthFile => {
-                let bytes = include_bytes!("../../resources/views/month.mustache");
-                String::from_utf8_lossy(bytes)
-            },
-        };
+        // Template Source
+        let bytes = include_bytes!("../../resources/views/index.mustache");
+        let raw = String::from_utf8_lossy(bytes);
 
+        // Compile Template
         let template = compile_str(&raw).unwrap();
 
         println!("-> File::create");
@@ -93,26 +92,45 @@ impl MustacheFile {
             Err(why) => panic!("Cannot create {}: {}", self.path, why),
         };
 
-        let mut users = vec!["Ahello", "Aworld"];
-        let mut f_users = move |mut builder: VecBuilder| {
-            for item in &users {
-                builder = builder.push(&item).unwrap();
+        let mut index: u32 = 0;
+        let mut balance_sum = Number::new();
+
+        // let _i: Vec<MustacheYear> = _result.years.values().map(|year_sum| MustacheYear::from(year_sum)).collect();
+        let _myears: Vec<MustacheYear> = _result.years.values()
+            .map(|year_sum| {
+                index += 1;
+                println!("-> index: {:?}", index);
+
+                balance_sum += year_sum.balance;
+                println!("-> balance_sum: {:.2}", balance_sum.to_display());
+
+                MustacheYear::from_summary(year_sum, index, &balance_sum)
+            })
+            .collect();
+        println!("-> _myears: {:?}", _myears);
+
+        let mut f_years = move |mut builder: VecBuilder| {
+            // let mut balance_sum = Number::new();
+
+            for y in &_myears {
+                println!("-> year {:?}", y.year);
+                builder = builder.push(&y).unwrap();
             }
             builder
         };
 
-        let mut planets = vec![
-            Planet{ name: "Bhello".into() },
-            Planet{ name: "Bworld".into() },
-        ];
-        let mut f_planets = move |mut builder: VecBuilder| {
-            println!("-> f_planets");
+        // let mut planets = vec![
+        //     Planet{ name: "Bhello".into() },
+        //     Planet{ name: "Bworld".into() },
+        // ];
+        // let mut f_planets = move |mut builder: VecBuilder| {
+        //     println!("-> f_planets");
 
-            for item in &planets {
-                builder = builder.push(&item).unwrap();
-            }
-            builder
-        };
+        //     for item in &planets {
+        //         builder = builder.push(&item).unwrap();
+        //     }
+        //     builder
+        // };
 
         let data = MapBuilder::new()
             .insert_str("PROJECT_NAME", APP_NAME)
@@ -122,18 +140,9 @@ impl MustacheFile {
             .insert_str("generated_at", now.format("%F %T %z").to_string())
             .insert_str("css_relative_path", ".")
             .insert_str("relative_path", ".")
-            // .insert_fn("users", move |_| {
-            //     println!("-> users: {:?}", users);
-            //     users.pop().unwrap().into()
-            // })
-            // .insert_vec("users", move |mut builder| {
-            //     for user in &users {
-            //         builder = builder.push_str(&user);
-            //     }
-            //     builder
-            // })
-            .insert_vec("users", f_users)
-            .insert_vec("planets", f_planets)
+
+            .insert_vec("years", f_years)
+
             .build();
 
         println!("-> render_data");
@@ -143,28 +152,10 @@ impl MustacheFile {
 }
 
 #[cfg(test)]
-mod tests_base {
-    use super::{MustacheFile, MustacheFileKind};
-
-    #[test]
-    fn test_mustachefile1() {
-        MustacheFile::new(MustacheFileKind::IndexFile, "../tmp/tests/test1.html".to_string());
-    }
-}
-
-#[cfg(test)]
-mod tests_render {
-    use super::{MustacheFile, MustacheFileKind, MustacheContent};
+mod tests_index_mustache_file {
+    use super::IndexMustacheFile;
+    use crate::wallet::FilterResult;
     use std::fs::create_dir_all;
-    // use crate::wallet::GetEntries;
-
-    // struct TestResult {}
-    // impl TestResult {
-    //     fn new() -> Self {
-    //         TestResult {}
-    //     }
-    // }
-    // impl GetEntries for TestResult {}
 
     fn setup() {
         create_dir_all("../tmp/tests/mustache")
@@ -172,28 +163,12 @@ mod tests_render {
     }
 
     #[test]
-    fn test_mustachefile_render_index_file() {
+    fn test_index_mustache_file1() {
         setup();
 
-        let c1 = MustacheContent::new();
+        let r1 = FilterResult::new();
 
-        let f1 = MustacheFile::new(MustacheFileKind::IndexFile, "../tmp/tests/mustache/index.html".to_string());
-        f1.render(c1);
+        let f1 = IndexMustacheFile::new("../tmp/tests/mustache/index.html".to_string());
+        f1.render(&r1);
     }
-
-//     #[test]
-//     fn test_mustachefile_render_year_file() {
-//         let res1 = setup();
-
-//         let f1 = MustacheFile::new(MustacheFileKind::YearFile, "../tmp/tests/mustache/year.html".to_string());
-//         f1.render(res1);
-//     }
-
-//     #[test]
-//     fn test_mustachefile_render_month_file() {
-//         let res1 = setup();
-
-//         let f1 = MustacheFile::new(MustacheFileKind::MonthFile, "../tmp/tests/mustache/month.html".to_string());
-//         f1.render(res1);
-//     }
 }

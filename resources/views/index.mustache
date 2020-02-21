@@ -15,6 +15,7 @@
     <table class="list">
         <thead>
         <tr>
+            <th class="left">#</th>
             <th class="left">Year</th>
             <th class="right">Revenue</th>
             <th class="right">Expense</th>
@@ -23,19 +24,18 @@
         </tr>
         </thead>
 
-        <!-- userz //-->
-        {{#users}}
+        <tbody>
+        {{#years}}
             <tr>
-                <td>{{.}}</td>
+                <td class="left">{{index}}</a></td>
+                <td class="left"><a href="year/{{{year}}}/index.html">{{year}}</a></td>
+                <td class="right">{{revenue}}</td>
+                <td class="right red">{{expense}}</td>
+                <td class="right {{{balance_class}}}">{{balance}}</td>
+                <td class="right {{{balance_sum_class}}}">{{balance_sum}}</td>
             </tr>
-        {{/users}}
-
-        <!-- planetz //-->
-        {{#planets}}
-            <tr>
-                <td>{{name}}</td>
-            </tr>
-        {{/planets}}
+        {{/years}}
+        </tbody>
     </table>
 
 </body>

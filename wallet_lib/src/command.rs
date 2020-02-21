@@ -147,10 +147,10 @@ impl Command {
     fn exec_list(&self) {
         println!("-> Command::exec_list()");
 
-        let options = FilterOptions::from(self.options.clone());
-        let wallet = Wallet::new(self.options.get_wallet_path());
+        // let options = FilterOptions::from(self.options.clone());
+        // let wallet = Wallet::new(self.options.get_wallet_path());
 
-        let result = wallet.filter(options);
+        // let result = wallet.filter(options);
 
         // TODO: dynamic DisplayKind. use terminal width to determine which EntryDisplayKind value to use when no option is provided. maybe calculate width.
 

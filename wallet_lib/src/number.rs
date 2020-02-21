@@ -4,7 +4,7 @@ use std::ops::{Add, AddAssign};
 
 pub type NumberType = f64;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Number {
     n: NumberType,
 }
@@ -43,6 +43,16 @@ impl Add for Number {
     }
 }
 
+impl Add<f64> for Number {
+    type Output = Self;
+
+    fn add(self, other: f64) -> Self {
+        Self {
+            n: self.n + other,
+        }
+    }
+}
+
 impl AddAssign for Number {
     fn add_assign(&mut self, other: Self) {
         // println!("-> Number::add_assign({:?})", other);
@@ -53,12 +63,26 @@ impl AddAssign for Number {
     }
 }
 
+impl AddAssign<f64> for Number {
+    fn add_assign(&mut self, other: f64) {
+        *self = Self {
+            n: self.n + other,
+        };
+    }
+}
+
+pub trait ToDisplay {
+    fn to_display(self) -> NumberDisplay;
+}
+
 impl ToDisplay for Number {
     fn to_display(self) -> NumberDisplay {
         NumberDisplay::new(self)
     }
 }
 
+// TODO
+// #[deprecated(note = "Implement Display for Number")]
 #[derive(Debug)]
 pub struct NumberDisplay {
     n: Number,
@@ -111,15 +135,12 @@ impl Display for NumberDisplay {
         } else if width == 0 && precision != 0 {
             write!(f, "{1:.*}", precision, n)?;
         } else {
-            write!(f, "NO_FORMAT")?;
+            // write!(f, "NO_FORMAT")?;
+            write!(f, "{:.2}", n)?;
         }
 
         Ok(())
     }
-}
-
-pub trait ToDisplay {
-    fn to_display(self) -> NumberDisplay;
 }
 
 #[cfg(test)]
@@ -134,11 +155,11 @@ mod tests_basic {
 }
 
 #[cfg(test)]
-mod tests_add {
+mod tests_add_number {
     use super::Number;
 
     #[test]
-    fn test_number_add1() {
+    fn test_number_add_number1() {
         let n1 = Number::from(1.0);
         let n2 = Number::from(2.0);
         let n3 = n1 + n2;
@@ -147,7 +168,7 @@ mod tests_add {
     }
 
     #[test]
-    fn test_number_add2() {
+    fn test_number_add_number2() {
         let mut n1 = Number::from(1.0);
         let n2 = Number::from(2.0);
         n1 += n2;
@@ -156,7 +177,7 @@ mod tests_add {
     }
 
     #[test]
-    fn test_number_add3() {
+    fn test_number_add_number3() {
         let mut n1 = Number::from(3.0);
         let n2 = Number::from(-2.0);
         n1 += n2;
@@ -165,12 +186,33 @@ mod tests_add {
     }
 
     #[test]
-    fn test_number_add4() {
+    fn test_number_add_number4() {
         let mut n1 = Number::from(3.0);
         let n2 = Number::from(-5.0);
         n1 += n2;
 
         assert_eq!(-2.0, n1.unwrap());
+    }
+}
+
+#[cfg(test)]
+mod tests_add_float {
+    use super::Number;
+
+    #[test]
+    fn test_number_add_float1() {
+        let n1 = Number::from(1.1);
+        let n2 = n1 + 21.2;
+
+        assert_eq!(22.3, n2.unwrap());
+    }
+
+    #[test]
+    fn test_number_add_float2() {
+        let mut n1 = Number::from(1.1);
+        n1 += 21.2;
+
+        assert_eq!(22.3, n1.unwrap());
     }
 }
 
