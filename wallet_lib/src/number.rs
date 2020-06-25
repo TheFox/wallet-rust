@@ -25,6 +25,11 @@ impl Number {
     pub fn unwrap(&self) -> NumberType {
         self.n
     }
+
+    pub fn is_negative(&self) -> bool {
+        println!("-> Number::is_negative()");
+        self.n < 0.0
+    }
 }
 
 impl PartialEq for Number {

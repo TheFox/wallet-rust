@@ -1,11 +1,12 @@
 
 /// https://github.com/nickel-org/rust-mustache
 
-// use std::convert::From;
+use std::convert::From;
 use std::fs::File;
+use std::include_bytes;
+use std::cmp::Eq;
 use mustache::{MapBuilder, VecBuilder, compile_str};
 // use mustache::serde;
-use std::include_bytes;
 // use std::env::current_dir;
 use chrono::{Local, DateTime};
 // use std::collections::HashMap;
@@ -23,39 +24,32 @@ const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 
 #[derive(Debug, Serialize)]
 struct MustacheYear {
-    index: u32,
+    index: u32, // Minimum: 1900
     year: Year,
     revenue: String,
     expense: String,
     balance: String,
     balance_sum: String,
+    balance_sum_class: String,
 }
 
 impl MustacheYear {
-    fn from_summary(year_sum: &YearSummary, index: u32, balance_sum: &Number) -> Self {
+}
+
+impl From<&YearSummary> for MustacheYear {
+    fn from(year_sum: &YearSummary) -> Self {
+        println!("-> MustacheFile::from()");
         Self {
-            index,
+            index: 0,
             year: year_sum.year,
             revenue: format!("{}", year_sum.revenue.to_display()),
             expense: format!("{}", year_sum.expense.to_display()),
             balance: format!("{}", year_sum.balance.to_display()),
-            balance_sum: format!("{}", balance_sum.to_display()),
+            balance_sum: String::new(),
+            balance_sum_class: String::new(),
         }
     }
 }
-
-// impl From<&YearSummary> for MustacheYear {
-//     fn from(year_sum: &YearSummary) -> Self {
-//         println!("-> MustacheFile::from()");
-//         Self {
-//             year: year_sum.year,
-//             revenue: format!("{}", year_sum.revenue.to_display()),
-//             expense: format!("{}", year_sum.expense.to_display()),
-//             balance: format!("{}", year_sum.balance.to_display()),
-//             balance_sum: String::new(),
-//         }
-//     }
-// }
 
 pub struct IndexMustacheFile {
     path: String,
@@ -86,7 +80,7 @@ impl IndexMustacheFile {
         // Compile Template
         let template = compile_str(&raw).unwrap();
 
-        println!("-> File::create");
+        println!("-> IndexMustacheFile::render() File::create");
         let mut _file = match File::create(&self.path) {
             Ok(file) => file,
             Err(why) => panic!("Cannot create {}: {}", self.path, why),
@@ -99,12 +93,18 @@ impl IndexMustacheFile {
         let _myears: Vec<MustacheYear> = _result.years.values()
             .map(|year_sum| {
                 index += 1;
-                println!("-> index: {:?}", index);
+                println!("-> IndexMustacheFile::render() index: {:?}", index);
 
                 balance_sum += year_sum.balance;
                 println!("-> balance_sum: {:.2}", balance_sum.to_display());
 
-                MustacheYear::from_summary(year_sum, index, &balance_sum)
+                let mut _myear = MustacheYear::from(year_sum);
+                _myear.index = index;
+                _myear.balance_sum = format!("{}", balance_sum.to_display());
+                if balance_sum.is_negative() {
+                    _myear.balance_sum_class = "red".to_string();
+                }
+                _myear
             })
             .collect();
         println!("-> _myears: {:?}", _myears);
