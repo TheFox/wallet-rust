@@ -98,6 +98,7 @@ trait AddEntry {
 
 #[derive(Debug)]
 pub struct CategorySummary {
+    pub name: String,
     pub revenue: Number,
     pub expense: Number,
     pub balance: Number,
@@ -106,6 +107,7 @@ pub struct CategorySummary {
 impl CategorySummary {
     pub fn new() -> Self {
         Self {
+            name: String::new(),
             revenue: Number::new(),
             expense: Number::new(),
             balance: Number::new(),
@@ -114,7 +116,7 @@ impl CategorySummary {
 }
 impl AddEntry for CategorySummary {
     fn add(&mut self, entry_ref: EntryRc) {
-        // println!("-> CategorySummary::add()");
+        println!("-> CategorySummary::add()");
 
         // Calc
         self.revenue += entry_ref.revenue();
@@ -242,14 +244,15 @@ impl AddEntry for MonthSummary {
         // Categories
         match self.categories.get_mut(&category) {
             Some(category_summary) => {
-                // println!("  -> old category_summary");
+                println!("  -> old category_summary");
 
                 category_summary.add(entry_ref.clone());
             },
             None => {
-                // println!("  -> new category_summary");
+                println!("  -> new category_summary");
 
                 let mut category_summary = CategorySummary::new();
+                //category_summary.name =
                 category_summary.add(entry_ref.clone());
 
                 self.categories.insert(category, category_summary);
@@ -353,6 +356,7 @@ impl AddEntry for YearSummary {
                 // println!("  -> new category_summary");
 
                 let mut category_summary = CategorySummary::new();
+                category_summary.name = category.clone();
                 category_summary.add(entry_ref.clone());
 
                 self.categories.insert(category, category_summary);
@@ -445,14 +449,15 @@ impl FilterResult {
         // Categories
         match self.categories.get_mut(&category) {
             Some(category_summary) => {
-                // println!("  -> old category_summary");
+                println!("  -> old category_summary");
 
                 category_summary.add(entry_ref.clone());
             },
             None => {
-                // println!("  -> new category_summary");
+                println!("  -> new category_summary => {:?}", category);
 
                 let mut category_summary = CategorySummary::new();
+                category_summary.name = category.clone();
                 category_summary.add(entry_ref.clone());
 
                 self.categories.insert(category, category_summary);
