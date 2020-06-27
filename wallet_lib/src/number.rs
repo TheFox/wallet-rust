@@ -27,7 +27,7 @@ impl Number {
     }
 
     pub fn is_negative(&self) -> bool {
-        println!("-> Number::is_negative()");
+        // println!("-> Number::is_negative()");
         self.n < 0.0
     }
 }

@@ -28,6 +28,7 @@ struct MustacheCategory {
     //revenue: String,
     //expense: String,
     balance: String,
+    is_placeholder: bool,
 }
 
 impl MustacheCategory {
@@ -37,18 +38,20 @@ impl MustacheCategory {
             //revenue: format!("{}", cat_sum.revenue.to_display()),
             //expense: format!("{}", cat_sum.expense.to_display()),
             balance: String::new(),
+            is_placeholder: false,
         }
     }
 }
 
 impl From<&CategorySummary> for MustacheCategory {
     fn from(cat_sum: &CategorySummary) -> Self {
-        println!("-> MustacheCategory::from() -> {:?}", cat_sum);
+        //println!("-> MustacheCategory::from() -> {:?}", cat_sum);
         Self {
             name: cat_sum.name.clone(),
             //revenue: format!("{}", cat_sum.revenue.to_display()),
             //expense: format!("{}", cat_sum.expense.to_display()),
             balance: format!("{}", cat_sum.balance.to_display()),
+            is_placeholder: false,
         }
     }
 }
@@ -69,7 +72,7 @@ struct MustacheYear {
 
 impl From<&YearSummary> for MustacheYear {
     fn from(year_sum: &YearSummary) -> Self {
-        println!("-> MustacheYear::from()");
+        //println!("-> MustacheYear::from()");
         Self {
             index: 0,
             year: year_sum.year,
@@ -114,7 +117,7 @@ impl IndexMustacheFile {
         // Compile Template
         let template = compile_str(&raw).unwrap();
 
-        println!("-> IndexMustacheFile::render() File::create");
+        //println!("-> IndexMustacheFile::render() File::create");
         let mut _file = match File::create(&self.path) {
             Ok(file) => file,
             Err(why) => panic!("Cannot create {}: {}", self.path, why),
@@ -130,7 +133,7 @@ impl IndexMustacheFile {
                 println!("-> Mustache Year: {:?}", year_sum.year);
 
                 balance_sum += year_sum.balance;
-                println!("-> balance_sum: {:.2}", balance_sum.to_display());
+                //println!("  -> balance_sum: {:.2}", balance_sum.to_display());
 
                 let mut _myear = MustacheYear::from(year_sum);
                 _myear.index = index;
@@ -139,12 +142,24 @@ impl IndexMustacheFile {
                     _myear.balance_sum_class = "red".to_string();
                 }
 
-                // Add Categories to Year.
-                for (category_name, category_sum) in &year_sum.categories {
+                // Add Categories to Year. Iterate over all common categories.
+                for (category_name, category_sum) in &_result.categories {
                     println!("  -> year {:?}, category: {:?}", year_sum.year, category_name);
 
-                    let mut _mcategory = MustacheCategory::from(category_sum);
-                    _myear.categories.push(_mcategory);
+                    // Search common category in Year Categories.
+                    if let Some(_ycategory) = year_sum.categories.get(category_name) {
+                        println!("  -> year {:?}, get: {:?}", year_sum.year, _ycategory.name);
+
+                        //let mut _mcategory = MustacheCategory::from(_ycategory);
+                        //println!("  -> year {:?}, mcategory: {:?}", year_sum.year, _mcategory);
+                        _myear.categories.push(MustacheCategory::from(_ycategory));
+                    } else {
+                        println!("  -> year category not found: {}", category_name);
+                        // Placeholder Category
+                        let mut _cplaceholder = MustacheCategory::new();
+                        _cplaceholder.is_placeholder = true;
+                        _myear.categories.push(_cplaceholder);
+                    }
                 }
 
                 // Return Mustache Year.
@@ -156,7 +171,7 @@ impl IndexMustacheFile {
         // Mustache Categories
         let _mcategories: MustacheCategories = _result.categories.values()
             .map(|category_sum| {
-                println!("-> Mustache Category => {:?}", category_sum);
+                //println!("-> Mustache Category => {:?}", category_sum);
 
                 let _mcategory = MustacheCategory::from(category_sum);
 
@@ -164,7 +179,7 @@ impl IndexMustacheFile {
                 _mcategory
             })
             .collect();
-        //println!("-> _mcategories: {:?}", _mcategories);
+        println!("-> _mcategories: {:?}", _mcategories);
 
         // Build Years
         let mut f_years = move |mut builder: VecBuilder| {
@@ -178,7 +193,7 @@ impl IndexMustacheFile {
         };
 
         // Build Categories
-        let mut f_categories = move |mut builder: VecBuilder| {
+        let mut f_categories = |mut builder: VecBuilder| {
             for c in &_mcategories {
                 //println!("-> category {:?}", c);
                 builder = builder.push(&c).unwrap();
@@ -197,6 +212,7 @@ impl IndexMustacheFile {
 
             .insert_vec("years", f_years)
             .insert_vec("categories", f_categories)
+            .insert_str("category_count", _mcategories.len().to_string())
 
             .build();
 

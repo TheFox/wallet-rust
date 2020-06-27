@@ -21,7 +21,7 @@
                 <th class="right">Expense</th>
                 <th class="right">Balance</th>
                 <th class="right">Balance &#8721;</th>
-                <th colspan="2">x Categories</th>
+                <th colspan="{{category_count}}">{{category_count}} Categories</th>
             </tr>
             <tr>
                 <th colspan="6">&nbsp;</th>
@@ -43,7 +43,12 @@
                 <td class="right {{{balance_sum_class}}}">{{balance_sum}}</td>
 
                 {{#categories}}
-                    <td>Category Balance '{{balance}}'</td>
+                    {{#is_placeholder}}
+                        <td>&nbsp;</td>
+                    {{/is_placeholder}}
+                    {{^is_placeholder}}
+                        <td>Category Balance '{{balance}}'</td>
+                    {{/is_placeholder}}
                 {{/categories}}
             </tr>
         {{/years}}

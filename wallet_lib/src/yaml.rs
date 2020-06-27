@@ -23,22 +23,22 @@ pub struct YamlFile {
 
 impl YamlFile {
     pub fn open_index(path: PathBuf) -> Self {
-        println!("-> YamlFile::open({:?})", path);
+        //println!("-> YamlFile::open({:?})", path);
         YamlFile::open(YamlFileKind::IndexFile, path)
     }
 
     pub fn open_epics(path: PathBuf) -> Self {
-        println!("-> YamlFile::open({:?})", path);
+        //println!("-> YamlFile::open({:?})", path);
         YamlFile::open(YamlFileKind::EpicsFile, path)
     }
 
     pub fn open_month(path: PathBuf) -> Self {
-        println!("-> YamlFile::open({:?})", path);
+        //println!("-> YamlFile::open({:?})", path);
         YamlFile::open(YamlFileKind::MonthFile, path)
     }
 
     fn open(kind: YamlFileKind, path: PathBuf) -> Self {
-        println!("-> YamlFile::open({:?}, {:?})", kind, path);
+        //println!("-> YamlFile::open({:?}, {:?})", kind, path);
 
         let mut _f = Self {
             kind,
@@ -51,32 +51,32 @@ impl YamlFile {
     }
 
     fn init(&mut self) {
-        println!("-> YamlFile::init()");
+        //println!("-> YamlFile::init()");
 
         if self.path.exists() && self.path.is_file() {
             // println!("-> read existing file");
             self.read();
         } else {
-            println!("-> create new file");
+            //println!("-> create new file");
 
             self.changed = true;
 
             if let Yaml::Hash(ref mut content_ref) = self.content {
                 match &self.kind {
                     YamlFileKind::IndexFile => {
-                        println!("-> IndexFile");
+                        //println!("-> IndexFile");
                         let index_key = "index".to_string().to_yaml();
                         let index_val = Yaml::Array(Vec::new());
                         content_ref.insert(index_key, index_val);
                     },
                     YamlFileKind::EpicsFile => {
-                        println!("-> EpicsFile");
+                        //println!("-> EpicsFile");
                         let index_key = "epics".to_string().to_yaml();
                         let index_val = Yaml::Array(Vec::new());
                         content_ref.insert(index_key, index_val);
                     },
                     YamlFileKind::MonthFile => {
-                        println!("-> MonthFile");
+                        //println!("-> MonthFile");
 
                         // Meta
                         let mut meta = Hash::new();
@@ -102,7 +102,7 @@ impl YamlFile {
     }
 
     fn read(&mut self) {
-        println!("-> YamlFile::read()");
+        //println!("-> YamlFile::read()");
         let raw = read_to_string(&self.path).expect("Cannot read file");
         // println!("-> raw: '{}'", raw);
 
@@ -113,14 +113,14 @@ impl YamlFile {
     }
 
     pub fn add<T: ToYaml>(&mut self, obj: T) {
-        println!("-> YamlFile::add() -> {:?}", self.kind);
+        //println!("-> YamlFile::add() -> {:?}", self.kind);
 
         if let Yaml::Hash(ref mut content_ref) = self.content {
             // println!("-> content_ref: {:?}", content_ref);
 
             match &self.kind {
                 YamlFileKind::IndexFile => {
-                    println!("-> IndexFile");
+                    //println!("-> IndexFile");
 
                     let index_key = "index".to_string().to_yaml();
 
@@ -130,7 +130,7 @@ impl YamlFile {
                     }
                 },
                 YamlFileKind::EpicsFile => {
-                    println!("-> EpicsFile");
+                    //println!("-> EpicsFile");
 
                     let index_key = "epics".to_string().to_yaml();
 
@@ -140,7 +140,7 @@ impl YamlFile {
                     }
                 },
                 YamlFileKind::MonthFile => {
-                    println!("-> YamlFile::add() MonthFile");
+                    //println!("-> YamlFile::add() MonthFile");
 
                     let v = obj.to_yaml();
 
@@ -185,7 +185,7 @@ impl YamlFile {
     }
 
     pub fn exists<T: ToYaml>(&self, id: T) -> bool {
-        println!("-> YamlFile::exists()");
+        //println!("-> YamlFile::exists()");
 
         // let str1 = id.to_string();
 
@@ -194,7 +194,7 @@ impl YamlFile {
 
             match &self.kind {
                 YamlFileKind::IndexFile => {
-                    println!("-> IndexFile");
+                    //println!("-> IndexFile");
 
                     let index_key = "index".to_string().to_yaml();
 
@@ -260,7 +260,7 @@ impl YamlFile {
     }
 
     pub fn get<T: FromYaml>(&self) -> Vec<T> {
-        println!("-> YamlFile::get() -> {:?}", self.kind);
+        //println!("-> YamlFile::get() -> {:?}", self.kind);
 
         let mut items: Vec<T> = vec![];
 
@@ -299,7 +299,7 @@ impl YamlFile {
     }
 
     fn write(&mut self) {
-        println!("-> YamlFile::write()");
+        // println!("-> YamlFile::write()");
         let mut out_str = String::new();
         {
             let mut emitter = YamlEmitter::new(&mut out_str);
@@ -308,7 +308,7 @@ impl YamlFile {
         out_str.push_str("\n");
         // println!("out: '{}'", out_str);
 
-        println!("-> File::create");
+        // println!("-> File::create");
         let mut file = File::create(&self.path)
             .expect("Cannot open file for writing");
 
@@ -321,7 +321,7 @@ impl YamlFile {
 
     /// Write file if content has changed.
     fn close(&mut self) {
-        println!("-> YamlFile::close()");
+        // println!("-> YamlFile::close()");
 
         if !self.changed {
             return;
@@ -332,22 +332,22 @@ impl YamlFile {
 
             match &self.kind {
                 YamlFileKind::MonthFile => {
-                    println!("-> MonthFile");
+                    // println!("-> MonthFile");
 
                     let index_key = "meta".to_string().to_yaml();
 
                     if let Yaml::Hash(ref mut index_ref) = content_ref[&index_key] {
-                        println!("-> index_ref: {:?}", index_ref);
+                        // println!("-> index_ref: {:?}", index_ref);
 
                         // Version
                         let version_key = "version".to_string().to_yaml();
-                        println!("-> version_key: {:?}", index_ref[&version_key]);
+                        // println!("-> version_key: {:?}", index_ref[&version_key]);
 
                         if let Yaml::Integer(version) = index_ref[&version_key] {
-                            println!("-> version: {:?}", version);
+                            // println!("-> version: {:?}", version);
 
                             if version < 3 {
-                                println!("-> new version");
+                                // println!("-> new version");
 
                                 index_ref[&version_key] = 3i64.to_yaml();
                             }
@@ -355,7 +355,7 @@ impl YamlFile {
 
                         // Updated At
                         let updatedat_key = "updated_at".to_string().to_yaml();
-                        println!("-> updatedat_key: {:?}", index_ref[&updatedat_key]);
+                        // println!("-> updatedat_key: {:?}", index_ref[&updatedat_key]);
 
                         let utc: DateTime<Utc> = Utc::now();
                         // index_ref.insert("updated_at".to_string().to_yaml(), "x".to_string().to_yaml());
