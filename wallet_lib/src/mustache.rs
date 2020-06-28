@@ -5,6 +5,7 @@ use std::convert::From;
 use std::fs::File;
 use std::include_bytes;
 use std::cmp::Eq;
+use std::cmp::Ordering;
 use mustache::{MapBuilder, VecBuilder, compile_str};
 // use mustache::serde;
 // use std::env::current_dir;
@@ -127,7 +128,7 @@ impl IndexMustacheFile {
         let mut balance_sum = Number::new();
 
         // Mustache Years
-        let _myears: MustacheYears = _result.years.values()
+        let mut _myears: MustacheYears = _result.years.values()
             .map(|year_sum| {
                 index += 1;
                 println!("-> Mustache Year: {:?}", year_sum.year);
@@ -166,7 +167,7 @@ impl IndexMustacheFile {
                 _myear
             })
             .collect();
-        //println!("-> _myears: {:?}", _myears.size());
+        println!("-> _myears len: {}", _myears.len());
 
         // Mustache Categories
         let _mcategories: MustacheCategories = _result.categories.values()
@@ -179,7 +180,19 @@ impl IndexMustacheFile {
                 _mcategory
             })
             .collect();
-        println!("-> _mcategories: {:?}", _mcategories);
+        println!("-> _mcategories len: {}", _mcategories.len());
+
+        // Sort Years
+        _myears.sort_by(|a, b| -> Ordering {
+            println!("-> sort: {} {}", a.year, b.year);
+            b.year.cmp(&a.year)
+        });
+
+        // Sort Categories
+        /*_mcategories.sort_by(|a, b| -> Ordering {
+            println!("-> sort: {} {}", a.name, b.name);
+            Ordering::Less
+        });*/
 
         // Build Years
         let mut f_years = move |mut builder: VecBuilder| {
