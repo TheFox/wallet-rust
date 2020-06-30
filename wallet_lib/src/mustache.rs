@@ -23,12 +23,41 @@ const APP_NAME: &'static str = "WalletRust";
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 
+trait HtmlAble {
+    fn get_balance(&self) -> Number;
+
+    fn get_balance_class(&self) -> String {
+        println!("-> HtmlAble::get_balance_class()");
+
+        if self.get_balance().is_negative() {
+            "red"
+        } else {
+            ""
+        }.into()
+    }
+}
+
+impl HtmlAble for CategorySummary {
+    fn get_balance(&self) -> Number {
+        println!("-> CategorySummary::get_balance()");
+        self.balance
+    }
+}
+
+impl HtmlAble for YearSummary {
+    fn get_balance(&self) -> Number {
+        println!("-> YearSummary::get_balance()");
+        self.balance
+    }
+}
+
 #[derive(Debug, Serialize)]
 struct MustacheCategory {
     name: String,
     //revenue: String,
     //expense: String,
     balance: String,
+    balance_class: String,
     is_placeholder: bool,
 }
 
@@ -39,6 +68,7 @@ impl MustacheCategory {
             //revenue: format!("{}", cat_sum.revenue.to_display()),
             //expense: format!("{}", cat_sum.expense.to_display()),
             balance: String::new(),
+            balance_class: String::new(),
             is_placeholder: false,
         }
     }
@@ -52,6 +82,7 @@ impl From<&CategorySummary> for MustacheCategory {
             //revenue: format!("{}", cat_sum.revenue.to_display()),
             //expense: format!("{}", cat_sum.expense.to_display()),
             balance: format!("{}", cat_sum.balance.to_display()),
+            balance_class: cat_sum.get_balance_class(),
             is_placeholder: false,
         }
     }
@@ -66,6 +97,7 @@ struct MustacheYear {
     revenue: String,
     expense: String,
     balance: String,
+    balance_class: String,
     balance_sum: String,
     balance_sum_class: String,
     categories: MustacheCategories
@@ -74,15 +106,17 @@ struct MustacheYear {
 impl From<&YearSummary> for MustacheYear {
     fn from(year_sum: &YearSummary) -> Self {
         //println!("-> MustacheYear::from()");
+
         Self {
             index: 0,
             year: year_sum.year,
             revenue: format!("{}", year_sum.revenue.to_display()),
             expense: format!("{}", year_sum.expense.to_display()),
             balance: format!("{}", year_sum.balance.to_display()),
+            balance_class: year_sum.get_balance_class(),
             balance_sum: String::new(),
             balance_sum_class: String::new(),
-            categories: vec![],
+            categories: MustacheCategories::new(),
         }
     }
 }
@@ -131,7 +165,7 @@ impl IndexMustacheFile {
         let mut _myears: MustacheYears = _result.years.values()
             .map(|year_sum| {
                 index += 1;
-                println!("-> Mustache Year: {:?}", year_sum.year);
+                //println!("-> Mustache Year: {:?}", year_sum.year);
 
                 balance_sum += year_sum.balance;
                 //println!("  -> balance_sum: {:.2}", balance_sum.to_display());
@@ -143,9 +177,11 @@ impl IndexMustacheFile {
                     _myear.balance_sum_class = "red".to_string();
                 }
 
+                //if _myear.ba
+
                 // Add Categories to Year. Iterate over all common categories.
                 for (category_name, category_sum) in &_result.categories {
-                    println!("  -> year {:?}, category: {:?}", year_sum.year, category_name);
+                    println!("-> year {:?}, category: {:?}", year_sum.year, category_name);
 
                     // Search common category in Year Categories.
                     if let Some(_ycategory) = year_sum.categories.get(category_name) {
@@ -155,7 +191,8 @@ impl IndexMustacheFile {
                         //println!("  -> year {:?}, mcategory: {:?}", year_sum.year, _mcategory);
                         _myear.categories.push(MustacheCategory::from(_ycategory));
                     } else {
-                        println!("  -> year category not found: {}", category_name);
+                        //println!("  -> year category not found: {}", category_name);
+
                         // Placeholder Category
                         let mut _cplaceholder = MustacheCategory::new();
                         _cplaceholder.is_placeholder = true;
@@ -170,7 +207,7 @@ impl IndexMustacheFile {
         println!("-> _myears len: {}", _myears.len());
 
         // Mustache Categories
-        let _mcategories: MustacheCategories = _result.categories.values()
+        let mut _mcategories: MustacheCategories = _result.categories.values()
             .map(|category_sum| {
                 //println!("-> Mustache Category => {:?}", category_sum);
 
@@ -183,15 +220,25 @@ impl IndexMustacheFile {
         println!("-> _mcategories len: {}", _mcategories.len());
 
         // Sort Years
-        _myears.sort_by(|a, b| -> Ordering {
-            println!("-> sort: {} {}", a.year, b.year);
-            b.year.cmp(&a.year)
-        });
+        /*_myears.sort_by(|a, b| -> Ordering {
+            println!("-> sort Years: {} {} => {:?}", a.year, b.year, a.year.cmp(&b.year));
+            a.year.cmp(&b.year)
+        });*/
 
         // Sort Categories
         /*_mcategories.sort_by(|a, b| -> Ordering {
-            println!("-> sort: {} {}", a.name, b.name);
-            Ordering::Less
+            let mut is_default = a.name == "default" || b.name == "default";
+            println!("-> sort Categories: '{}' '{}' {:?}", a.name, b.name, is_default);
+
+            if a.name == "default" {
+                Ordering::Less
+            } else {
+                if b.name == "default" {
+                    Ordering::Greater
+                } else {
+                    a.name.cmp(&b.name)
+                }
+            }
         });*/
 
         // Build Years

@@ -9,7 +9,7 @@ use std::include_bytes;
 use glob::glob;
 use std::fmt::{Display, Formatter, Result as FmtRes};
 use std::vec::Vec;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::rc::Rc;
 // use serde::Serialize;
 use crate::entry::Entry;
@@ -25,11 +25,11 @@ pub type Month = u32;
 pub type Day = u32;
 pub type EntryRc = Rc<Entry>;
 pub type Entries = Vec<EntryRc>;
-pub type Categories = HashMap<String, CategorySummary>;
-pub type Epics = HashMap<String, EpicSummary>;
-pub type Days = HashMap<Day, DaySummary>;
-pub type Months = HashMap<Month, MonthSummary>;
-pub type Years = HashMap<Year, YearSummary>;
+pub type Categories = BTreeMap<String, CategorySummary>;
+pub type Epics = BTreeMap<String, EpicSummary>;
+pub type Days = BTreeMap<Day, DaySummary>;
+pub type Months = BTreeMap<Month, MonthSummary>;
+pub type Years = BTreeMap<Year, YearSummary>;
 
 pub struct AddedResult {
     month_file_name: String,
@@ -197,9 +197,9 @@ impl MonthSummary {
     pub fn new() -> Self {
         Self {
             entries: Entries::new(),
-            days: HashMap::new(),
-            categories: HashMap::new(),
-            epics: HashMap::new(),
+            days: Days::new(),
+            categories: Categories::new(),
+            epics: Epics::new(),
 
             revenue: Number::new(),
             expense: Number::new(),
@@ -301,15 +301,23 @@ impl YearSummary {
             year,
 
             entries: Entries::new(),
-            months: HashMap::new(),
-            categories: HashMap::new(),
-            epics: HashMap::new(),
+            months: Months::new(),
+            categories: Categories::new(),
+            epics: Epics::new(),
 
             revenue: Number::new(),
             expense: Number::new(),
             balance: Number::new(),
         }
     }
+
+    /*pub fn get_balance_class(&self) -> String {
+        if self.balance.is_negative() {
+            "red"
+        } else {
+            ""
+        }.into()
+    }*/
 }
 
 impl AddEntry for YearSummary {
@@ -401,9 +409,9 @@ impl FilterResult {
     pub fn new() -> Self {
         FilterResult {
             entries: Entries::new(),
-            years: HashMap::new(),
-            categories: HashMap::new(),
-            epics: HashMap::new(),
+            years: Years::new(),
+            categories: Categories::new(),
+            epics: Epics::new(),
 
             revenue: Number::new(),
             expense: Number::new(),
