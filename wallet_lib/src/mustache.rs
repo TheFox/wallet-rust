@@ -39,14 +39,14 @@ trait HtmlAble {
 
 impl HtmlAble for CategorySummary {
     fn get_balance(&self) -> Number {
-        println!("-> CategorySummary::get_balance()");
+        //println!("-> CategorySummary::get_balance()");
         self.balance
     }
 }
 
 impl HtmlAble for YearSummary {
     fn get_balance(&self) -> Number {
-        println!("-> YearSummary::get_balance()");
+        //println!("-> YearSummary::get_balance()");
         self.balance
     }
 }
@@ -122,6 +122,43 @@ impl From<&YearSummary> for MustacheYear {
 }
 
 type MustacheYears = Vec<MustacheYear>;
+
+#[derive(Debug, Serialize)]
+struct MustacheTotal {
+    label: String,
+    revenue: String,
+    revenue_percent: String,
+    expense: String,
+    expense_percent: String,
+    balance: String,
+    balance_class: String,
+
+    has_categories: bool,
+    categories: MustacheCategories,
+
+    has_epics: bool,
+    //epics: MustacheEpics,
+}
+
+impl MustacheTotal {
+    fn new() -> Self {
+        Self {
+            label: "TOTAL".to_string(),
+            revenue: String::new(),
+            revenue_percent: String::new(),
+            expense: String::new(),
+            expense_percent: String::new(),
+            balance: String::new(),
+            balance_class: String::new(),
+
+            has_categories: false,
+            categories: MustacheCategories::new(),
+
+            has_epics: false,
+            //epics: MustacheEpics::new(),
+        }
+    }
+}
 
 pub struct IndexMustacheFile {
     path: String,
@@ -261,7 +298,10 @@ impl IndexMustacheFile {
             builder
         };
 
-        let data = MapBuilder::new()
+        // Index Total
+        let mut index_total = MustacheTotal::new();
+
+        let mut builder = MapBuilder::new()
             .insert_str("PROJECT_NAME", APP_NAME)
             .insert_str("PROJECT_VERSION_FULL", APP_VERSION)
             .insert_str("PROJECT_HOMEPAGE_URL", APP_HOMEPAGE)
@@ -273,8 +313,12 @@ impl IndexMustacheFile {
             .insert_vec("years", f_years)
             .insert_vec("categories", f_categories)
             .insert_str("category_count", _mcategories.len().to_string())
+        ;
 
-            .build();
+        builder = builder.insert("total", &index_total)
+            .expect("Cannot add 'total' field to builder");
+
+        let data = builder.build();
 
         println!("-> render_data");
         template.render_data(&mut _file, &data)
