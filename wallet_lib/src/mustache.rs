@@ -219,8 +219,6 @@ impl IndexMustacheFile {
                     _myear.balance_sum_class = "red".to_string();
                 }
 
-                //if _myear.ba
-
                 // Add Categories to Year. Iterate over all common categories.
                 for (category_name, category_sum) in &_result.categories {
                     //println!("-> year {:?}, category: {:?}", year_sum.year, category_name);

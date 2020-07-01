@@ -99,7 +99,7 @@ impl HtmlDisplay for Number {
         if self.is_negative() {
             "red"
         } else {
-            "x"
+            ""
         }.into()
     }
 }
