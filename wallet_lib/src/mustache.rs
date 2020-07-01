@@ -18,6 +18,7 @@ use crate::wallet::{YearSummary, CategorySummary};
 use crate::wallet::Year;
 use crate::number::Number;
 use crate::number::ToDisplay;
+use crate::number::HtmlDisplay;
 
 const APP_NAME: &'static str = "WalletRust";
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -27,13 +28,7 @@ trait HtmlAble {
     fn get_balance(&self) -> Number;
 
     fn get_balance_class(&self) -> String {
-        println!("-> HtmlAble::get_balance_class()");
-
-        if self.get_balance().is_negative() {
-            "red"
-        } else {
-            ""
-        }.into()
+        self.get_balance().html_class()
     }
 }
 
@@ -126,10 +121,13 @@ type MustacheYears = Vec<MustacheYear>;
 #[derive(Debug, Serialize)]
 struct MustacheTotal {
     label: String,
+
     revenue: String,
     revenue_percent: String,
+
     expense: String,
     expense_percent: String,
+
     balance: String,
     balance_class: String,
 
@@ -144,10 +142,13 @@ impl MustacheTotal {
     fn new() -> Self {
         Self {
             label: "TOTAL".to_string(),
+
             revenue: String::new(),
             revenue_percent: String::new(),
+
             expense: String::new(),
             expense_percent: String::new(),
+
             balance: String::new(),
             balance_class: String::new(),
 
@@ -196,6 +197,8 @@ impl IndexMustacheFile {
         };
 
         let mut index: u32 = 0;
+        let mut revenue_sum = Number::new();
+        let mut expense_sum = Number::new();
         let mut balance_sum = Number::new();
 
         // Mustache Years
@@ -204,6 +207,8 @@ impl IndexMustacheFile {
                 index += 1;
                 //println!("-> Mustache Year: {:?}", year_sum.year);
 
+                revenue_sum += year_sum.revenue;
+                expense_sum += year_sum.expense;
                 balance_sum += year_sum.balance;
                 //println!("  -> balance_sum: {:.2}", balance_sum.to_display());
 
@@ -218,11 +223,11 @@ impl IndexMustacheFile {
 
                 // Add Categories to Year. Iterate over all common categories.
                 for (category_name, category_sum) in &_result.categories {
-                    println!("-> year {:?}, category: {:?}", year_sum.year, category_name);
+                    //println!("-> year {:?}, category: {:?}", year_sum.year, category_name);
 
                     // Search common category in Year Categories.
                     if let Some(_ycategory) = year_sum.categories.get(category_name) {
-                        println!("  -> year {:?}, get: {:?}", year_sum.year, _ycategory.name);
+                        //println!("  -> year {:?}, get: {:?}", year_sum.year, _ycategory.name);
 
                         //let mut _mcategory = MustacheCategory::from(_ycategory);
                         //println!("  -> year {:?}, mcategory: {:?}", year_sum.year, _mcategory);
@@ -298,9 +303,20 @@ impl IndexMustacheFile {
             builder
         };
 
+        let total_volume = revenue_sum.unwrap() + expense_sum.unwrap().abs();
+        let revenue_percent = revenue_sum.unwrap() / total_volume * 100.0;
+        let expense_percent = expense_sum.unwrap() / total_volume * 100.0;
+
         // Index Total
         let mut index_total = MustacheTotal::new();
+        index_total.revenue = format!("{}", revenue_sum.to_display());
+        index_total.revenue_percent = format!("{:.2}", revenue_percent);
+        index_total.expense = format!("{}", expense_sum.to_display());
+        index_total.expense_percent = format!("{:.2}", expense_percent);
+        index_total.balance = format!("{}", balance_sum.to_display());
+        index_total.balance_class = balance_sum.html_class();
 
+        // Mustache Builder
         let mut builder = MapBuilder::new()
             .insert_str("PROJECT_NAME", APP_NAME)
             .insert_str("PROJECT_VERSION_FULL", APP_VERSION)

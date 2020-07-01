@@ -614,7 +614,7 @@ impl Wallet {
     /// Retrieve Entries by a set of filters.
     pub fn filter(&self, options: FilterOptions) -> FilterResult {
         println!("-> Wallet::filter()");
-        // println!("-> options: {:?}", options);
+        println!("-> options: {:?}", options);
 
         // Result
         let mut all_items: Vec<Entry> = vec![];
@@ -622,6 +622,7 @@ impl Wallet {
         let data_dir = self.data_dir.join("month_");
 
         // Find files.
+        println!("-> find files");
         if let Some(path) = data_dir.to_str() {
             let mut g = String::from(path);
 
@@ -647,15 +648,15 @@ impl Wallet {
 
             // Get files.
             let entries = glob(&g).expect("Failed to read glob pattern");
+            println!("-> for path {}, found files: {}", g, glob(&g).unwrap().count());
+
             for entry in entries {
                 match entry {
                     Ok(path) => {
-                        // println!("-> path: {:?}", path.display());
-                        // println!("-> path: {:?}", path);
+                        println!("-> collect file: {:?}", path);
 
                         let month_file = YamlFile::open_month(path);
                         let mut month_items: Vec<Entry> = month_file.get();
-                        // println!("-> month_items: {:?}", month_items);
 
                         all_items.append(&mut month_items);
                     },
@@ -664,9 +665,11 @@ impl Wallet {
             }
         }
 
+        println!("-> entries: {}", all_items.len());
+
         // Filter
         let filter = all_items.iter().filter(|entry| -> bool {
-            // println!("-> filter: {:?}", entry);
+            //println!("-> entry: {:?}", entry.id());
 
             // Date
             if let Some(odate) = options.date {

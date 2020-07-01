@@ -57,8 +57,7 @@
         <tfoot>
         {{#total}}
             <tr>
-                <td>&nbsp;</td>
-                <td class="left">{{label}}</td>
+                <td class="left" colspan="2">{{label}}</td>
                 <td class="right">{{revenue}}</td>
                 <td class="right red">{{expense}}</td>
                 <td class="right {{{balance_class}}}">{{balance}} '{{{balance_class}}}'</td>
@@ -77,8 +76,7 @@
         {{/total}}
         {{#total}}
             <tr>
-                <td>&nbsp;</td>
-                <td>{{label}} %</td>
+                <td class="left" colspan="2">{{label}} %</td>
                 <td class="right">{{{revenue_percent}}}</td>
                 <td class="right red">{{{expense_percent}}}</td>
                 <td colspan="2">&nbsp;</td>

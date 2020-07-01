@@ -30,6 +30,10 @@ impl Number {
         // println!("-> Number::is_negative()");
         self.n < 0.0
     }
+
+    // pub fn html_class(&self) -> String {
+    //     println!("-> Number::html_class()");
+    // }
 }
 
 impl PartialEq for Number {
@@ -83,6 +87,20 @@ pub trait ToDisplay {
 impl ToDisplay for Number {
     fn to_display(self) -> NumberDisplay {
         NumberDisplay::new(self)
+    }
+}
+
+pub trait HtmlDisplay {
+    fn html_class(&self) -> String;
+}
+
+impl HtmlDisplay for Number {
+    fn html_class(&self) -> String {
+        if self.is_negative() {
+            "red"
+        } else {
+            "x"
+        }.into()
     }
 }
 
