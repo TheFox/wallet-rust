@@ -196,16 +196,20 @@ impl IndexMustacheFile {
             Err(why) => panic!("Cannot create {}: {}", self.path, why),
         };
 
+        // Total
         let mut index: u32 = 0;
         let mut revenue_sum = Number::new();
         let mut expense_sum = Number::new();
         let mut balance_sum = Number::new();
 
+        // Index Total
+        let mut index_total = MustacheTotal::new();
+
         // Mustache Years
         let mut _myears: MustacheYears = _result.years.values()
             .map(|year_sum| {
                 index += 1;
-                //println!("-> Mustache Year: {:?}", year_sum.year);
+                println!("-> Mustache Year: {:?} #{}", year_sum.year, index);
 
                 revenue_sum += year_sum.revenue;
                 expense_sum += year_sum.expense;
@@ -217,16 +221,17 @@ impl IndexMustacheFile {
                 _myear.balance_sum = format!("{}", balance_sum.to_display());
                 _myear.balance_sum_class = balance_sum.html_class();
 
-                // Add Categories to Year. Iterate over all common categories.
+                // Iterate over all common categories. Add Categories to Year.
                 for (category_name, category_sum) in &_result.categories {
-                    //println!("-> year {:?}, category: {:?}", year_sum.year, category_name);
+                    //println!("  -> category: {:?}", category_sum);
 
                     // Search common category in Year Categories.
                     if let Some(_ycategory) = year_sum.categories.get(category_name) {
                         //println!("  -> year {:?}, get: {:?}", year_sum.year, _ycategory.name);
 
                         //let mut _mcategory = MustacheCategory::from(_ycategory);
-                        //println!("  -> year {:?}, mcategory: {:?}", year_sum.year, _mcategory);
+                        //println!("    -> year {:?}, mcategory: {:?}", year_sum.year, _mcategory);
+
                         _myear.categories.push(MustacheCategory::from(_ycategory));
                     } else {
                         //println!("  -> year category not found: {}", category_name);
@@ -247,7 +252,7 @@ impl IndexMustacheFile {
         // Mustache Categories
         let mut _mcategories: MustacheCategories = _result.categories.values()
             .map(|category_sum| {
-                //println!("-> Mustache Category => {:?}", category_sum);
+                println!("-> Mustache Category => {}", category_sum.name);
 
                 let _mcategory = MustacheCategory::from(category_sum);
 
@@ -299,18 +304,28 @@ impl IndexMustacheFile {
             builder
         };
 
+        // Percentages
         let total_volume = revenue_sum.unwrap() + expense_sum.unwrap().abs();
         let revenue_percent = revenue_sum.unwrap() / total_volume * 100.0;
         let expense_percent = expense_sum.unwrap() / total_volume * 100.0;
+        for _category in &_mcategories {
+            let _p = 0.0;
+            println!("-> _category {:?} -> {:.2}", _category, _p);
+        }
+
+        //
+        //let category_count = _mcategories.len();
 
         // Index Total
-        let mut index_total = MustacheTotal::new();
+        //let mut index_total = MustacheTotal::new();
         index_total.revenue = format!("{}", revenue_sum.to_display());
         index_total.revenue_percent = format!("{:.2}", revenue_percent);
         index_total.expense = format!("{}", expense_sum.to_display());
         index_total.expense_percent = format!("{:.2}", expense_percent);
         index_total.balance = format!("{}", balance_sum.to_display());
         index_total.balance_class = balance_sum.html_class();
+        //index_total.has_categories = category_count > 0;
+        //index_total.categories = _mcategories;
 
         // Mustache Builder
         let mut builder = MapBuilder::new()

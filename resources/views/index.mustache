@@ -60,38 +60,31 @@
                 <td class="left" colspan="2">{{label}}</td>
                 <td class="right">{{revenue}}</td>
                 <td class="right red">{{expense}}</td>
-                <td class="right {{{balance_class}}}">{{balance}} '{{{balance_class}}}'</td>
-                <td>&nbsp;</td>
-                {{#has_categories}}
-                    {{#categories}}
-                        <td class="right {{{balance_class}}}">{{balance}} '{{{balance_class}}}'</td>
-                    {{/categories}}
-                {{/has_categories}}
-                {{#has_epics}}
-                    {{#epics}}
-                        <td class="right {{{balance_class}}}" bgcolor="{{{epic_bg_color}}}">{{{balance}}} '{{{balance_class}}}' '{{{epic_bg_color}}}'</td>
-                    {{/epics}}
-                {{/has_epics}}
-            </tr>
+                <td class="right {{{balance_class}}}">{{balance}} c'{{{balance_class}}}'</td>
         {{/total}}
+                <td>&nbsp;</td>
+                {{#categories}}
+                    <td class="right {{{balance_class}}}">{{balance}} c'{{{balance_class}}}'</td>
+                {{/categories}}
+                {{#epics}}
+                    <td class="right {{{balance_class}}}" bgcolor="{{{epic_bg_color}}}">{{{balance}}} c'{{{balance_class}}}' bg'{{{epic_bg_color}}}'</td>
+                {{/epics}}
+            </tr>
+
         {{#total}}
             <tr>
                 <td class="left" colspan="2">{{label}} %</td>
                 <td class="right">{{{revenue_percent}}}</td>
                 <td class="right red">{{{expense_percent}}}</td>
-                <td colspan="2">&nbsp;</td>
-                {{#has_categories}}
-                    {{#categories}}
-                        <td class="right {{{balance_class}}}">{{{balance_percent}}} '{{{balance_class}}}'</td>
-                    {{/categories}}
-                {{/has_categories}}
-                {{#has_epics}}
-                    {{#epics}}
-                        <td class="right {{{balance_class}}}" bgcolor="{{{epic_bg_color}}}">{{{balance_percent}}} '{{{balance_class}}}' '{{{epic_bg_color}}}'</td>
-                    {{/epics}}
-                {{/has_epics}}
-            </tr>
         {{/total}}
+                <td colspan="2">&nbsp;</td>
+                {{#categories}}
+                    <td class="right {{{balance_class}}}">{{{balance_percent}}} c'{{{balance_class}}}'</td>
+                {{/categories}}
+                {{#epics}}
+                    <td class="right {{{balance_class}}}" bgcolor="{{{epic_bg_color}}}">{{{balance_percent}}} c'{{{balance_class}}}' bg'{{{epic_bg_color}}}'</td>
+                {{/epics}}
+            </tr>
         </tfoot>
     </table>
 
