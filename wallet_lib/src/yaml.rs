@@ -33,12 +33,12 @@ impl YamlFile {
     }
 
     pub fn open_month(path: PathBuf) -> Self {
-        println!("-> YamlFile::open_month({:?})", path);
+        // println!("-> YamlFile::open_month({:?})", path);
         YamlFile::open(YamlFileKind::MonthFile, path)
     }
 
     fn open(kind: YamlFileKind, path: PathBuf) -> Self {
-        println!("-> YamlFile::open({:?}, {:?})", kind, path);
+        // println!("-> YamlFile::open({:?}, {:?})", kind, path);
 
         let mut _f = Self {
             kind,
@@ -51,10 +51,10 @@ impl YamlFile {
     }
 
     fn init(&mut self) {
-        println!("-> YamlFile::init()");
+        //println!("-> YamlFile::init()");
 
         if self.path.exists() && self.path.is_file() {
-            println!("-> read existing file");
+            //println!("-> read existing file");
             self.read();
         } else {
             //println!("-> create new file");
@@ -100,21 +100,21 @@ impl YamlFile {
             }
         }
 
-        println!("<- YamlFile::init()");
+        //println!("<- YamlFile::init()");
     }
 
     fn read(&mut self) {
-        println!("-> YamlFile::read()");
+        // println!("-> YamlFile::read()");
         let raw = read_to_string(&self.path).expect("Cannot read file");
-        // println!("-> raw: '{}'", raw);
 
-        println!("-> YamlLoader::load_from_str()");
+        // println!("-> YamlLoader::load_from_str()");
         let docs = YamlLoader::load_from_str(&raw).unwrap();
-        //println!("-> docs: '{:?}'", docs);
 
+        // println!("-> yaml loaded");
         self.content = docs[0].clone();
+        //self.content = YamlLoader::load_from_str(&raw).unwrap()[0];
 
-        println!("<- YamlFile::read()");
+        // println!("<- YamlFile::read()");
     }
 
     pub fn add<T: ToYaml>(&mut self, obj: T) {
@@ -265,7 +265,7 @@ impl YamlFile {
     }
 
     pub fn get<T: FromYaml>(&self) -> Vec<T> {
-        println!("-> YamlFile::get() -> {:?}", self.kind);
+        //println!("-> YamlFile::get() -> {:?}", self.kind);
 
         let mut items: Vec<T> = vec![];
 
@@ -277,13 +277,18 @@ impl YamlFile {
                     // println!("-> MonthFile");
 
                     let index_key = "days".to_string().to_yaml();
-                    println!("-> index_key: {:?}", index_key);
+                    //println!("-> index_key: {:?}", index_key);
+
+                    // let _x = content_ref[&index_key].is_badvalue();
+                    // println!("-> _x: {:?}", _x);
 
                     if let Yaml::Hash(ref index_ref) = content_ref[&index_key] {
-                        // println!("-> index_ref: {:?}", index_ref);
+                        //println!("-> index_ref: {:?}", index_ref);
 
-                        for (_, day) in index_ref.iter() {
-                            // println!("-> day: {:?}", day);
+                        for (day_name, day) in index_ref.iter() {
+                            // println!("-> day");
+                            //println!("-> day: {:?}", day_name);
+                            //println!("-> day: {:?}", day);
 
                             if let Yaml::Array(ref day_ref) = day {
                                 // println!("-> day_ref: {:?}", day_ref);

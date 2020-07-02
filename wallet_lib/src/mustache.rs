@@ -222,7 +222,7 @@ impl IndexMustacheFile {
 
                 // Add Categories to Year. Iterate over all common categories.
                 for (category_name, category_sum) in &_result.categories {
-                    println!("-> year {:?}, category: {:?}", year_sum.year, category_name);
+                    //println!("-> year {:?}, category: {:?}", year_sum.year, category_name);
 
                     // Search common category in Year Categories.
                     if let Some(_ycategory) = year_sum.categories.get(category_name) {
