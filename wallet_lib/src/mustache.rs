@@ -308,9 +308,11 @@ impl IndexMustacheFile {
         let total_volume = revenue_sum.unwrap() + expense_sum.unwrap().abs();
         let revenue_percent = revenue_sum.unwrap() / total_volume * 100.0;
         let expense_percent = expense_sum.unwrap() / total_volume * 100.0;
-        for _category in &_mcategories {
-            let _p = 0.0;
-            println!("-> _category {:?} -> {:.2}", _category, _p);
+        for (category_name, category_sum) in &_result.categories {
+            let _v = category_sum.balance.unwrap().abs();
+            let _p = _v / total_volume * 100.0;
+
+            println!("-> _category {:?} -> v:{:.2} p:{:.2}", category_sum.name, _v, _p);
         }
 
         //
