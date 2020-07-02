@@ -215,13 +215,14 @@ impl IndexMustacheFile {
                 let mut _myear = MustacheYear::from(year_sum);
                 _myear.index = index;
                 _myear.balance_sum = format!("{}", balance_sum.to_display());
-                if balance_sum.is_negative() {
-                    _myear.balance_sum_class = "red".to_string();
-                }
+                _myear.balance_sum_class = balance_sum.html_class();
+                // if balance_sum.is_negative() {
+                //     _myear.balance_sum_class = "red".to_string();
+                // }
 
                 // Add Categories to Year. Iterate over all common categories.
                 for (category_name, category_sum) in &_result.categories {
-                    //println!("-> year {:?}, category: {:?}", year_sum.year, category_name);
+                    println!("-> year {:?}, category: {:?}", year_sum.year, category_name);
 
                     // Search common category in Year Categories.
                     if let Some(_ycategory) = year_sum.categories.get(category_name) {

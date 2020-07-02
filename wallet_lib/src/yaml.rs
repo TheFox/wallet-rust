@@ -33,12 +33,12 @@ impl YamlFile {
     }
 
     pub fn open_month(path: PathBuf) -> Self {
-        //println!("-> YamlFile::open({:?})", path);
+        println!("-> YamlFile::open_month({:?})", path);
         YamlFile::open(YamlFileKind::MonthFile, path)
     }
 
     fn open(kind: YamlFileKind, path: PathBuf) -> Self {
-        //println!("-> YamlFile::open({:?}, {:?})", kind, path);
+        println!("-> YamlFile::open({:?}, {:?})", kind, path);
 
         let mut _f = Self {
             kind,
@@ -51,10 +51,10 @@ impl YamlFile {
     }
 
     fn init(&mut self) {
-        //println!("-> YamlFile::init()");
+        println!("-> YamlFile::init()");
 
         if self.path.exists() && self.path.is_file() {
-            // println!("-> read existing file");
+            println!("-> read existing file");
             self.read();
         } else {
             //println!("-> create new file");
@@ -99,17 +99,22 @@ impl YamlFile {
                 }
             }
         }
+
+        println!("<- YamlFile::init()");
     }
 
     fn read(&mut self) {
-        //println!("-> YamlFile::read()");
+        println!("-> YamlFile::read()");
         let raw = read_to_string(&self.path).expect("Cannot read file");
         // println!("-> raw: '{}'", raw);
 
+        println!("-> YamlLoader::load_from_str()");
         let docs = YamlLoader::load_from_str(&raw).unwrap();
-        // println!("-> docs: '{:?}'", docs);
+        //println!("-> docs: '{:?}'", docs);
 
         self.content = docs[0].clone();
+
+        println!("<- YamlFile::read()");
     }
 
     pub fn add<T: ToYaml>(&mut self, obj: T) {
@@ -260,7 +265,7 @@ impl YamlFile {
     }
 
     pub fn get<T: FromYaml>(&self) -> Vec<T> {
-        //println!("-> YamlFile::get() -> {:?}", self.kind);
+        println!("-> YamlFile::get() -> {:?}", self.kind);
 
         let mut items: Vec<T> = vec![];
 
@@ -272,7 +277,7 @@ impl YamlFile {
                     // println!("-> MonthFile");
 
                     let index_key = "days".to_string().to_yaml();
-                    // println!("-> index_key: {:?}", index_key);
+                    println!("-> index_key: {:?}", index_key);
 
                     if let Yaml::Hash(ref index_ref) = content_ref[&index_key] {
                         // println!("-> index_ref: {:?}", index_ref);
