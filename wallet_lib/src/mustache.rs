@@ -10,7 +10,7 @@ use mustache::{MapBuilder, VecBuilder, compile_str};
 // use mustache::serde;
 // use std::env::current_dir;
 use chrono::{Local, DateTime};
-// use std::collections::HashMap;
+use std::collections::BTreeMap;
 use serde::Serialize;
 // use std::fmt::Display;
 use crate::wallet::FilterResult;
@@ -19,10 +19,15 @@ use crate::wallet::Year;
 use crate::number::Number;
 use crate::number::ToDisplay;
 use crate::number::HtmlDisplay;
+//use std::clone::Cloned;
 
 const APP_NAME: &'static str = "WalletRust";
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
+
+type UnsortedMustacheCategories = Vec<MustacheCategory>;
+//type SortedMustacheCategories = BTreeMap<String, MustacheCategory>;
+type MustacheYears = Vec<MustacheYear>;
 
 trait HtmlAble {
     fn get_balance(&self) -> Number;
@@ -46,13 +51,14 @@ impl HtmlAble for YearSummary {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 struct MustacheCategory {
     name: String,
     //revenue: String,
     //expense: String,
     balance: String,
     balance_class: String,
+    balance_percent: String,
     is_placeholder: bool,
 }
 
@@ -64,6 +70,7 @@ impl MustacheCategory {
             //expense: format!("{}", cat_sum.expense.to_display()),
             balance: String::new(),
             balance_class: String::new(),
+            balance_percent: String::new(),
             is_placeholder: false,
         }
     }
@@ -78,12 +85,17 @@ impl From<&CategorySummary> for MustacheCategory {
             //expense: format!("{}", cat_sum.expense.to_display()),
             balance: format!("{}", cat_sum.balance.to_display()),
             balance_class: cat_sum.get_balance_class(),
+            balance_percent: format!("{:.2}", cat_sum.balance_percent),
             is_placeholder: false,
         }
     }
 }
 
-type MustacheCategories = Vec<MustacheCategory>;
+// impl From<u8> for UnsortedMustacheCategories {
+//     fn from(n: u8) -> Self {
+//         UnsortedMustacheCategories::new()
+//     }
+// }
 
 #[derive(Debug, Serialize)]
 struct MustacheYear {
@@ -95,7 +107,7 @@ struct MustacheYear {
     balance_class: String,
     balance_sum: String,
     balance_sum_class: String,
-    categories: MustacheCategories
+    categories: UnsortedMustacheCategories
 }
 
 impl From<&YearSummary> for MustacheYear {
@@ -111,12 +123,10 @@ impl From<&YearSummary> for MustacheYear {
             balance_class: year_sum.get_balance_class(),
             balance_sum: String::new(),
             balance_sum_class: String::new(),
-            categories: MustacheCategories::new(),
+            categories: UnsortedMustacheCategories::new(),
         }
     }
 }
-
-type MustacheYears = Vec<MustacheYear>;
 
 #[derive(Debug, Serialize)]
 struct MustacheTotal {
@@ -131,10 +141,10 @@ struct MustacheTotal {
     balance: String,
     balance_class: String,
 
-    has_categories: bool,
-    categories: MustacheCategories,
+    //has_categories: bool,
+    //categories: UnsortedMustacheCategories,
 
-    has_epics: bool,
+    //has_epics: bool,
     //epics: MustacheEpics,
 }
 
@@ -152,10 +162,10 @@ impl MustacheTotal {
             balance: String::new(),
             balance_class: String::new(),
 
-            has_categories: false,
-            categories: MustacheCategories::new(),
+            //has_categories: false,
+            //categories: UnsortedMustacheCategories::new(),
 
-            has_epics: false,
+            //has_epics: false,
             //epics: MustacheEpics::new(),
         }
     }
@@ -249,8 +259,8 @@ impl IndexMustacheFile {
             .collect();
         println!("-> _myears len: {}", _myears.len());
 
-        // Mustache Categories
-        let mut _mcategories: MustacheCategories = _result.categories.values()
+        // Unsorted Mustache Categories
+        let mut _mcategories: UnsortedMustacheCategories = _result.categories.values()
             .map(|category_sum| {
                 println!("-> Mustache Category => {}", category_sum.name);
 
@@ -261,28 +271,7 @@ impl IndexMustacheFile {
             })
             .collect();
         println!("-> _mcategories len: {}", _mcategories.len());
-
-        // Sort Years
-        /*_myears.sort_by(|a, b| -> Ordering {
-            println!("-> sort Years: {} {} => {:?}", a.year, b.year, a.year.cmp(&b.year));
-            a.year.cmp(&b.year)
-        });*/
-
-        // Sort Categories
-        /*_mcategories.sort_by(|a, b| -> Ordering {
-            let mut is_default = a.name == "default" || b.name == "default";
-            println!("-> sort Categories: '{}' '{}' {:?}", a.name, b.name, is_default);
-
-            if a.name == "default" {
-                Ordering::Less
-            } else {
-                if b.name == "default" {
-                    Ordering::Greater
-                } else {
-                    a.name.cmp(&b.name)
-                }
-            }
-        });*/
+        println!("-> _mcategories: {:?}", _mcategories);
 
         // Build Years
         let mut f_years = move |mut builder: VecBuilder| {
@@ -308,15 +297,6 @@ impl IndexMustacheFile {
         let total_volume = revenue_sum.unwrap() + expense_sum.unwrap().abs();
         let revenue_percent = revenue_sum.unwrap() / total_volume * 100.0;
         let expense_percent = expense_sum.unwrap() / total_volume * 100.0;
-        for (category_name, category_sum) in &_result.categories {
-            let _v = category_sum.balance.unwrap().abs();
-            let _p = _v / total_volume * 100.0;
-
-            println!("-> _category {:?} -> v:{:.2} p:{:.2}", category_sum.name, _v, _p);
-        }
-
-        //
-        //let category_count = _mcategories.len();
 
         // Index Total
         //let mut index_total = MustacheTotal::new();

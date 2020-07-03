@@ -34,6 +34,13 @@ impl Number {
     // pub fn html_class(&self) -> String {
     //     println!("-> Number::html_class()");
     // }
+
+    pub fn abs(&self) -> Self {
+        //println!("-> Number::abs()");
+        Number {
+            n: self.n.abs(),
+        }
+    }
 }
 
 impl PartialEq for Number {

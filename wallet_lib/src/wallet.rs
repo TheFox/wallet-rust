@@ -1,5 +1,5 @@
 
-// use std::convert::From;
+use std::convert::From;
 // use std::env::current_dir;
 use std::path::PathBuf;
 use std::fs::create_dir_all;
@@ -18,14 +18,17 @@ use crate::yaml::YamlFile;
 use crate::date::Date;
 use crate::command::CommandOptions;
 use crate::mustache::{IndexMustacheFile};
-use crate::number::Number;
+use crate::number::{NumberType, Number};
 
 pub type Year = i32;
 pub type Month = u32;
 pub type Day = u32;
 pub type EntryRc = Rc<Entry>;
 pub type Entries = Vec<EntryRc>;
-pub type Categories = BTreeMap<String, CategorySummary>;
+pub type EntryRef<'a> = &'a Entry;
+pub type EntriesRef<'a> = Vec<EntryRef<'a>>;
+pub type CategorySet = Vec<CategorySummary>;
+pub type SortedCategories = BTreeMap<String, CategorySummary>;
 pub type Epics = BTreeMap<String, EpicSummary>;
 pub type Days = BTreeMap<Day, DaySummary>;
 pub type Months = BTreeMap<Month, MonthSummary>;
@@ -102,6 +105,7 @@ pub struct CategorySummary {
     pub revenue: Number,
     pub expense: Number,
     pub balance: Number,
+    pub balance_percent: NumberType,
 }
 
 impl CategorySummary {
@@ -111,6 +115,7 @@ impl CategorySummary {
             revenue: Number::new(),
             expense: Number::new(),
             balance: Number::new(),
+            balance_percent: 0.0
         }
     }
 }
@@ -185,7 +190,7 @@ impl AddEntry for DaySummary {
 pub struct MonthSummary {
     pub entries: Entries,
     pub days: Days,
-    pub categories: Categories,
+    pub categories: SortedCategories,
     pub epics: Epics,
 
     pub revenue: Number,
@@ -198,7 +203,7 @@ impl MonthSummary {
         Self {
             entries: Entries::new(),
             days: Days::new(),
-            categories: Categories::new(),
+            categories: SortedCategories::new(),
             epics: Epics::new(),
 
             revenue: Number::new(),
@@ -286,7 +291,7 @@ pub struct YearSummary {
 
     pub entries: Entries,
     pub months: Months,
-    pub categories: Categories,
+    pub categories: SortedCategories,
     pub epics: Epics,
 
     pub revenue: Number,
@@ -302,7 +307,7 @@ impl YearSummary {
 
             entries: Entries::new(),
             months: Months::new(),
-            categories: Categories::new(),
+            categories: SortedCategories::new(),
             epics: Epics::new(),
 
             revenue: Number::new(),
@@ -396,7 +401,9 @@ impl AddEntry for YearSummary {
 pub struct FilterResult {
     pub entries: Entries,
     pub years: Years,
-    pub categories: Categories,
+    pub categories: SortedCategories,
+    //pub categories_balance: Number,
+    //pub categories_volume: Number,
     pub epics: Epics,
 
     pub revenue: Number,
@@ -410,7 +417,9 @@ impl FilterResult {
         FilterResult {
             entries: Entries::new(),
             years: Years::new(),
-            categories: Categories::new(),
+            categories: SortedCategories::new(),
+            //categories_balance: Number::new(),
+            //categories_volume: Number::new(),
             epics: Epics::new(),
 
             revenue: Number::new(),
@@ -420,7 +429,7 @@ impl FilterResult {
     }
 
     pub fn add(&mut self, entry: Entry) {
-        // println!("-> FilterResult::add()");
+        //println!("-> FilterResult::add()");
 
         let date = entry.date();
         let year = date.year();
@@ -436,6 +445,8 @@ impl FilterResult {
         self.revenue += entry_ref.revenue();
         self.expense += entry_ref.expense();
         self.balance += entry_ref.balance();
+        //self.categories_balance += entry_ref.balance();
+        //self.categories_volume += entry_ref.balance().abs();
 
         // Years
         match self.years.get_mut(&year) {
@@ -457,12 +468,12 @@ impl FilterResult {
         // Categories
         match self.categories.get_mut(&category) {
             Some(category_summary) => {
-                //println!("  -> old category_summary");
+                println!("  -> old category_summary");
 
                 category_summary.add(entry_ref.clone());
             },
             None => {
-                //println!("  -> new category_summary => {:?}", category);
+                println!("  -> new category_summary => {:?}", category);
 
                 let mut category_summary = CategorySummary::new();
                 category_summary.name = category.clone();
@@ -491,6 +502,33 @@ impl FilterResult {
 
         // Consume entry ref here.
         self.entries.push(entry_ref);
+    }
+
+    fn post_calc(&mut self) {
+        println!("-> FilterResult::post_calc()");
+
+        let total_category_volume: NumberType = self.categories.values().map(|cs| cs.balance.abs().unwrap()).sum();
+        println!("-> total_category_volume: {:?}", total_category_volume);
+
+        // Categories Balance Volume
+        for (category_name, category_sum) in &mut self.categories {
+            //println!("-> category_sum: {:?} -> {}", category_name, category_sum.balance);
+            let _v = category_sum.balance.abs().unwrap();
+            category_sum.balance_percent = _v / total_category_volume * 100.0;
+            println!("-> category_sum: {:?} -> {:?} {:?}", category_name, category_sum.balance, _v);
+        }
+    }
+}
+
+impl From<EntriesRef<'_>> for FilterResult {
+    fn from(entries: EntriesRef) -> Self {
+        //println!("-> FilterResult::from() -> {:?}", entries);
+        let mut result = FilterResult::new();
+        for entry in entries {
+            result.add(entry.clone());
+        }
+        result.post_calc();
+        result
     }
 }
 
@@ -733,26 +771,11 @@ impl Wallet {
             true
         });
 
-        // Result
-        let mut result = FilterResult::new();
-
         // Apply filter.
-        let entries: Vec<&Entry> = filter.collect();
+        let entries: EntriesRef = filter.collect();
 
-        // Iterate entries.
-        for entry in entries {
-            // println!("-> entry: {:?}", entry);
-
-            result.add(entry.clone());
-        }
-
-        // let mut filtered_items: Vec<&Entry> = filter.collect();
-        // filtered_items.sort_by(|a, b| a.date().to_string().cmp(&b.date().to_string()));
-
-        // let items = filtered_items.into_iter().map(|item| item.clone()).collect();
-        // items
-
-        result
+        // Result
+        FilterResult::from(entries)
     }
 
     /// HTML

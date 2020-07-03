@@ -60,11 +60,11 @@
                 <td class="left" colspan="2">{{label}}</td>
                 <td class="right">{{revenue}}</td>
                 <td class="right red">{{expense}}</td>
-                <td class="right {{{balance_class}}}">{{balance}} c'{{{balance_class}}}'</td>
+                <td class="right {{{balance_class}}}">{{balance}}</td>
         {{/total}}
                 <td>&nbsp;</td>
                 {{#categories}}
-                    <td class="right {{{balance_class}}}">{{balance}} c'{{{balance_class}}}'</td>
+                    <td class="right {{{balance_class}}}">{{balance}}</td>
                 {{/categories}}
                 {{#epics}}
                     <td class="right {{{balance_class}}}" bgcolor="{{{epic_bg_color}}}">{{{balance}}} c'{{{balance_class}}}' bg'{{{epic_bg_color}}}'</td>
@@ -79,7 +79,7 @@
         {{/total}}
                 <td colspan="2">&nbsp;</td>
                 {{#categories}}
-                    <td class="right {{{balance_class}}}">{{{balance_percent}}} c'{{{balance_class}}}'</td>
+                    <td class="right {{{balance_class}}}">{{{balance_percent}}}</td>
                 {{/categories}}
                 {{#epics}}
                     <td class="right {{{balance_class}}}" bgcolor="{{{epic_bg_color}}}">{{{balance_percent}}} c'{{{balance_class}}}' bg'{{{epic_bg_color}}}'</td>
