@@ -132,6 +132,7 @@ impl AddEntry for CategorySummary {
 
 #[derive(Debug)]
 pub struct EpicSummary {
+    pub name: String, // TODO: set epic name
     pub revenue: Number,
     pub expense: Number,
     pub balance: Number,
@@ -140,6 +141,7 @@ pub struct EpicSummary {
 impl EpicSummary {
     pub fn new() -> Self {
         Self {
+            name: String::new(),
             revenue: Number::new(),
             expense: Number::new(),
             balance: Number::new(),

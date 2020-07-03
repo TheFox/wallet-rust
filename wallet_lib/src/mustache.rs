@@ -14,7 +14,7 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 // use std::fmt::Display;
 use crate::wallet::FilterResult;
-use crate::wallet::{YearSummary, CategorySummary};
+use crate::wallet::{YearSummary, CategorySummary, EpicSummary};
 use crate::wallet::Year;
 use crate::number::Number;
 use crate::number::ToDisplay;
@@ -25,9 +25,10 @@ const APP_NAME: &'static str = "WalletRust";
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 
+type MustacheYears = Vec<MustacheYear>;
 type UnsortedMustacheCategories = Vec<MustacheCategory>;
 //type SortedMustacheCategories = BTreeMap<String, MustacheCategory>;
-type MustacheYears = Vec<MustacheYear>;
+type UnsortedMustacheEpics = Vec<MustacheEpic>;
 
 trait HtmlAble {
     fn get_balance(&self) -> Number;
@@ -51,7 +52,7 @@ impl HtmlAble for YearSummary {
     }
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize)]
 struct MustacheCategory {
     name: String,
     //revenue: String,
@@ -91,11 +92,27 @@ impl From<&CategorySummary> for MustacheCategory {
     }
 }
 
-// impl From<u8> for UnsortedMustacheCategories {
-//     fn from(n: u8) -> Self {
-//         UnsortedMustacheCategories::new()
-//     }
-// }
+#[derive(Debug, Serialize)]
+struct MustacheEpic {
+    name: String,
+}
+
+impl MustacheEpic {
+    fn new() -> Self {
+        Self {
+            name: String::new(),
+        }
+    }
+}
+
+impl From<&EpicSummary> for MustacheEpic {
+    fn from(epic_sum: &EpicSummary) -> Self {
+        Self {
+            // name: epic_sum.name.clone(),
+            name: "epic_name".into(),
+        }
+    }
+}
 
 #[derive(Debug, Serialize)]
 struct MustacheYear {
@@ -270,8 +287,25 @@ impl IndexMustacheFile {
                 _mcategory
             })
             .collect();
-        println!("-> _mcategories len: {}", _mcategories.len());
+        let _mcategories_len = _mcategories.len();
+        println!("-> _mcategories len: {}", _mcategories_len);
         println!("-> _mcategories: {:?}", _mcategories);
+
+        // Epics
+        let _mepics: UnsortedMustacheEpics = _result.epics.values()
+            .map(|epic_sum| {
+                println!("-> Mustache Epic => {}", epic_sum.name);
+
+                let _mepic = MustacheEpic::from(epic_sum);
+
+                // Return Mustache Epic.
+                _mepic
+            })
+            .collect();
+        let _mepics_len = _mepics.len();
+        println!("-> _mepics len: {}", _mepics_len);
+        println!("-> has _mepics: {}", _mepics_len > 0);
+        println!("-> _mepics: {:?}", _mepics);
 
         // Build Years
         let mut f_years = move |mut builder: VecBuilder| {
@@ -289,6 +323,15 @@ impl IndexMustacheFile {
             for c in &_mcategories {
                 //println!("-> category {:?}", c);
                 builder = builder.push(&c).unwrap();
+            }
+            builder
+        };
+
+        // Build Epics
+        let mut f_epics = |mut builder: VecBuilder| {
+            for e in &_mepics {
+                println!("-> epic {:?}", e);
+                builder = builder.push(&e).unwrap();
             }
             builder
         };
@@ -320,12 +363,22 @@ impl IndexMustacheFile {
             .insert_str("relative_path", ".")
 
             .insert_vec("years", f_years)
+
             .insert_vec("categories", f_categories)
-            .insert_str("category_count", _mcategories.len().to_string())
+            .insert_str("category_count", _mcategories_len.to_string())
+
+            .insert_vec("epics", f_epics)
+            .insert_str("epic_count", _mepics_len.to_string())
         ;
 
         builder = builder.insert("total", &index_total)
             .expect("Cannot add 'total' field to builder");
+
+        builder = builder.insert("has_categories", &(_mcategories_len > 0))
+            .expect("Cannot add 'has_categories' field to builder");
+
+        builder = builder.insert("has_epics", &(_mepics_len > 0))
+            .expect("Cannot add 'has_epics' field to builder");
 
         let data = builder.build();
 
