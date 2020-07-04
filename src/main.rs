@@ -246,13 +246,13 @@ fn main() {
             }
 
             // Category
-            set_category(add_matches, &mut cmd_options);
+            set_category_name(add_matches, &mut cmd_options);
 
             // Comment
             set_comment(add_matches, &mut cmd_options);
 
             // Epic
-            set_epic(add_matches, &mut cmd_options);
+            set_epic_handle(add_matches, &mut cmd_options);
 
             // ID
             if add_matches.is_present("id") {
@@ -293,10 +293,10 @@ fn main() {
             set_date_silent(list_matches, &mut cmd_options);
 
             // Category
-            set_category(list_matches, &mut cmd_options);
+            set_category_name(list_matches, &mut cmd_options);
 
             // Epic
-            set_epic(list_matches, &mut cmd_options);
+            set_epic_handle(list_matches, &mut cmd_options);
 
             // Revenue
             if list_matches.is_present("revenue") {
@@ -328,10 +328,10 @@ fn main() {
             // set_date_silent(html_matches, &mut cmd_options);
 
             // Category
-            // set_category(html_matches, &mut cmd_options);
+            // set_category_name(html_matches, &mut cmd_options);
 
             // Epic
-            // set_epic(html_matches, &mut cmd_options);
+            // set_epic_handle(html_matches, &mut cmd_options);
 
             // Revenue
             // if html_matches.is_present("revenue") {
@@ -420,14 +420,14 @@ fn set_date_silent(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     cmd_options.date = Some(date);
 }
 
-fn set_category(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+fn set_category_name(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     if !matches.is_present("category") {
         return;
     }
 
     // &str
     let vs = matches.value_of("category").unwrap();
-    cmd_options.category = Some(vs.to_string());
+    cmd_options.category_name = Some(vs.to_string());
 }
 
 fn set_comment(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
@@ -440,14 +440,14 @@ fn set_comment(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     cmd_options.comment = Some(vs.to_string());
 }
 
-fn set_epic(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
+fn set_epic_handle(matches: &ArgMatches, cmd_options: &mut CommandOptions) {
     if !matches.is_present("epic") {
         return;
     }
 
     // &str
     let vs = matches.value_of("epic").unwrap();
-    cmd_options.epic = Some(vs.to_string());
+    cmd_options.epic_handle = Some(vs.to_string());
 }
 
 fn set_handle(matches: &ArgMatches, cmd_options: &mut CommandOptions) {

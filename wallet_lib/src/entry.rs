@@ -133,36 +133,36 @@ impl Display for Entry {
 
 // TODO tests
 impl From<CommandOptions> for Entry {
-    fn from(options: CommandOptions) -> Entry {
-        // println!("-> Entry::from({:?})", options);
+    fn from(cmd_options: CommandOptions) -> Entry {
+        // println!("-> Entry::from({:?})", cmd_options);
 
         let mut entry = Entry::new();
 
-        if let Some(ref id) = options.id {
+        if let Some(ref id) = cmd_options.id {
             entry.set_id(id.clone());
         }
 
-        if let Some(date) = options.date {
+        if let Some(date) = cmd_options.date {
             entry.set_date(date);
         }
 
-        if let Some(title) = options.title {
+        if let Some(title) = cmd_options.title {
             entry.set_title(title.to_string());
         }
-        if let Some(revenue) = options.revenue {
+        if let Some(revenue) = cmd_options.revenue {
             entry.set_revenue(revenue);
         }
-        if let Some(expense) = options.expense {
+        if let Some(expense) = cmd_options.expense {
             entry.set_expense(expense);
         }
-        if let Some(category) = options.category {
-            entry.set_category(category.to_string());
+        if let Some(category_name) = cmd_options.category_name {
+            entry.set_category(category_name.to_string());
         }
-        if let Some(comment) = options.comment {
+        if let Some(comment) = cmd_options.comment {
             entry.set_comment(comment.to_string());
         }
-        if let Some(epic) = options.epic {
-            entry.set_epic(epic.to_string());
+        if let Some(epic_handle) = cmd_options.epic_handle {
+            entry.set_epic(epic_handle.to_string());
         }
 
         entry

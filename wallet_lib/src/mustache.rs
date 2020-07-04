@@ -4,22 +4,16 @@
 use std::convert::From;
 use std::fs::File;
 use std::include_bytes;
-use std::cmp::Eq;
 use std::cmp::Ordering;
 use mustache::{MapBuilder, VecBuilder, compile_str};
-// use mustache::serde;
-// use std::env::current_dir;
 use chrono::{Local, DateTime};
-use std::collections::BTreeMap;
 use serde::Serialize;
-// use std::fmt::Display;
 use crate::wallet::FilterResult;
 use crate::wallet::{YearSummary, CategorySummary, EpicSummary};
 use crate::wallet::Year;
 use crate::number::Number;
 use crate::number::ToDisplay;
 use crate::number::HtmlDisplay;
-//use std::clone::Cloned;
 
 const APP_NAME: &'static str = "WalletRust";
 const APP_VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -27,7 +21,6 @@ const APP_HOMEPAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 
 type MustacheYears = Vec<MustacheYear>;
 type UnsortedMustacheCategories = Vec<MustacheCategory>;
-//type SortedMustacheCategories = BTreeMap<String, MustacheCategory>;
 type UnsortedMustacheEpics = Vec<MustacheEpic>;
 
 pub trait HtmlAble {

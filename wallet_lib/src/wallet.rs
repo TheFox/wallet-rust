@@ -63,8 +63,8 @@ pub struct FilterOptions {
     pub date: Option<Date>,
     pub filter_revenue: Option<bool>,
     pub filter_expense: Option<bool>,
-    pub category: Option<String>,
-    pub epic: Option<String>,
+    pub category_name: Option<String>,
+    pub epic_handle: Option<String>,
 }
 
 impl FilterOptions {
@@ -73,8 +73,8 @@ impl FilterOptions {
             date: None,
             filter_revenue: None,
             filter_expense: None,
-            category: None,
-            epic: None,
+            category_name: None,
+            epic_handle: None,
         }
     }
 }
@@ -86,8 +86,8 @@ impl From<CommandOptions> for FilterOptions {
         foptions.date = options.date;
         foptions.filter_revenue = options.filter_revenue;
         foptions.filter_expense = options.filter_expense;
-        foptions.category = options.category;
-        foptions.epic = options.epic;
+        foptions.category_name = options.category_name;
+        foptions.epic_handle = options.epic_handle;
 
         foptions
     }
@@ -669,9 +669,9 @@ impl Wallet {
     }
 
     /// Retrieve Entries by a set of filters.
-    pub fn filter(&self, options: FilterOptions) -> FilterResult {
+    pub fn filter(&self, filter_options: FilterOptions) -> FilterResult {
         println!("-> Wallet::filter()");
-        println!("-> options: {:?}", options);
+        println!("-> filter_options: {:?}", filter_options);
 
         // Result
         let mut all_items: Vec<Entry> = vec![];
@@ -684,7 +684,7 @@ impl Wallet {
             let mut g = String::from(path);
 
             // Filter Date
-            if let Some(date) = options.date {
+            if let Some(date) = filter_options.date {
                 if date.has_year() && date.has_month() {
                     g.push_str(&date.rym());
                 } else if date.has_year() {
@@ -707,6 +707,7 @@ impl Wallet {
             let entries = glob(&g).expect("Failed to read glob pattern");
             println!("-> for path {}, found files: {}", g, glob(&g).unwrap().count());
 
+            // Collect files.
             for entry in entries {
                 match entry {
                     Ok(path) => {
@@ -729,7 +730,7 @@ impl Wallet {
             //println!("-> entry: {:?}", entry.id());
 
             // Date
-            if let Some(odate) = options.date {
+            if let Some(odate) = filter_options.date {
                 // println!("-> odate: {:?} -> {:?}", odate, odate.to_string());
 
                 let edate = entry.date();
@@ -752,7 +753,7 @@ impl Wallet {
             }
 
             // Revenue
-            if let Some(filter_revenue) = options.filter_revenue {
+            if let Some(filter_revenue) = filter_options.filter_revenue {
                 // println!("-> filter_revenue: {:?}", filter_revenue);
 
                 if filter_revenue && !entry.has_revenue() {
@@ -761,7 +762,7 @@ impl Wallet {
             }
 
             // Expense
-            if let Some(filter_expense) = options.filter_expense {
+            if let Some(filter_expense) = filter_options.filter_expense {
                 // println!("-> filter_expense: {:?}", filter_expense);
 
                 if filter_expense && !entry.has_expense() {
@@ -770,19 +771,19 @@ impl Wallet {
             }
 
             // Category
-            if let Some(category) = &options.category {
-                // println!("-> category: {:?}", category);
+            if let Some(category_name) = &filter_options.category_name {
+                // println!("-> category_name: {:?}", category_name);
 
-                if &entry.category() != category {
+                if &entry.category() != category_name {
                     return false;
                 }
             }
 
             // Epic
-            if let Some(epic) = &options.epic {
-                // println!("-> epic: {:?}", epic);
+            if let Some(epic_handle) = &filter_options.epic_handle {
+                // println!("-> epic_handle: {:?}", epic_handle);
 
-                if &entry.epic() != epic {
+                if &entry.epic() != epic_handle {
                     return false;
                 }
             }
@@ -794,12 +795,15 @@ impl Wallet {
         let entries: EntriesRef = filter.collect();
 
         // Result
-        FilterResult::from(entries)
+        let result = FilterResult::from(entries);
+
+        result
     }
 
     /// HTML
-    pub fn html(&self, _options: FilterOptions) {
+    pub fn html(&self, filter_options: FilterOptions) {
         println!("-> Wallet::html()");
+        println!("-> wallet: {:?}", self);
 
         // Create html directory.
         create_dir_all(&self.html_dir).expect("Cannot create html directory.");
@@ -810,7 +814,7 @@ impl Wallet {
         // let up = cwd.join("..");
         // println!("-> up: {}", up.display());
 
-        let _result = self.filter(_options);
+        let _result = self.filter(filter_options);
 
         // CSS File
         {
@@ -884,11 +888,11 @@ mod tests_filteroptions_from {
     #[test]
     fn test_filteroptions_from_commandoptions1() {
         let mut copt1 = CommandOptions::new();
-        copt1.category = Some("test1".to_string());
+        copt1.category_name = Some("test1".to_string());
 
         let fopt1 = FilterOptions::from(copt1);
-        if let Some(category) = fopt1.category {
-            assert_eq!("test1", category);
+        if let Some(category_name) = fopt1.category_name {
+            assert_eq!("test1", category_name);
         }
         else {
             assert!(false);
