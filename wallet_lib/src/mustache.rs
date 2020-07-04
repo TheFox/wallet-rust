@@ -30,25 +30,11 @@ type UnsortedMustacheCategories = Vec<MustacheCategory>;
 //type SortedMustacheCategories = BTreeMap<String, MustacheCategory>;
 type UnsortedMustacheEpics = Vec<MustacheEpic>;
 
-trait HtmlAble {
+pub trait HtmlAble {
     fn get_balance(&self) -> Number;
 
     fn get_balance_class(&self) -> String {
         self.get_balance().html_class()
-    }
-}
-
-impl HtmlAble for CategorySummary {
-    fn get_balance(&self) -> Number {
-        //println!("-> CategorySummary::get_balance()");
-        self.balance
-    }
-}
-
-impl HtmlAble for YearSummary {
-    fn get_balance(&self) -> Number {
-        //println!("-> YearSummary::get_balance()");
-        self.balance
     }
 }
 
@@ -95,21 +81,31 @@ impl From<&CategorySummary> for MustacheCategory {
 #[derive(Debug, Serialize)]
 struct MustacheEpic {
     name: String,
+    handle: String,
+    balance: String,
+    balance_class: String,
 }
 
 impl MustacheEpic {
     fn new() -> Self {
         Self {
             name: String::new(),
+            handle: String::new(),
+            balance: String::new(),
+            balance_class: String::new(),
         }
     }
 }
 
 impl From<&EpicSummary> for MustacheEpic {
     fn from(epic_sum: &EpicSummary) -> Self {
+        println!("-> epic_sum: {:?}", epic_sum);
         Self {
-            // name: epic_sum.name.clone(),
-            name: "epic_name".into(),
+            name: epic_sum.name.clone(),
+            handle: epic_sum.handle.clone(),
+            balance: format!("{}", epic_sum.balance.to_display()),
+            //balance_class: epic_sum.balance.get_balance_class(),
+            balance_class: String::new(),
         }
     }
 }
@@ -254,15 +250,8 @@ impl IndexMustacheFile {
 
                     // Search common category in Year Categories.
                     if let Some(_ycategory) = year_sum.categories.get(category_name) {
-                        //println!("  -> year {:?}, get: {:?}", year_sum.year, _ycategory.name);
-
-                        //let mut _mcategory = MustacheCategory::from(_ycategory);
-                        //println!("    -> year {:?}, mcategory: {:?}", year_sum.year, _mcategory);
-
                         _myear.categories.push(MustacheCategory::from(_ycategory));
                     } else {
-                        //println!("  -> year category not found: {}", category_name);
-
                         // Placeholder Category
                         let mut _cplaceholder = MustacheCategory::new();
                         _cplaceholder.is_placeholder = true;

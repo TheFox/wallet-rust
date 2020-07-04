@@ -31,10 +31,6 @@ impl Number {
         self.n < 0.0
     }
 
-    // pub fn html_class(&self) -> String {
-    //     println!("-> Number::html_class()");
-    // }
-
     pub fn abs(&self) -> Self {
         //println!("-> Number::abs()");
         Number {

@@ -1,6 +1,5 @@
 
 use std::convert::From;
-// use std::env::current_dir;
 use std::path::PathBuf;
 use std::fs::create_dir_all;
 use std::fs::File;
@@ -11,13 +10,12 @@ use std::fmt::{Display, Formatter, Result as FmtRes};
 use std::vec::Vec;
 use std::collections::BTreeMap;
 use std::rc::Rc;
-// use serde::Serialize;
 use crate::entry::Entry;
 use crate::epic::Epic;
 use crate::yaml::YamlFile;
 use crate::date::Date;
 use crate::command::CommandOptions;
-use crate::mustache::{IndexMustacheFile};
+use crate::mustache::{IndexMustacheFile, HtmlAble};
 use crate::number::{NumberType, Number};
 
 pub type Year = i32;
@@ -130,9 +128,17 @@ impl AddEntry for CategorySummary {
     }
 }
 
+impl HtmlAble for CategorySummary {
+    fn get_balance(&self) -> Number {
+        //println!("-> CategorySummary::get_balance()");
+        self.balance
+    }
+}
+
 #[derive(Debug)]
 pub struct EpicSummary {
-    pub name: String, // TODO: set epic name
+    pub name: String,
+    pub handle: String,
     pub revenue: Number,
     pub expense: Number,
     pub balance: Number,
@@ -142,6 +148,7 @@ impl EpicSummary {
     pub fn new() -> Self {
         Self {
             name: String::new(),
+            handle: String::new(),
             revenue: Number::new(),
             expense: Number::new(),
             balance: Number::new(),
@@ -157,6 +164,12 @@ impl AddEntry for EpicSummary {
         self.revenue += entry_ref.revenue();
         self.expense += entry_ref.expense();
         self.balance += entry_ref.balance();
+    }
+}
+
+impl HtmlAble for EpicSummary {
+    fn get_balance(&self) -> Number {
+        self.balance
     }
 }
 
@@ -226,8 +239,8 @@ impl AddEntry for MonthSummary {
 
         let date = entry_ref.date();
         let day = date.day();
-        let category = entry_ref.category();
-        let epic = entry_ref.epic();
+        let category_name = entry_ref.category();
+        let epic_handle = entry_ref.epic();
 
         // println!("  -> day: {:?}", day);
 
@@ -249,7 +262,7 @@ impl AddEntry for MonthSummary {
         }
 
         // Categories
-        match self.categories.get_mut(&category) {
+        match self.categories.get_mut(&epic_handle) {
             Some(category_summary) => {
                 //println!("  -> old category_summary");
 
@@ -259,15 +272,15 @@ impl AddEntry for MonthSummary {
                 //println!("  -> new category_summary");
 
                 let mut category_summary = CategorySummary::new();
-                //category_summary.name =
+                category_summary.name = category_name.clone();
                 category_summary.add(entry_ref.clone());
 
-                self.categories.insert(category, category_summary);
+                self.categories.insert(category_name, category_summary);
             }
         }
 
         // Epics
-        match self.epics.get_mut(&epic) {
+        match self.epics.get_mut(&epic_handle) {
             Some(epic_summary) => {
                 // println!("  -> old epic_summary");
 
@@ -277,9 +290,10 @@ impl AddEntry for MonthSummary {
                 // println!("  -> new epic_summary");
 
                 let mut epic_summary = EpicSummary::new();
+                epic_summary.handle = epic_handle.clone();
                 epic_summary.add(entry_ref.clone());
 
-                self.epics.insert(epic, epic_summary);
+                self.epics.insert(epic_handle, epic_summary);
             }
         }
 
@@ -317,14 +331,6 @@ impl YearSummary {
             balance: Number::new(),
         }
     }
-
-    /*pub fn get_balance_class(&self) -> String {
-        if self.balance.is_negative() {
-            "red"
-        } else {
-            ""
-        }.into()
-    }*/
 }
 
 impl AddEntry for YearSummary {
@@ -338,8 +344,8 @@ impl AddEntry for YearSummary {
 
         let date = entry_ref.date();
         let month = date.month();
-        let category = entry_ref.category();
-        let epic = entry_ref.epic();
+        let category_name = entry_ref.category();
+        let epic_handle = entry_ref.epic();
 
         // println!("  -> month: {:?}", month);
 
@@ -361,7 +367,7 @@ impl AddEntry for YearSummary {
         }
 
         // Categories
-        match self.categories.get_mut(&category) {
+        match self.categories.get_mut(&category_name) {
             Some(category_summary) => {
                 // println!("  -> old category_summary");
 
@@ -371,15 +377,15 @@ impl AddEntry for YearSummary {
                 // println!("  -> new category_summary");
 
                 let mut category_summary = CategorySummary::new();
-                category_summary.name = category.clone();
+                category_summary.name = category_name.clone();
                 category_summary.add(entry_ref.clone());
 
-                self.categories.insert(category, category_summary);
+                self.categories.insert(category_name, category_summary);
             }
         }
 
         // Epics
-        match self.epics.get_mut(&epic) {
+        match self.epics.get_mut(&epic_handle) {
             Some(epic_summary) => {
                 // println!("  -> old epic_summary");
 
@@ -389,13 +395,21 @@ impl AddEntry for YearSummary {
                 // println!("  -> new epic_summary");
 
                 let mut epic_summary = EpicSummary::new();
+                epic_summary.handle = epic_handle.clone();
                 epic_summary.add(entry_ref.clone());
 
-                self.epics.insert(epic, epic_summary);
+                self.epics.insert(epic_handle, epic_summary);
             }
         }
 
         self.entries.push(entry_ref);
+    }
+}
+
+impl HtmlAble for YearSummary {
+    fn get_balance(&self) -> Number {
+        //println!("-> YearSummary::get_balance()");
+        self.balance
     }
 }
 
@@ -430,13 +444,14 @@ impl FilterResult {
         }
     }
 
+    /// Add Entry.
     pub fn add(&mut self, entry: Entry) {
         //println!("-> FilterResult::add()");
 
         let date = entry.date();
         let year = date.year();
-        let category = entry.category();
-        let epic = entry.epic();
+        let category_name = entry.category();
+        let epic_handle = entry.epic();
 
         // println!("  -> year: {:?}", year);
 
@@ -468,37 +483,38 @@ impl FilterResult {
         }
 
         // Categories
-        match self.categories.get_mut(&category) {
+        match self.categories.get_mut(&category_name) {
             Some(category_summary) => {
-                println!("  -> old category_summary");
+                println!("  -> old category_summary: {}", category_name);
 
                 category_summary.add(entry_ref.clone());
             },
             None => {
-                println!("  -> new category_summary => {:?}", category);
+                println!("  -> new category_summary => {:?}", category_name);
 
                 let mut category_summary = CategorySummary::new();
-                category_summary.name = category.clone();
+                category_summary.name = category_name.clone();
                 category_summary.add(entry_ref.clone());
 
-                self.categories.insert(category, category_summary);
+                self.categories.insert(category_name, category_summary);
             }
         }
 
         // Epics
-        match self.epics.get_mut(&epic) {
+        match self.epics.get_mut(&epic_handle) {
             Some(epic_summary) => {
                 // println!("  -> old epic_summary");
 
                 epic_summary.add(entry_ref.clone());
             },
             None => {
-                // println!("  -> new epic_summary");
+                println!("  -> new epic_summary: {}", epic_handle);
 
                 let mut epic_summary = EpicSummary::new();
+                epic_summary.handle = epic_handle.clone();
                 epic_summary.add(entry_ref.clone());
 
-                self.epics.insert(epic, epic_summary);
+                self.epics.insert(epic_handle, epic_summary);
             }
         }
 
@@ -506,6 +522,7 @@ impl FilterResult {
         self.entries.push(entry_ref);
     }
 
+    /// Calc after collecting.
     fn post_calc(&mut self) {
         println!("-> FilterResult::post_calc()");
 
