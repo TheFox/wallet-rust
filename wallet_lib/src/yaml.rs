@@ -285,7 +285,7 @@ impl YamlFile {
                     if let Yaml::Hash(ref index_ref) = content_ref[&index_key] {
                         //println!("-> index_ref: {:?}", index_ref);
 
-                        for (day_name, day) in index_ref.iter() {
+                        for (_, day) in index_ref.iter() {
                             // println!("-> day");
                             //println!("-> day: {:?}", day_name);
                             //println!("-> day: {:?}", day);
@@ -365,11 +365,8 @@ impl YamlFile {
 
                         // Updated At
                         let updatedat_key = "updated_at".to_string().to_yaml();
-                        // println!("-> updatedat_key: {:?}", index_ref[&updatedat_key]);
-
-                        let utc: DateTime<Utc> = Utc::now();
-                        // index_ref.insert("updated_at".to_string().to_yaml(), "x".to_string().to_yaml());
-                        index_ref.insert("updated_at".to_string().to_yaml(), utc.format("%FT%T%:z").to_string().to_yaml());
+                        let now: DateTime<Utc> = Utc::now();
+                        index_ref.insert(updatedat_key, now.format("%FT%T%:z").to_string().to_yaml());
                     }
                 },
                 _ => (),

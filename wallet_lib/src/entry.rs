@@ -11,6 +11,8 @@ use crate::string::ShortString;
 use yaml_rust::Yaml;
 use yaml_rust::yaml::Hash;
 
+pub type UnsortedEntries = Vec<Entry>;
+
 #[derive(Debug, Clone)]
 pub struct Entry {
     id: String,
@@ -368,12 +370,12 @@ pub enum EntryDisplayKind {
 }
 
 pub struct EntryDisplay {
-    entries: Vec<Entry>,
+    entries: UnsortedEntries,
     kind: EntryDisplayKind,
 }
 
 impl EntryDisplay {
-    pub fn new(entries: Vec<Entry>, kind: EntryDisplayKind) -> Self {
+    pub fn new(entries: UnsortedEntries, kind: EntryDisplayKind) -> Self {
         EntryDisplay {
             entries,
             kind,
@@ -659,11 +661,11 @@ mod tests_sum {
 
 #[cfg(test)]
 mod tests_display {
-    use super::{Entry, EntryDisplay, EntryDisplayKind};
+    use super::{UnsortedEntries, EntryDisplay, EntryDisplayKind};
 
     #[test]
     fn test_display1() {
-        let list: Vec<Entry> = vec![];
+        let list: UnsortedEntries = vec![];
         EntryDisplay::new(list, EntryDisplayKind::Normal);
     }
 }

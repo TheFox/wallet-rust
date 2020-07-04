@@ -10,7 +10,7 @@ use std::fmt::{Display, Formatter, Result as FmtRes};
 use std::vec::Vec;
 use std::collections::BTreeMap;
 use std::rc::Rc;
-use crate::entry::Entry;
+use crate::entry::{UnsortedEntries, Entry};
 use crate::epic::Epic;
 use crate::yaml::YamlFile;
 use crate::date::Date;
@@ -674,7 +674,7 @@ impl Wallet {
         println!("-> filter_options: {:?}", filter_options);
 
         // Result
-        let mut all_items: Vec<Entry> = vec![];
+        let mut all_items = UnsortedEntries::new();
 
         let data_dir = self.data_dir.join("month_");
 
@@ -714,7 +714,7 @@ impl Wallet {
                         println!("-> collect file: {:?}", path);
 
                         let month_file = YamlFile::open_month(path);
-                        let mut month_items: Vec<Entry> = month_file.get();
+                        let mut month_items: UnsortedEntries = month_file.get();
 
                         all_items.append(&mut month_items);
                     },

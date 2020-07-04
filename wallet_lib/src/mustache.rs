@@ -4,7 +4,6 @@
 use std::convert::From;
 use std::fs::File;
 use std::include_bytes;
-use std::cmp::Ordering;
 use mustache::{MapBuilder, VecBuilder, compile_str};
 use chrono::{Local, DateTime};
 use serde::Serialize;
@@ -79,16 +78,16 @@ struct MustacheEpic {
     balance_class: String,
 }
 
-impl MustacheEpic {
-    fn new() -> Self {
-        Self {
-            name: String::new(),
-            handle: String::new(),
-            balance: String::new(),
-            balance_class: String::new(),
-        }
-    }
-}
+// impl MustacheEpic {
+//     fn new() -> Self {
+//         Self {
+//             name: String::new(),
+//             handle: String::new(),
+//             balance: String::new(),
+//             balance_class: String::new(),
+//         }
+//     }
+// }
 
 impl From<&EpicSummary> for MustacheEpic {
     fn from(epic_sum: &EpicSummary) -> Self {
@@ -238,7 +237,7 @@ impl IndexMustacheFile {
                 _myear.balance_sum_class = balance_sum.html_class();
 
                 // Iterate over all common categories. Add Categories to Year.
-                for (category_name, category_sum) in &_result.categories {
+                for category_name in _result.categories.keys() {
                     //println!("  -> category: {:?}", category_sum);
 
                     // Search common category in Year Categories.
@@ -290,7 +289,7 @@ impl IndexMustacheFile {
         println!("-> _mepics: {:?}", _mepics);
 
         // Build Years
-        let mut f_years = move |mut builder: VecBuilder| {
+        let f_years = move |mut builder: VecBuilder| {
             // let mut balance_sum = Number::new();
 
             for y in &_myears {
@@ -301,7 +300,7 @@ impl IndexMustacheFile {
         };
 
         // Build Categories
-        let mut f_categories = |mut builder: VecBuilder| {
+        let f_categories = move |mut builder: VecBuilder| {
             for c in &_mcategories {
                 //println!("-> category {:?}", c);
                 builder = builder.push(&c).unwrap();
@@ -310,7 +309,7 @@ impl IndexMustacheFile {
         };
 
         // Build Epics
-        let mut f_epics = |mut builder: VecBuilder| {
+        let f_epics = move |mut builder: VecBuilder| {
             for e in &_mepics {
                 println!("-> epic {:?}", e);
                 builder = builder.push(&e).unwrap();
